@@ -1,0 +1,38 @@
+{
+  "cli": {
+    "version": ">= 3.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://sdrsoccfingecvlzrlym.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_hZCl16bChwDHZ4d9OFZf1A_lshrzLx1",
+        "EXPO_PUBLIC_API_URL": "https://fbf-dashboard.vercel.app"
+      },
+      "ios": {
+        "simulator": true
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://sdrsoccfingecvlzrlym.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_hZCl16bChwDHZ4d9OFZf1A_lshrzLx1",
+        "EXPO_PUBLIC_API_URL": "https://fbf-dashboard.vercel.app"
+      },
+      "ios": {
+        "buildConfiguration": "Release"
+      },
+      "android": {
+        "buildType": "app-bundle"
+      }
+    }
+  }
+}

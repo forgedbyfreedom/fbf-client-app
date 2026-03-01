@@ -95,6 +95,8 @@ export function usePushNotifications() {
           router.push('/(tabs)/checkin');
         } else if (data?.type === 'chat_message') {
           router.push('/(tabs)/chat');
+        } else if (data?.type === 'badge_earned') {
+          router.push('/(tabs)/profile');
         } else {
           router.push('/(tabs)');
         }

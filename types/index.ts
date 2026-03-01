@@ -56,6 +56,7 @@ export interface Client {
   target_carbs: number | null;
   target_fats: number | null;
   is_active: boolean;
+  leaderboard_opt_in: boolean;
   weigh_in_day: string;
   current_supplements: SupplementItem[];
   current_peds: PedItem[];
@@ -178,8 +179,48 @@ export interface ClientMetrics {
   updated_at: string;
 }
 
+export interface BadgeDefinition {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  category: 'streak' | 'checkins' | 'targets' | 'lifestyle';
+  icon: string;
+  threshold_json: Record<string, unknown>;
+  sort_order: number;
+}
+
+export interface EarnedBadge extends BadgeDefinition {
+  earned_at: string;
+}
+
+export interface StreakData {
+  current_streak: number;
+  best_streak: number;
+  total_checkins: number;
+  last_checkin_date?: string | null;
+}
+
+export interface LeaderboardEntry {
+  client_id: string;
+  name: string;
+  current_streak: number;
+  best_streak: number;
+  total_checkins: number;
+  badge_count: number;
+  adherence_7d: number;
+}
+
+export interface LeaderboardResponse {
+  leaderboard: LeaderboardEntry[];
+  myRank: number | null;
+}
+
 export interface ClientMeResponse {
   client: Client;
   metrics: ClientMetrics | null;
   recentCheckins: Checkin[];
+  streak: StreakData;
+  earnedBadges: EarnedBadge[];
+  allBadges: BadgeDefinition[];
 }

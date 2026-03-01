@@ -11,13 +11,14 @@ import { useAuth } from '../../hooks/useAuth';
 import { Loading } from '../../components/ui/Loading';
 import { Button } from '../../components/ui/Button';
 import { OverviewCard } from '../../components/dashboard/OverviewCard';
+import { StreakCard } from '../../components/dashboard/StreakCard';
 import { TargetsCard } from '../../components/dashboard/TargetsCard';
 import { TrendChart } from '../../components/dashboard/TrendChart';
 import { HistoryList } from '../../components/dashboard/HistoryList';
 import { colors, fontSize, spacing } from '../../lib/theme';
 
 export default function DashboardScreen() {
-  const { client, metrics, recentCheckins, loading, clientError, refreshClientData } = useAuth();
+  const { client, metrics, recentCheckins, streak, loading, clientError, refreshClientData } = useAuth();
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = React.useState(false);
 
@@ -59,6 +60,8 @@ export default function DashboardScreen() {
       }
     >
       <OverviewCard client={client} latestCheckin={latestCheckin} />
+
+      <StreakCard streak={streak} />
 
       <TargetsCard client={client} latestCheckin={latestCheckin} />
 

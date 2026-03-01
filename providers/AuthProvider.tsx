@@ -2,7 +2,7 @@ import React, { createContext, useEffect, useState, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { api } from '../lib/api';
-import { Client, ClientMetrics, Checkin } from '../types';
+import { Client, ClientMetrics, Checkin, StreakData, EarnedBadge, BadgeDefinition } from '../types';
 
 interface AuthContextType {
   session: Session | null;
@@ -10,6 +10,9 @@ interface AuthContextType {
   client: Client | null;
   metrics: ClientMetrics | null;
   recentCheckins: Checkin[];
+  streak: StreakData | null;
+  earnedBadges: EarnedBadge[];
+  allBadges: BadgeDefinition[];
   loading: boolean;
   clientError: string | null;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
@@ -23,6 +26,9 @@ export const AuthContext = createContext<AuthContextType>({
   client: null,
   metrics: null,
   recentCheckins: [],
+  streak: null,
+  earnedBadges: [],
+  allBadges: [],
   loading: true,
   clientError: null,
   signIn: async () => ({ error: null }),
@@ -36,6 +42,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [client, setClient] = useState<Client | null>(null);
   const [metrics, setMetrics] = useState<ClientMetrics | null>(null);
   const [recentCheckins, setRecentCheckins] = useState<Checkin[]>([]);
+  const [streak, setStreak] = useState<StreakData | null>(null);
+  const [earnedBadges, setEarnedBadges] = useState<EarnedBadge[]>([]);
+  const [allBadges, setAllBadges] = useState<BadgeDefinition[]>([]);
   const [loading, setLoading] = useState(true);
   const [clientError, setClientError] = useState<string | null>(null);
 
@@ -46,10 +55,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         client: Client;
         metrics: ClientMetrics | null;
         recentCheckins: Checkin[];
+        streak: StreakData;
+        earnedBadges: EarnedBadge[];
+        allBadges: BadgeDefinition[];
       }>('/api/client/me');
       setClient(data.client);
       setMetrics(data.metrics);
       setRecentCheckins(data.recentCheckins);
+      setStreak(data.streak ?? null);
+      setEarnedBadges(data.earnedBadges ?? []);
+      setAllBadges(data.allBadges ?? []);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load data';
       console.error('Failed to fetch client data:', message);
@@ -74,6 +89,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setClient(null);
           setMetrics(null);
           setRecentCheckins([]);
+          setStreak(null);
+          setEarnedBadges([]);
+          setAllBadges([]);
         }
       }
     );
@@ -91,6 +109,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setClient(null);
     setMetrics(null);
     setRecentCheckins([]);
+    setStreak(null);
+    setEarnedBadges([]);
+    setAllBadges([]);
   }, []);
 
   return (
@@ -101,6 +122,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         client,
         metrics,
         recentCheckins,
+        streak,
+        earnedBadges,
+        allBadges,
         loading,
         clientError,
         signIn,

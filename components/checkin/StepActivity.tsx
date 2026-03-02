@@ -77,13 +77,6 @@ export function StepActivity() {
           />
 
           <MoodSelector
-            value={parseInt(form.rpe) || 5}
-            onChange={(v) => updateForm({ rpe: String(v) })}
-            label="Rate of Perceived Exertion (RPE)"
-            max={10}
-          />
-
-          <MoodSelector
             value={parseInt(form.performance_rating) || 5}
             onChange={(v) => updateForm({ performance_rating: String(v) })}
             label="Rate Your Performance Today"

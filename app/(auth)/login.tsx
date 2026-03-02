@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
+  Image,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
@@ -47,7 +48,11 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          <Text style={styles.logo}>FORGED BY FREEDOM</Text>
+          <Image
+            source={require('../../assets/fbf-logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <Text style={styles.subtitle}>Client Portal</Text>
         </View>
 
@@ -101,18 +106,17 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginBottom: spacing.xxxl + 16,
+    marginBottom: spacing.xxl,
   },
   logo: {
-    fontSize: fontSize.xxxl,
-    fontWeight: '800',
-    color: colors.accent,
-    letterSpacing: 2,
+    width: 220,
+    height: 280,
+    marginBottom: spacing.sm,
   },
   subtitle: {
     fontSize: fontSize.lg,
     color: colors.textSecondary,
-    marginTop: spacing.sm,
+    letterSpacing: 1,
   },
   form: {
     gap: spacing.lg,

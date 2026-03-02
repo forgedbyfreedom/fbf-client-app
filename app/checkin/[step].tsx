@@ -6,6 +6,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -59,6 +60,7 @@ function CheckinFormContent() {
 
   const handleSubmit = async () => {
     if (!client) return;
+    Keyboard.dismiss();
     setSubmitting(true);
 
     try {
@@ -173,7 +175,7 @@ function CheckinFormContent() {
             title="Submit"
             onPress={handleSubmit}
             loading={submitting}
-            style={{ ...styles.footerBtn, ...styles.submitBtn }}
+            style={StyleSheet.flatten([styles.footerBtn, styles.submitBtn])}
           />
         ) : (
           <Button

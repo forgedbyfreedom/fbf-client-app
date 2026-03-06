@@ -216,8 +216,49 @@ export interface LeaderboardResponse {
   myRank: number | null;
 }
 
+export type UserRole = 'org_admin' | 'coach' | null;
+
+export interface AdminClient {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string | null;
+  phone: string | null;
+  is_active: boolean;
+  target_calories: number | null;
+  target_protein: number | null;
+  target_steps: number | null;
+  target_carbs: number | null;
+  target_fats: number | null;
+  weigh_in_day: string;
+  created_at: string;
+  client_coach_assignments: {
+    coach_user_id: string;
+    is_active: boolean;
+    profiles: { full_name: string | null; email: string } | null;
+  }[];
+  client_metrics: {
+    status: 'green' | 'yellow' | 'red';
+    adherence_7d: number | null;
+  }[] | null;
+}
+
+export interface OrgCoach {
+  user_id: string;
+  role: string;
+  client_count: number;
+  profiles: {
+    id: string;
+    full_name: string | null;
+    email: string;
+    avatar_url: string | null;
+  };
+}
+
 export interface ClientMeResponse {
-  client: Client;
+  client: Client | null;
+  userRole: UserRole;
+  organizationId: string | null;
   metrics: ClientMetrics | null;
   recentCheckins: Checkin[];
   streak: StreakData;

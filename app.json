@@ -14,7 +14,11 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.forgedbyfreedom.client"
+      "bundleIdentifier": "com.forgedbyfreedom.client",
+      "buildNumber": "5",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -25,6 +29,7 @@
       },
       "package": "com.forgedbyfreedom.client",
       "permissions": [
+        "android.permission.RECORD_AUDIO",
         "android.permission.RECORD_AUDIO"
       ]
     },
@@ -48,7 +53,8 @@
           "photosPermission": "Allow Forged by Freedom to access your photos for progress tracking.",
           "cameraPermission": "Allow Forged by Freedom to access your camera for progress photos."
         }
-      ]
+      ],
+      "expo-font"
     ],
     "extra": {
       "router": {},
@@ -56,6 +62,12 @@
         "projectId": "a0941bf2-6a49-474e-9470-87d53fb93cf1"
       }
     },
-    "owner": "forgedbyfreedom"
+    "owner": "forgedbyfreedom",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/a0941bf2-6a49-474e-9470-87d53fb93cf1"
+    }
   }
 }

@@ -2,12 +2,15 @@ import React, { createContext, useEffect, useState, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { api } from '../lib/api';
-import { Client, ClientMetrics, Checkin, StreakData, EarnedBadge, BadgeDefinition } from '../types';
+import { Client, ClientMetrics, Checkin, StreakData, EarnedBadge, BadgeDefinition, UserRole } from '../types';
 
 interface AuthContextType {
   session: Session | null;
   user: User | null;
   client: Client | null;
+  userRole: UserRole;
+  isAdmin: boolean;
+  organizationId: string | null;
   metrics: ClientMetrics | null;
   recentCheckins: Checkin[];
   streak: StreakData | null;
@@ -24,6 +27,9 @@ export const AuthContext = createContext<AuthContextType>({
   session: null,
   user: null,
   client: null,
+  userRole: null,
+  isAdmin: false,
+  organizationId: null,
   metrics: null,
   recentCheckins: [],
   streak: null,
@@ -40,6 +46,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [client, setClient] = useState<Client | null>(null);
+  const [userRole, setUserRole] = useState<UserRole>(null);
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [metrics, setMetrics] = useState<ClientMetrics | null>(null);
   const [recentCheckins, setRecentCheckins] = useState<Checkin[]>([]);
   const [streak, setStreak] = useState<StreakData | null>(null);
@@ -52,14 +60,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setClientError(null);
       const data = await api.get<{
-        client: Client;
+        client: Client | null;
+        userRole: UserRole;
+        organizationId: string | null;
         metrics: ClientMetrics | null;
         recentCheckins: Checkin[];
         streak: StreakData;
         earnedBadges: EarnedBadge[];
         allBadges: BadgeDefinition[];
       }>('/api/client/me');
-      setClient(data.client);
+      setClient(data.client ?? null);
+      setUserRole(data.userRole ?? null);
+      setOrganizationId(data.organizationId ?? null);
       setMetrics(data.metrics);
       setRecentCheckins(data.recentCheckins);
       setStreak(data.streak ?? null);
@@ -87,6 +99,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (s) fetchClientData();
         else {
           setClient(null);
+          setUserRole(null);
+          setOrganizationId(null);
           setMetrics(null);
           setRecentCheckins([]);
           setStreak(null);
@@ -107,6 +121,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
     setClient(null);
+    setUserRole(null);
+    setOrganizationId(null);
     setMetrics(null);
     setRecentCheckins([]);
     setStreak(null);
@@ -120,6 +136,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         session,
         user,
         client,
+        userRole,
+        isAdmin: userRole === 'org_admin',
+        organizationId,
         metrics,
         recentCheckins,
         streak,

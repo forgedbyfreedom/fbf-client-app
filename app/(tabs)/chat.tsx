@@ -13,46 +13,55 @@ import { useAuth } from '../../hooks/useAuth';
 import { Loading } from '../../components/ui/Loading';
 import { MessageBubble } from '../../components/chat/MessageBubble';
 import { ChatInput } from '../../components/chat/ChatInput';
+import { ChannelPills } from '../../components/chat/ChannelPills';
 import { colors, fontSize, spacing } from '../../lib/theme';
 import { ChatChannel, ChatMessage } from '../../types';
 
 export default function ChatScreen() {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
-  const [channel, setChannel] = useState<ChatChannel | null>(null);
+  const [channels, setChannels] = useState<ChatChannel[]>([]);
+  const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const flatListRef = useRef<FlatList>(null);
   const supabaseRef = useRef(supabase);
+  const subscriptionRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
-  // Fetch the DM channel for this client
-  const fetchChannel = useCallback(async () => {
-    if (!user) return null;
+  // Fetch ALL channels for this user
+  const fetchChannels = useCallback(async () => {
+    if (!user) return [];
 
     try {
-      const { data: channels, error } = await supabaseRef.current
+      const { data, error } = await supabaseRef.current
         .from('chat_members')
         .select('channel_id, chat_channels(id, name, type, organization_id)')
         .eq('user_id', user.id);
 
       if (error) {
         console.warn('Chat not available:', error.message);
-        return null;
+        return [];
       }
 
-      if (channels && channels.length > 0) {
-        const ch = (channels[0] as any).chat_channels as ChatChannel;
-        setChannel(ch);
-        return ch;
+      if (data && data.length > 0) {
+        const chs = data.map((d: any) => d.chat_channels as ChatChannel);
+        // Sort: group channels first, then DMs
+        chs.sort((a: ChatChannel, b: ChatChannel) => {
+          if (a.type === 'group' && b.type !== 'group') return -1;
+          if (a.type !== 'group' && b.type === 'group') return 1;
+          return a.name.localeCompare(b.name);
+        });
+        setChannels(chs);
+        return chs;
       }
     } catch (err) {
       console.warn('Chat fetch failed:', err);
     }
 
-    return null;
+    return [];
   }, [user]);
 
-  // Fetch messages for the channel
+  // Fetch messages for a specific channel
   const fetchMessages = useCallback(async (channelId: string) => {
     const { data } = await supabaseRef.current
       .from('chat_messages')
@@ -64,38 +73,48 @@ export default function ChatScreen() {
     if (data) setMessages(data as unknown as ChatMessage[]);
   }, []);
 
-  // Initialize
+  // Subscribe to real-time messages for a channel
+  const subscribeTo = useCallback((channelId: string) => {
+    // Clean up previous subscription
+    if (subscriptionRef.current) {
+      subscriptionRef.current.unsubscribe();
+      subscriptionRef.current = null;
+    }
+
+    subscriptionRef.current = supabaseRef.current
+      .channel(`chat-${channelId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `channel_id=eq.${channelId}`,
+        },
+        async (payload) => {
+          const { data: msg } = await supabaseRef.current
+            .from('chat_messages')
+            .select('id, content, created_at, user_id, profiles:user_id(full_name, avatar_url)')
+            .eq('id', payload.new.id)
+            .single();
+          if (msg) {
+            setMessages((prev) => [...prev, msg as unknown as ChatMessage]);
+          }
+        }
+      )
+      .subscribe();
+  }, []);
+
+  // Initialize: fetch channels, pick default, load messages
   useEffect(() => {
-    let subscription: ReturnType<typeof supabase.channel> | null = null;
-
     const init = async () => {
-      const ch = await fetchChannel();
-      if (ch) {
-        await fetchMessages(ch.id);
-
-        // Subscribe to new messages
-        subscription = supabaseRef.current
-          .channel(`chat-${ch.id}`)
-          .on(
-            'postgres_changes',
-            {
-              event: 'INSERT',
-              schema: 'public',
-              table: 'chat_messages',
-              filter: `channel_id=eq.${ch.id}`,
-            },
-            async (payload) => {
-              const { data: msg } = await supabaseRef.current
-                .from('chat_messages')
-                .select('id, content, created_at, user_id, profiles:user_id(full_name, avatar_url)')
-                .eq('id', payload.new.id)
-                .single();
-              if (msg) {
-                setMessages((prev) => [...prev, msg as unknown as ChatMessage]);
-              }
-            }
-          )
-          .subscribe();
+      const chs = await fetchChannels();
+      if (chs.length > 0) {
+        // Default to first group channel (General) or first channel
+        const defaultCh = chs.find((c: ChatChannel) => c.type === 'group') || chs[0];
+        setActiveChannelId(defaultCh.id);
+        await fetchMessages(defaultCh.id);
+        subscribeTo(defaultCh.id);
       }
       setLoading(false);
     };
@@ -103,28 +122,44 @@ export default function ChatScreen() {
     init();
 
     return () => {
-      if (subscription) subscription.unsubscribe();
+      if (subscriptionRef.current) subscriptionRef.current.unsubscribe();
     };
-  }, [fetchChannel, fetchMessages]);
+  }, [fetchChannels, fetchMessages, subscribeTo]);
+
+  // Switch channel
+  const handleChannelSwitch = useCallback(async (channelId: string) => {
+    if (channelId === activeChannelId) return;
+    setActiveChannelId(channelId);
+    setMessages([]);
+    await fetchMessages(channelId);
+    subscribeTo(channelId);
+  }, [activeChannelId, fetchMessages, subscribeTo]);
 
   const sendMessage = async (content: string) => {
-    if (!channel || !user) return;
+    if (!activeChannelId || !user) return;
 
     await supabaseRef.current.from('chat_messages').insert({
-      channel_id: channel.id,
+      channel_id: activeChannelId,
       user_id: user.id,
       content,
     });
   };
 
+  const activeChannel = channels.find(c => c.id === activeChannelId);
+  const headerTitle = activeChannel
+    ? activeChannel.type === 'group'
+      ? `# ${activeChannel.name}`
+      : activeChannel.name
+    : 'Chat';
+
   if (loading) return <Loading />;
 
-  if (!channel) {
+  if (channels.length === 0) {
     return (
       <View style={[styles.empty, { paddingTop: insets.top }]}>
-        <Text style={styles.emptyTitle}>No Chat Available</Text>
+        <Text style={styles.emptyTitle}>No Channels Yet</Text>
         <Text style={styles.emptyText}>
-          Your coach will set up a chat channel for you.
+          You'll be added to the group chat automatically.
         </Text>
       </View>
     );
@@ -137,7 +172,12 @@ export default function ChatScreen() {
       keyboardVerticalOffset={0}
     >
       <View style={[styles.header, { paddingTop: insets.top + spacing.sm }]}>
-        <Text style={styles.headerTitle}>Chat with Coach</Text>
+        <Text style={styles.headerTitle}>{headerTitle}</Text>
+        <ChannelPills
+          channels={channels}
+          activeId={activeChannelId!}
+          onSelect={handleChannelSwitch}
+        />
       </View>
 
       <FlatList
@@ -157,6 +197,13 @@ export default function ChatScreen() {
         onLayout={() =>
           flatListRef.current?.scrollToEnd({ animated: false })
         }
+        ListEmptyComponent={
+          <View style={styles.emptyMessages}>
+            <Text style={styles.emptyMessagesText}>
+              No messages yet. Say hello!
+            </Text>
+          </View>
+        }
       />
 
       <View style={{ paddingBottom: insets.bottom }}>
@@ -173,7 +220,7 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
+    paddingBottom: spacing.xs,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
     backgroundColor: colors.surface,
@@ -204,5 +251,15 @@ const styles = StyleSheet.create({
     fontSize: fontSize.md,
     color: colors.textSecondary,
     textAlign: 'center',
+  },
+  emptyMessages: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.xxxl * 2,
+  },
+  emptyMessagesText: {
+    fontSize: fontSize.md,
+    color: colors.textTertiary,
   },
 });

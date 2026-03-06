@@ -7,6 +7,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Redirect } from 'expo-router';
 import { useAuth } from '../../hooks/useAuth';
 import { Loading } from '../../components/ui/Loading';
 import { Button } from '../../components/ui/Button';
@@ -18,7 +19,7 @@ import { HistoryList } from '../../components/dashboard/HistoryList';
 import { colors, fontSize, spacing } from '../../lib/theme';
 
 export default function DashboardScreen() {
-  const { client, metrics, recentCheckins, streak, loading, clientError, refreshClientData } = useAuth();
+  const { client, metrics, recentCheckins, streak, loading, clientError, refreshClientData, isAdmin } = useAuth();
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = React.useState(false);
 
@@ -29,6 +30,10 @@ export default function DashboardScreen() {
   }, [refreshClientData]);
 
   if (loading) return <Loading />;
+
+  if (!client && isAdmin) {
+    return <Redirect href="/(tabs)/admin" />;
+  }
 
   if (!client) {
     return (

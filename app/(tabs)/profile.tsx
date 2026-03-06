@@ -1,23 +1,15 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { View, Text, Switch, StyleSheet, ScrollView, Alert, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
-import { BadgeGallery } from '../../components/gamification/BadgeGallery';
-import { LeaderboardCard } from '../../components/gamification/LeaderboardCard';
 import { colors, fontSize, spacing } from '../../lib/theme';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { user, client, earnedBadges, allBadges, signOut, refreshClientData } = useAuth();
+  const { user, client, signOut } = useAuth();
   const [pushEnabled, setPushEnabled] = useState(true);
-  const [leaderboardOptIn, setLeaderboardOptIn] = useState(client?.leaderboard_opt_in ?? false);
-
-  const handleLeaderboardOptInChange = useCallback((newValue: boolean) => {
-    setLeaderboardOptIn(newValue);
-    refreshClientData();
-  }, [refreshClientData]);
 
   const handleSignOut = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -93,16 +85,6 @@ export default function ProfileScreen() {
           style={styles.linkBtn}
         />
       </Card>
-
-      <BadgeGallery allBadges={allBadges} earnedBadges={earnedBadges} />
-
-      {client && (
-        <LeaderboardCard
-          clientId={client.id}
-          isOptedIn={leaderboardOptIn}
-          onOptInChange={handleLeaderboardOptInChange}
-        />
-      )}
 
       <Button
         title="Sign Out"

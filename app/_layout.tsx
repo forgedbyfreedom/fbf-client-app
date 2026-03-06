@@ -70,6 +70,25 @@ export default function RootLayout() {
             animation: 'slide_from_bottom',
           }}
         />
+        <Stack.Screen
+          name="admin/clients"
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="admin/coaches"
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="admin/client-detail"
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="admin/create-client"
+          options={{
+            presentation: 'fullScreenModal',
+            animation: 'slide_from_bottom',
+          }}
+        />
       </Stack>
       <RootNavigation />
       {Platform.OS !== 'web' && <PushNotificationHandler />}

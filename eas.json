@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 3.0.0"
+    "version": ">= 3.0.0",
+    "appVersionSource": "local"
   },
   "build": {
     "development": {
@@ -27,11 +28,20 @@
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_hZCl16bChwDHZ4d9OFZf1A_lshrzLx1",
         "EXPO_PUBLIC_API_URL": "https://fbf-dashboard.vercel.app"
       },
+      "autoIncrement": true,
       "ios": {
         "buildConfiguration": "Release"
       },
       "android": {
         "buildType": "app-bundle"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "forgedbyfreedom@gmail.com",
+        "appleTeamId": "GX448CX85G"
       }
     }
   }

@@ -3,11 +3,13 @@ import { Tabs } from 'expo-router';
 import { View, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Badge } from '../../components/ui/Badge';
+import { useAuth } from '../../hooks/useAuth';
 import { colors, fontSize } from '../../lib/theme';
 
 export default function TabLayout() {
   // TODO: wire up unread count from chat context
   const unreadCount = 0;
+  const { isAdmin } = useAuth();
 
   return (
     <Tabs
@@ -49,6 +51,25 @@ export default function TabLayout() {
               <Ionicons name="chatbubble-outline" size={size} color={color} />
               <Badge count={unreadCount} />
             </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="compete"
+        options={{
+          title: 'Compete',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="trophy-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="admin"
+        options={{
+          title: 'Admin',
+          href: isAdmin ? '/(tabs)/admin' : null,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="shield-outline" size={size} color={color} />
           ),
         }}
       />

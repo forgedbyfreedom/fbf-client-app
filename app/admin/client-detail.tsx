@@ -16,8 +16,30 @@ import { api } from '../../lib/api';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { CoachPicker } from '../../components/admin/CoachPicker';
+import { PhotoComparison } from '../../components/admin/PhotoComparison';
+import { ClientAlerts } from '../../components/admin/ClientAlerts';
+import { TrendChart } from '../../components/dashboard/TrendChart';
 import { Client, Checkin, ClientMetrics, OrgCoach } from '../../types';
 import { colors, borderRadius, fontSize, spacing } from '../../lib/theme';
+
+const TREND_OPTIONS: {
+  key: string;
+  label: string;
+  dataKey: keyof Checkin;
+  unit?: string;
+  color: string;
+}[] = [
+  { key: 'weight', label: 'Weight', dataKey: 'weight_lbs', unit: ' lbs', color: colors.accent },
+  { key: 'temp', label: 'Body Temp', dataKey: 'body_temp', unit: '°F', color: colors.red },
+  { key: 'bp', label: 'BP (Systolic)', dataKey: 'blood_pressure_systolic', unit: ' mmHg', color: colors.red },
+  { key: 'sleep', label: 'Sleep', dataKey: 'sleep_hours', unit: 'h', color: colors.gold },
+  { key: 'calories', label: 'Calories', dataKey: 'calories', unit: ' kcal', color: colors.gold },
+  { key: 'protein', label: 'Protein', dataKey: 'protein_g', unit: 'g', color: colors.green },
+  { key: 'steps', label: 'Steps', dataKey: 'steps', color: colors.green },
+  { key: 'mood', label: 'Mood', dataKey: 'mood_rating', unit: '/10', color: colors.yellow },
+  { key: 'glucose', label: 'Glucose', dataKey: 'blood_glucose', unit: ' mg/dL', color: colors.red },
+  { key: 'hr', label: 'Heart Rate', dataKey: 'resting_heart_rate', unit: ' bpm', color: colors.accent },
+];
 
 interface ClientDetailData {
   client: Client & {
@@ -42,6 +64,7 @@ export default function ClientDetailScreen() {
   const [reassigning, setReassigning] = useState(false);
   const [showReassign, setShowReassign] = useState(false);
   const [toggling, setToggling] = useState(false);
+  const [activeTrend, setActiveTrend] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!id) return;
@@ -195,6 +218,8 @@ export default function ClientDetailScreen() {
           </Card>
         )}
 
+        <ClientAlerts checkins={checkins} targetCalories={client.target_calories} />
+
         <Card>
           <Text style={styles.sectionLabel}>Targets</Text>
           <View style={styles.metricsGrid}>
@@ -221,6 +246,46 @@ export default function ClientDetailScreen() {
               </View>
             ))
           )}
+        </Card>
+
+        <PhotoComparison checkins={checkins} />
+
+        <Card>
+          <Text style={styles.sectionLabel}>Trends</Text>
+          <View style={styles.trendPillRow}>
+            {TREND_OPTIONS.map(opt => {
+              const isActive = activeTrend === opt.key;
+              return (
+                <TouchableOpacity
+                  key={opt.key}
+                  style={[
+                    styles.trendPill,
+                    isActive && styles.trendPillActive,
+                  ]}
+                  onPress={() => setActiveTrend(prev => (prev === opt.key ? null : opt.key))}
+                >
+                  <Text style={[styles.trendPillText, isActive && styles.trendPillTextActive]}>
+                    {opt.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+          {activeTrend != null && (() => {
+            const opt = TREND_OPTIONS.find(o => o.key === activeTrend);
+            if (!opt) return null;
+            return (
+              <View style={{ marginTop: spacing.md }}>
+                <TrendChart
+                  checkins={checkins}
+                  dataKey={opt.dataKey}
+                  title={opt.label}
+                  unit={opt.unit}
+                  color={opt.color}
+                />
+              </View>
+            );
+          })()}
         </Card>
 
         <Button
@@ -359,5 +424,29 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: fontSize.sm,
     color: colors.textTertiary,
+  },
+  trendPillRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  trendPill: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+  },
+  trendPillActive: {
+    borderColor: colors.accent,
+    backgroundColor: 'rgba(255, 106, 0, 0.15)',
+  },
+  trendPillText: {
+    fontSize: 11,
+    color: colors.textSecondary,
+  },
+  trendPillTextActive: {
+    color: colors.accent,
   },
 });

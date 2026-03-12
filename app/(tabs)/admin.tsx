@@ -13,6 +13,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
 import { api } from '../../lib/api';
+import { Card } from '../../components/ui/Card';
 import { StatCard } from '../../components/admin/StatCard';
 import { QuickAddClientModal } from '../../components/admin/QuickAddClientModal';
 import { AdminClient, OrgCoach } from '../../types';
@@ -57,6 +58,15 @@ export default function AdminDashboard() {
 
   const activeClients = clients.filter(c => c.is_active).length;
   const redClients = clients.filter(c => c.client_metrics?.[0]?.status === 'red').length;
+  const lowAdherenceClients = clients.filter(
+    c => c.client_metrics?.[0]?.adherence_7d !== null && c.client_metrics?.[0]?.adherence_7d !== undefined && c.client_metrics[0].adherence_7d < 50
+  ).length;
+  const inactiveClients = clients.filter(c => !c.is_active).length;
+
+  const alerts: { icon: keyof typeof Ionicons.glyphMap; text: string; count: number; color: string }[] = [];
+  if (redClients > 0) alerts.push({ icon: 'warning', text: 'clients need attention', count: redClients, color: colors.red });
+  if (lowAdherenceClients > 0) alerts.push({ icon: 'trending-down', text: 'clients low adherence', count: lowAdherenceClients, color: colors.yellow });
+  if (inactiveClients > 0) alerts.push({ icon: 'person-remove', text: 'clients inactive', count: inactiveClients, color: colors.textTertiary });
 
   if (loading) {
     return (
@@ -81,6 +91,25 @@ export default function AdminDashboard() {
           <StatCard value={coaches.length} label="Coaches" />
           <StatCard value={redClients} label="Attention" color={redClients > 0 ? colors.red : colors.textTertiary} />
         </View>
+
+        {alerts.length > 0 && (
+          <Card>
+            <Text style={styles.sectionLabel}>Alerts</Text>
+            {alerts.map((alert, i) => (
+              <View key={i} style={[styles.alertRow, i < alerts.length - 1 && styles.alertRowBorder]}>
+                <View style={styles.alertLeft}>
+                  <Ionicons name={alert.icon} size={20} color={alert.color} />
+                  <Text style={[styles.alertText, { color: alert.color }]}>
+                    {alert.count} {alert.text}
+                  </Text>
+                </View>
+                <View style={[styles.alertBadge, { backgroundColor: alert.color }]}>
+                  <Text style={styles.alertBadgeText}>{alert.count}</Text>
+                </View>
+              </View>
+            ))}
+          </Card>
+        )}
 
         <TouchableOpacity
           style={styles.navCard}
@@ -177,6 +206,46 @@ const styles = StyleSheet.create({
   statsRow: {
     flexDirection: 'row',
     gap: spacing.md,
+  },
+  sectionLabel: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: spacing.md,
+  },
+  alertRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.sm,
+  },
+  alertRowBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  alertLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  alertText: {
+    fontSize: fontSize.md,
+    fontWeight: '500',
+  },
+  alertBadge: {
+    minWidth: 24,
+    height: 24,
+    borderRadius: borderRadius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.sm,
+  },
+  alertBadgeText: {
+    fontSize: fontSize.xs,
+    fontWeight: '700',
+    color: '#fff',
   },
   navCard: {
     flexDirection: 'row',

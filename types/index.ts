@@ -74,6 +74,10 @@ export interface Checkin {
   date: string;
   weight_lbs: number | null;
   body_temp: number | null;
+  blood_glucose: number | null;
+  resting_heart_rate: number | null;
+  blood_pressure_systolic: number | null;
+  blood_pressure_diastolic: number | null;
   mood_rating: number | null;
   mood_notes: string | null;
   stress_level: number | null;
@@ -91,6 +95,8 @@ export interface Checkin {
   rpe: number | null;
   performance_rating: number | null;
   cardio_minutes: number | null;
+  workout_duration_min: number | null;
+  avg_heart_rate: number | null;
   estimated_calories_burned: number | null;
   supplement_compliance: boolean;
   supplements_json: SupplementItem[] | null;
@@ -100,12 +106,18 @@ export interface Checkin {
   general_notes: string | null;
   sleep_hours: number | null;
   sleep_quality: number | null;
+  sleep_time: string | null;
+  wake_time: string | null;
   created_at: string;
 }
 
 export interface CheckinFormData {
   weight_lbs: string;
   body_temp: string;
+  blood_glucose: string;
+  resting_heart_rate: string;
+  blood_pressure_systolic: string;
+  blood_pressure_diastolic: string;
   mood_rating: number;
   mood_notes: string;
   stress_level: number;
@@ -122,9 +134,13 @@ export interface CheckinFormData {
   rpe: string;
   performance_rating: string;
   cardio_minutes: string;
+  workout_duration_min: string;
+  avg_heart_rate: string;
   estimated_calories_burned: string;
   sleep_hours: number;
   sleep_quality: number;
+  sleep_time: string;
+  wake_time: string;
   supplement_compliance: boolean;
   supplements_json: SupplementItem[];
   ped_log_json: PedItem[];

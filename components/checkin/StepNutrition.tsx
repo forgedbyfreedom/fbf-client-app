@@ -29,7 +29,7 @@ export function StepNutrition() {
               <Text style={styles.label}>{m.label}</Text>
               {m.target ? (
                 <Text style={styles.target}>
-                  Target: {m.target} {m.unit}
+                  {current > 0 ? `${current} / ${m.target} ${m.unit} (${Math.round(pct)}%)` : `Target: ${m.target} ${m.unit}`}
                 </Text>
               ) : null}
             </View>

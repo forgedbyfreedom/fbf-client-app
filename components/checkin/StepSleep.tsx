@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { CheckinContext } from '../../providers/CheckinProvider';
+import { Input } from '../ui/Input';
 import { colors, fontSize, spacing, borderRadius } from '../../lib/theme';
 import { SLEEP_QUALITY_LABELS } from '../../lib/constants';
 
@@ -29,6 +30,25 @@ export function StepSleep() {
         >
           <Text style={styles.hourBtnText}>+</Text>
         </TouchableOpacity>
+      </View>
+
+      <View style={styles.timeRow}>
+        <View style={styles.timeField}>
+          <Input
+            label="Bedtime"
+            value={form.sleep_time}
+            onChangeText={(t) => updateForm({ sleep_time: t })}
+            placeholder="e.g. 10:30 PM"
+          />
+        </View>
+        <View style={styles.timeField}>
+          <Input
+            label="Wake Time"
+            value={form.wake_time}
+            onChangeText={(t) => updateForm({ wake_time: t })}
+            placeholder="e.g. 6:00 AM"
+          />
+        </View>
       </View>
 
       <Text style={styles.sectionTitle}>Sleep Quality</Text>
@@ -130,5 +150,13 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xs,
     color: colors.textTertiary,
     marginTop: 2,
+  },
+  timeRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginBottom: spacing.xl,
+  },
+  timeField: {
+    flex: 1,
   },
 });

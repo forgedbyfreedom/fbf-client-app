@@ -50,6 +50,46 @@ export function StepBodyWellness() {
         containerStyle={styles.field}
       />
 
+      <Input
+        label="Blood Glucose (mg/dL)"
+        value={form.blood_glucose}
+        onChangeText={(t) => updateForm({ blood_glucose: t })}
+        placeholder="e.g. 95"
+        keyboardType="numeric"
+        containerStyle={styles.field}
+      />
+
+      <Input
+        label="Resting Heart Rate (bpm)"
+        value={form.resting_heart_rate}
+        onChangeText={(t) => updateForm({ resting_heart_rate: t })}
+        placeholder="e.g. 65"
+        keyboardType="numeric"
+        containerStyle={styles.field}
+      />
+
+      <View style={styles.bpRow}>
+        <View style={styles.bpField}>
+          <Input
+            label="Blood Pressure (sys)"
+            value={form.blood_pressure_systolic}
+            onChangeText={(t) => updateForm({ blood_pressure_systolic: t })}
+            placeholder="e.g. 120"
+            keyboardType="numeric"
+          />
+        </View>
+        <Text style={styles.bpSlash}>/</Text>
+        <View style={styles.bpField}>
+          <Input
+            label="(dia)"
+            value={form.blood_pressure_diastolic}
+            onChangeText={(t) => updateForm({ blood_pressure_diastolic: t })}
+            placeholder="e.g. 80"
+            keyboardType="numeric"
+          />
+        </View>
+      </View>
+
       <MoodSelector
         value={form.mood_rating}
         onChange={(v) => updateForm({ mood_rating: v })}
@@ -83,6 +123,20 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   weighInNote: {},
+  bpRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'flex-end' as const,
+    gap: 8,
+    marginBottom: spacing.lg,
+  },
+  bpField: {
+    flex: 1,
+  },
+  bpSlash: {
+    fontSize: fontSize.xl,
+    color: colors.textSecondary,
+    paddingBottom: 12,
+  },
   noteText: {
     fontSize: fontSize.xs,
     color: colors.textTertiary,

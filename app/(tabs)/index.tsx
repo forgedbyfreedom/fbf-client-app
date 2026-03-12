@@ -5,6 +5,8 @@ import {
   RefreshControl,
   Text,
   StyleSheet,
+  TouchableOpacity,
+  Linking,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Redirect } from 'expo-router';
@@ -16,6 +18,7 @@ import { StreakCard } from '../../components/dashboard/StreakCard';
 import { TargetsCard } from '../../components/dashboard/TargetsCard';
 import { TrendChart } from '../../components/dashboard/TrendChart';
 import { HistoryList } from '../../components/dashboard/HistoryList';
+import { Card } from '../../components/ui/Card';
 import { colors, fontSize, spacing } from '../../lib/theme';
 
 export default function DashboardScreen() {
@@ -48,6 +51,16 @@ export default function DashboardScreen() {
   }
 
   const latestCheckin = recentCheckins[0] ?? null;
+
+  // Calculate weekly body temp average
+  const last7Temps = recentCheckins
+    .slice(0, 7)
+    .map((c) => c.body_temp)
+    .filter((t): t is number => t != null);
+  const avgTemp = last7Temps.length > 0
+    ? (last7Temps.reduce((a, b) => a + b, 0) / last7Temps.length).toFixed(1)
+    : null;
+  const tempWarning = avgTemp && parseFloat(avgTemp) <= 97.4;
 
   return (
     <ScrollView
@@ -91,10 +104,42 @@ export default function DashboardScreen() {
             title="Steps"
             color={colors.green}
           />
+          <TrendChart
+            checkins={recentCheckins}
+            dataKey="body_temp"
+            title="Body Temp"
+            unit="°F"
+            color={colors.red}
+          />
         </>
       )}
 
+      {avgTemp && (
+        <Card style={tempWarning ? styles.tempCardWarning : undefined}>
+          <View style={styles.tempRow}>
+            <View>
+              <Text style={styles.tempLabel}>7-Day Avg Body Temp</Text>
+              <Text style={[styles.tempValue, tempWarning && { color: colors.red }]}>
+                {avgTemp}°F
+              </Text>
+            </View>
+            {tempWarning && (
+              <Text style={styles.tempAlert}>Possible metabolic slowdown</Text>
+            )}
+          </View>
+        </Card>
+      )}
+
       <HistoryList checkins={recentCheckins} />
+
+      <TouchableOpacity
+        style={styles.storeCard}
+        onPress={() => Linking.openURL('https://www.etsy.com/shop/FBFStrengthNutrition')}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.storeTitle}>FBF Store</Text>
+        <Text style={styles.storeSub}>Shop gear and supplements</Text>
+      </TouchableOpacity>
 
       <View style={{ height: spacing.xxxl }} />
     </ScrollView>
@@ -128,5 +173,51 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
+  },
+  tempCardWarning: {
+    borderWidth: 1,
+    borderColor: colors.red,
+  },
+  tempRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  tempLabel: {
+    fontSize: fontSize.xs,
+    color: colors.textTertiary,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  tempValue: {
+    fontSize: fontSize.xxl,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    marginTop: 4,
+  },
+  tempAlert: {
+    fontSize: fontSize.xs,
+    color: colors.red,
+    fontWeight: '600',
+    maxWidth: 120,
+    textAlign: 'right',
+  },
+  storeCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    padding: spacing.lg,
+    alignItems: 'center',
+  },
+  storeTitle: {
+    fontSize: fontSize.lg,
+    fontWeight: '700',
+    color: colors.accent,
+  },
+  storeSub: {
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
+    marginTop: 4,
   },
 });

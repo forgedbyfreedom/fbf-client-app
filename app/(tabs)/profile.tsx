@@ -84,6 +84,12 @@ export default function ProfileScreen() {
           }}
           style={styles.linkBtn}
         />
+        <Button
+          title="FBF Shop"
+          variant="secondary"
+          onPress={() => Linking.openURL('https://www.etsy.com/shop/FBFStrengthNutrition')}
+          style={styles.linkBtn}
+        />
       </Card>
 
       <Button

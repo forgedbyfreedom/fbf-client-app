@@ -83,6 +83,27 @@ export function StepActivity() {
             max={10}
           />
 
+          <View style={styles.row}>
+            <View style={styles.halfField}>
+              <Input
+                label="Workout Duration (min)"
+                value={form.workout_duration_min}
+                onChangeText={(t) => updateForm({ workout_duration_min: t })}
+                placeholder="e.g. 60"
+                keyboardType="numeric"
+              />
+            </View>
+            <View style={styles.halfField}>
+              <Input
+                label="Avg Heart Rate (bpm)"
+                value={form.avg_heart_rate}
+                onChangeText={(t) => updateForm({ avg_heart_rate: t })}
+                placeholder="e.g. 145"
+                keyboardType="numeric"
+              />
+            </View>
+          </View>
+
           <Input
             label="Workout Notes"
             value={form.workout_notes}

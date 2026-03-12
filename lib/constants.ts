@@ -70,6 +70,7 @@ export const COMPOUND_CATEGORIES = {
     'Thymosin Alpha 1',
     'Kisspeptin',
     'Epithalon',
+    'IGF-1 LR3',
   ],
   'Growth Hormone': [
     'Generic GH',

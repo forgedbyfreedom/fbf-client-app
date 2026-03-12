@@ -1,15 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Switch, StyleSheet, ScrollView, Alert, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { colors, fontSize, spacing } from '../../lib/theme';
 
+const PUSH_PREF_KEY = 'fbf_push_enabled';
+
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { user, client, signOut } = useAuth();
   const [pushEnabled, setPushEnabled] = useState(true);
+
+  useEffect(() => {
+    AsyncStorage.getItem(PUSH_PREF_KEY).then((val) => {
+      if (val !== null) setPushEnabled(val === 'true');
+    });
+  }, []);
+
+  const togglePush = (value: boolean) => {
+    setPushEnabled(value);
+    AsyncStorage.setItem(PUSH_PREF_KEY, String(value));
+  };
 
   const handleSignOut = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -66,7 +80,7 @@ export default function ProfileScreen() {
           </View>
           <Switch
             value={pushEnabled}
-            onValueChange={setPushEnabled}
+            onValueChange={togglePush}
             trackColor={{ false: colors.border, true: colors.accent }}
             thumbColor="#fff"
           />

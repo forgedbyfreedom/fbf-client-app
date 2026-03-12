@@ -16,6 +16,7 @@ import { api } from '../../lib/api';
 import { Card } from '../../components/ui/Card';
 import { StatCard } from '../../components/admin/StatCard';
 import { QuickAddClientModal } from '../../components/admin/QuickAddClientModal';
+import { AlertFeed } from '../../components/admin/AlertFeed';
 import { AdminClient, OrgCoach } from '../../types';
 import { colors, borderRadius, fontSize, spacing } from '../../lib/theme';
 
@@ -161,6 +162,12 @@ export default function AdminDashboard() {
           </View>
           <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
         </TouchableOpacity>
+
+        <AlertFeed
+          onClientPress={(clientId) =>
+            router.push({ pathname: '/admin/client-detail', params: { id: clientId } })
+          }
+        />
 
         <View style={{ height: spacing.xxxl * 2 }} />
       </ScrollView>

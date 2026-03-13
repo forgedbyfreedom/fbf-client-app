@@ -232,6 +232,30 @@ export interface LeaderboardResponse {
   myRank: number | null;
 }
 
+export interface BodyScan {
+  id: string;
+  client_id: string;
+  scan_date: string;
+  scan_type: 'inbody' | 'dexa' | 'bodpod' | 'calipers' | 'other';
+  body_fat_pct: number | null;
+  lean_mass_lbs: number | null;
+  fat_mass_lbs: number | null;
+  total_weight_lbs: number | null;
+  skeletal_muscle_mass_lbs: number | null;
+  body_water_lbs: number | null;
+  bmi: number | null;
+  visceral_fat_level: number | null;
+  basal_metabolic_rate: number | null;
+  right_arm_lbs: number | null;
+  left_arm_lbs: number | null;
+  trunk_lbs: number | null;
+  right_leg_lbs: number | null;
+  left_leg_lbs: number | null;
+  scan_file_url: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
 export type UserRole = 'org_admin' | 'coach' | null;
 
 export interface AdminClient {

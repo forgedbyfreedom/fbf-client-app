@@ -18,6 +18,7 @@ import { StreakCard } from '../../components/dashboard/StreakCard';
 import { TargetsCard } from '../../components/dashboard/TargetsCard';
 import { TrendChart } from '../../components/dashboard/TrendChart';
 import { HistoryList } from '../../components/dashboard/HistoryList';
+import { BodyScanTracker } from '../../components/dashboard/BodyScanTracker';
 import { Card } from '../../components/ui/Card';
 import { colors, fontSize, spacing } from '../../lib/theme';
 
@@ -129,6 +130,8 @@ export default function DashboardScreen() {
           </View>
         </Card>
       )}
+
+      <BodyScanTracker clientId={client.id} />
 
       <HistoryList checkins={recentCheckins} />
 

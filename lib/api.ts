@@ -38,6 +38,41 @@ export async function apiFetch<T = unknown>(
   return res.json();
 }
 
+export async function apiUpload<T = unknown>(
+  path: string,
+  fileUri: string,
+  fields: Record<string, string> = {}
+): Promise<T> {
+  const authHeaders = await getAuthHeaders();
+  const formData = new FormData();
+
+  const filename = fileUri.split('/').pop() || 'upload';
+  const ext = filename.split('.').pop()?.toLowerCase() || 'jpg';
+  const mimeType = ext === 'pdf' ? 'application/pdf' : `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+
+  formData.append('file', {
+    uri: fileUri,
+    name: filename,
+    type: mimeType,
+  } as unknown as Blob);
+
+  for (const [key, value] of Object.entries(fields)) {
+    formData.append(key, value);
+  }
+
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'POST',
+    headers: { ...authHeaders },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`API ${res.status}: ${body}`);
+  }
+  return res.json();
+}
+
 export const api = {
   get: <T = unknown>(path: string) => apiFetch<T>(path),
   post: <T = unknown>(path: string, body: unknown) =>
@@ -48,4 +83,5 @@ export const api = {
     apiFetch<T>(path, { method: 'PATCH', body: JSON.stringify(body) }),
   delete: <T = unknown>(path: string) =>
     apiFetch<T>(path, { method: 'DELETE' }),
+  upload: apiUpload,
 };

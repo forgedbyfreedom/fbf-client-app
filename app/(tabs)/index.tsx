@@ -24,6 +24,7 @@ import { MetabolicMap } from '../../components/dashboard/MetabolicMap';
 import { VitalStatsCard } from '../../components/dashboard/VitalStatsCard';
 import { Card } from '../../components/ui/Card';
 import { BrandHeader } from '../../components/ui/BrandHeader';
+import { DailyScoreCard } from '../../components/dashboard/DailyScoreCard';
 import { AIInsightsCard } from '../../components/dashboard/AIInsightsCard';
 import { ProgressProjection } from '../../components/dashboard/ProgressProjection';
 import { colors, fontSize, spacing } from '../../lib/theme';
@@ -118,6 +119,8 @@ export default function DashboardScreen() {
     >
       <BrandHeader />
       <OverviewCard client={client} latestCheckin={latestCheckin} />
+
+      <DailyScoreCard clientId={client.id} />
 
       <StreakCard streak={streak} />
 

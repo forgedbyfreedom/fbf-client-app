@@ -8,6 +8,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
+  Linking,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -288,6 +289,27 @@ export default function ClientDetailScreen() {
           })()}
         </Card>
 
+        <View style={styles.reportRow}>
+          <Button
+            title="30-Day Report"
+            variant="secondary"
+            onPress={() => {
+              const base = 'https://forged-by-freedom-api-nm4f.onrender.com';
+              Linking.openURL(`${base}/api/coach/clients/${client.id}/report?key=${process.env.EXPO_PUBLIC_ADMIN_KEY || ''}&days=30`);
+            }}
+            style={{ flex: 1 }}
+          />
+          <Button
+            title="90-Day Report"
+            variant="secondary"
+            onPress={() => {
+              const base = 'https://forged-by-freedom-api-nm4f.onrender.com';
+              Linking.openURL(`${base}/api/coach/clients/${client.id}/report?key=${process.env.EXPO_PUBLIC_ADMIN_KEY || ''}&days=90`);
+            }}
+            style={{ flex: 1 }}
+          />
+        </View>
+
         <Button
           title={client.is_active ? 'Deactivate Client' : 'Reactivate Client'}
           variant={client.is_active ? 'ghost' : 'secondary'}
@@ -315,6 +337,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  reportRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
   },
   centered: {
     flex: 1,

@@ -12,15 +12,18 @@ import {
   Platform,
 } from 'react-native';
 import type { AudioPlayer } from 'expo-audio';
+import * as DocumentPicker from 'expo-document-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { colors, fontSize, spacing, borderRadius } from '../../lib/theme';
 import { generateSpeech, playAudio } from '../../lib/elevenlabs';
+import { apiUpload } from '../../lib/api';
+import { BrandHeader } from '../../components/ui/BrandHeader';
 import { useAuth } from '../../hooks/useAuth';
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'https://forged-by-freedom-api-nm4f.onrender.com';
+const AI_API_BASE = 'https://forged-by-freedom-api-nm4f.onrender.com';
 
 const SAMPLE_QUESTIONS = [
   'How is my progress this week?',
@@ -38,7 +41,7 @@ type Tab = 'ask' | 'bloodwork';
 async function askCoach(question: string, clientId?: string): Promise<string> {
   // Try context-aware endpoint first, fall back to generic
   try {
-    const res = await fetch(`${API_BASE}/api/coach-chat`, {
+    const res = await fetch(`${AI_API_BASE}/api/coach-chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: question, client_id: clientId }),
@@ -48,7 +51,7 @@ async function askCoach(question: string, clientId?: string): Promise<string> {
   } catch {}
 
   // Fallback to generic /ask
-  const res = await fetch(`${API_BASE}/ask`, {
+  const res = await fetch(`${AI_API_BASE}/ask`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ question }),
@@ -70,6 +73,8 @@ export default function AICoachScreen() {
   const playerRef = useRef<AudioPlayer | null>(null);
   const scrollRef = useRef<ScrollView>(null);
   const [audioUri, setAudioUri] = useState<string | null>(null);
+  const [bloodworkFiles, setBloodworkFiles] = useState<{ name: string; uri: string }[]>([]);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -81,15 +86,65 @@ export default function AICoachScreen() {
     const q = activeTab === 'ask' ? question.trim() : '';
     if (activeTab === 'ask' && !q) return;
 
-    if (activeTab === 'bloodwork' && !bloodwork.trim()) {
-      Alert.alert('Missing Data', 'Please paste your bloodwork results.');
+    if (activeTab === 'bloodwork' && !bloodwork.trim() && bloodworkFiles.length === 0) {
+      Alert.alert('Missing Data', 'Please paste your results or attach a file.');
       return;
     }
 
-    const fullQuestion =
-      activeTab === 'bloodwork'
-        ? `Please analyze my bloodwork results. For each marker, tell me: the value, standard lab range, enhanced athlete acceptable range, and your assessment (normal/watch/intervene/red flag). Flag anything concerning, explain which compounds could cause abnormal values, and provide the intervention ladder (lifestyle > supplements with doses > pharmaceuticals with doses > discontinuation thresholds). Here are my results:\n\n${bloodwork.trim()}`
-        : q;
+    // Upload bloodwork files if any
+    let fileUrls: string[] = [];
+    if (bloodworkFiles.length > 0) {
+      setUploadingFiles(true);
+      try {
+        for (const file of bloodworkFiles) {
+          const filename = file.uri.split('/').pop() || 'upload';
+          const ext = filename.split('.').pop()?.toLowerCase() || 'jpg';
+          const mimeType = ext === 'pdf' ? 'application/pdf' : `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+
+          const formData = new FormData();
+          formData.append('file', {
+            uri: file.uri,
+            name: filename,
+            type: mimeType,
+          } as unknown as Blob);
+          formData.append('lead_id', client?.id || 'unknown');
+          formData.append('category', 'bloodwork');
+
+          const res = await fetch(`${AI_API_BASE}/api/upload`, {
+            method: 'POST',
+            body: formData,
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.url) fileUrls.push(data.url);
+          }
+        }
+      } catch {
+        Alert.alert('Upload Error', 'Failed to upload bloodwork files.');
+        setUploadingFiles(false);
+        return;
+      }
+      setUploadingFiles(false);
+    }
+
+    const fileNote = fileUrls.length > 0
+      ? `\n\n[${fileUrls.length} bloodwork file(s) uploaded and saved to your records]`
+      : '';
+
+    let fullQuestion: string;
+    if (activeTab === 'bloodwork') {
+      const hasText = bloodwork.trim().length > 0;
+      const hasFiles = fileUrls.length > 0;
+      if (hasText) {
+        fullQuestion = `Please analyze my bloodwork results. For each marker, tell me: the value, standard lab range, enhanced athlete acceptable range, and your assessment (normal/watch/intervene/red flag). Flag anything concerning, explain which compounds could cause abnormal values, and provide the intervention ladder (lifestyle > supplements with doses > pharmaceuticals with doses > discontinuation thresholds). Here are my results:\n\n${bloodwork.trim()}${fileNote}`;
+      } else if (hasFiles) {
+        fullQuestion = `I just uploaded ${fileUrls.length} bloodwork file(s) to my records. I don't have the values typed out yet. Based on my recent check-in data, please give me a general overview of what bloodwork markers I should be watching closely given my current protocol, and what optimal ranges look like for an enhanced athlete. Also remind me to paste my actual values next time for a full analysis.`;
+      } else {
+        fullQuestion = '';
+      }
+    } else {
+      fullQuestion = q;
+    }
 
     setLoading(true);
     setAnswer('');
@@ -155,6 +210,27 @@ export default function AICoachScreen() {
     setSpeakingState('idle');
   };
 
+  const handlePickBloodwork = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/pdf', 'image/*'],
+        multiple: true,
+      });
+      if (!result.canceled && result.assets?.length) {
+        setBloodworkFiles(prev => [
+          ...prev,
+          ...result.assets.map(a => ({ name: a.name, uri: a.uri })),
+        ]);
+      }
+    } catch {
+      Alert.alert('Error', 'Failed to pick file.');
+    }
+  };
+
+  const removeBloodworkFile = (index: number) => {
+    setBloodworkFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSampleQuestion = (q: string) => {
     setQuestion(q);
   };
@@ -172,9 +248,9 @@ export default function AICoachScreen() {
         keyboardShouldPersistTaps="handled"
       >
         {/* Header */}
-        <Text style={styles.title}>AI Coach</Text>
+        <BrandHeader title="AI Coach" />
         <Text style={styles.subtitle}>
-          127M+ word knowledge base — training, nutrition, PEDs, protocols
+          50M+ words analyzed across 14K+ expert transcripts, 100+ sources
         </Text>
 
         {/* Tabs */}
@@ -244,29 +320,64 @@ export default function AICoachScreen() {
 
         {/* Bloodwork Tab */}
         {activeTab === 'bloodwork' && (
-          <TextInput
-            style={[styles.input, styles.inputLarge]}
-            placeholder={`Paste your lab results here...\n\nExample:\nTestosterone Total: 856 ng/dL\nEstradiol (E2): 42 pg/mL\nHematocrit: 51.2%\nALT: 67 U/L\nAST: 54 U/L`}
-            placeholderTextColor={colors.textTertiary}
-            value={bloodwork}
-            onChangeText={setBloodwork}
-            multiline
-            textAlignVertical="top"
-          />
+          <>
+            {/* File Upload */}
+            <TouchableOpacity style={styles.uploadZone} onPress={handlePickBloodwork}>
+              <Ionicons
+                name={bloodworkFiles.length > 0 ? 'document-attach' : 'cloud-upload-outline'}
+                size={28}
+                color={bloodworkFiles.length > 0 ? colors.green : colors.accent}
+              />
+              <Text style={styles.uploadZoneText}>
+                {bloodworkFiles.length > 0
+                  ? `${bloodworkFiles.length} file(s) attached`
+                  : 'Tap to attach bloodwork PDF or photo'}
+              </Text>
+              <Text style={styles.uploadZoneHint}>PDF, JPG, PNG supported</Text>
+            </TouchableOpacity>
+
+            {bloodworkFiles.length > 0 && (
+              <View style={styles.fileList}>
+                {bloodworkFiles.map((file, i) => (
+                  <View key={i} style={styles.fileItem}>
+                    <Ionicons name="document" size={16} color={colors.accent} />
+                    <Text style={styles.fileName} numberOfLines={1}>{file.name}</Text>
+                    <TouchableOpacity onPress={() => removeBloodworkFile(i)}>
+                      <Ionicons name="close-circle" size={18} color={colors.red} />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            <Text style={styles.orText}>— or paste results below —</Text>
+
+            <TextInput
+              style={[styles.input, styles.inputLarge]}
+              placeholder={`Paste your lab results here...\n\nExample:\nTestosterone Total: 856 ng/dL\nEstradiol (E2): 42 pg/mL\nHematocrit: 51.2%\nALT: 67 U/L\nAST: 54 U/L`}
+              placeholderTextColor={colors.textTertiary}
+              value={bloodwork}
+              onChangeText={setBloodwork}
+              multiline
+              textAlignVertical="top"
+            />
+          </>
         )}
 
         {/* Submit */}
         <Button
           title={
-            loading
+            uploadingFiles
+              ? 'Uploading files...'
+              : loading
               ? 'Thinking...'
               : activeTab === 'ask'
               ? 'Ask Coach Bryan'
               : 'Analyze Bloodwork'
           }
           onPress={handleAsk}
-          loading={loading}
-          disabled={loading}
+          loading={loading || uploadingFiles}
+          disabled={loading || uploadingFiles}
         />
 
         {/* Answer */}
@@ -407,6 +518,48 @@ const styles = StyleSheet.create({
   inputLarge: {
     minHeight: 150,
     textAlignVertical: 'top',
+  },
+  uploadZone: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.xl,
+    backgroundColor: colors.surface,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderStyle: 'dashed',
+    borderRadius: borderRadius.lg,
+    gap: spacing.sm,
+  },
+  uploadZoneText: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  uploadZoneHint: {
+    fontSize: fontSize.xs,
+    color: colors.textTertiary,
+  },
+  fileList: {
+    gap: spacing.xs,
+  },
+  fileItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.md,
+    padding: spacing.sm,
+    paddingHorizontal: spacing.md,
+  },
+  fileName: {
+    flex: 1,
+    fontSize: fontSize.sm,
+    color: colors.textPrimary,
+  },
+  orText: {
+    textAlign: 'center',
+    fontSize: fontSize.xs,
+    color: colors.textTertiary,
   },
   answerCard: {
     gap: spacing.md,

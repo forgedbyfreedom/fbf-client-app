@@ -3,10 +3,12 @@ import {
   View,
   FlatList,
   Text,
+  TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
@@ -14,6 +16,8 @@ import { Loading } from '../../components/ui/Loading';
 import { MessageBubble } from '../../components/chat/MessageBubble';
 import { ChatInput } from '../../components/chat/ChatInput';
 import { ChannelPills } from '../../components/chat/ChannelPills';
+import { NewChatModal } from '../../components/chat/NewChatModal';
+import { BrandHeader } from '../../components/ui/BrandHeader';
 import { colors, fontSize, spacing } from '../../lib/theme';
 import { ChatChannel, ChatMessage } from '../../types';
 
@@ -24,6 +28,7 @@ export default function ChatScreen() {
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showNewChat, setShowNewChat] = useState(false);
   const flatListRef = useRef<FlatList>(null);
   const supabaseRef = useRef(supabase);
   const subscriptionRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
@@ -145,6 +150,20 @@ export default function ChatScreen() {
     });
   };
 
+  const handleNewChatCreated = async (channelId: string) => {
+    // Delay to let Supabase propagate, then retry a few times
+    let chs: ChatChannel[] = [];
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await new Promise(r => setTimeout(r, 800));
+      chs = await fetchChannels();
+      if (chs.find(c => c.id === channelId)) break;
+    }
+    setActiveChannelId(channelId);
+    setMessages([]);
+    await fetchMessages(channelId);
+    subscribeTo(channelId);
+  };
+
   const activeChannel = channels.find(c => c.id === activeChannelId);
   const headerTitle = activeChannel
     ? activeChannel.type === 'group'
@@ -157,10 +176,20 @@ export default function ChatScreen() {
   if (channels.length === 0) {
     return (
       <View style={[styles.empty, { paddingTop: insets.top }]}>
-        <Text style={styles.emptyTitle}>No Channels Yet</Text>
+        <BrandHeader />
+        <Text style={styles.emptyTitle}>No Conversations Yet</Text>
         <Text style={styles.emptyText}>
-          You'll be added to the group chat automatically.
+          Start a conversation with your coach or team.
         </Text>
+        <TouchableOpacity style={styles.newChatBtn} onPress={() => setShowNewChat(true)}>
+          <Ionicons name="add-circle" size={24} color="#fff" />
+          <Text style={styles.newChatBtnText}>New Chat</Text>
+        </TouchableOpacity>
+        <NewChatModal
+          visible={showNewChat}
+          onClose={() => setShowNewChat(false)}
+          onCreated={handleNewChatCreated}
+        />
       </View>
     );
   }
@@ -172,13 +201,23 @@ export default function ChatScreen() {
       keyboardVerticalOffset={0}
     >
       <View style={[styles.header, { paddingTop: insets.top + spacing.sm }]}>
-        <Text style={styles.headerTitle}>{headerTitle}</Text>
+        <View style={styles.headerRow}>
+          <BrandHeader title={headerTitle} compact />
+          <TouchableOpacity onPress={() => setShowNewChat(true)} style={styles.newBtn}>
+            <Ionicons name="create-outline" size={22} color={colors.accent} />
+          </TouchableOpacity>
+        </View>
         <ChannelPills
           channels={channels}
           activeId={activeChannelId!}
           onSelect={handleChannelSwitch}
         />
       </View>
+      <NewChatModal
+        visible={showNewChat}
+        onClose={() => setShowNewChat(false)}
+        onCreated={handleNewChatCreated}
+      />
 
       <FlatList
         ref={flatListRef}
@@ -225,10 +264,33 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
     backgroundColor: colors.surface,
   },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   headerTitle: {
     fontSize: fontSize.lg,
     fontWeight: '600',
     color: colors.textPrimary,
+  },
+  newBtn: {
+    padding: spacing.sm,
+  },
+  newChatBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.accent,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    marginTop: spacing.xl,
+  },
+  newChatBtnText: {
+    fontSize: fontSize.md,
+    fontWeight: '700',
+    color: '#fff',
   },
   messageList: {
     padding: spacing.md,

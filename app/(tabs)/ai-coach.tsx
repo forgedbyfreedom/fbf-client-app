@@ -91,38 +91,44 @@ export default function AICoachScreen() {
       return;
     }
 
-    // Upload bloodwork files if any
+    // Upload bloodwork files if any (native only — web preview skips upload)
     let fileUrls: string[] = [];
     if (bloodworkFiles.length > 0) {
       setUploadingFiles(true);
       try {
-        for (const file of bloodworkFiles) {
-          const filename = file.uri.split('/').pop() || 'upload';
-          const ext = filename.split('.').pop()?.toLowerCase() || 'jpg';
-          const mimeType = ext === 'pdf' ? 'application/pdf' : `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+        if (Platform.OS !== 'web') {
+          for (const file of bloodworkFiles) {
+            const filename = file.uri.split('/').pop() || 'upload';
+            const ext = filename.split('.').pop()?.toLowerCase() || 'jpg';
+            const mimeType = ext === 'pdf' ? 'application/pdf' : `image/${ext === 'jpg' ? 'jpeg' : ext}`;
 
-          const formData = new FormData();
-          formData.append('file', {
-            uri: file.uri,
-            name: filename,
-            type: mimeType,
-          } as unknown as Blob);
-          formData.append('lead_id', client?.id || 'unknown');
-          formData.append('category', 'bloodwork');
+            const formData = new FormData();
+            formData.append('file', {
+              uri: file.uri,
+              name: filename,
+              type: mimeType,
+            } as unknown as Blob);
+            formData.append('lead_id', client?.id || 'unknown');
+            formData.append('category', 'bloodwork');
 
-          const res = await fetch(`${AI_API_BASE}/api/upload`, {
-            method: 'POST',
-            body: formData,
-          });
-          if (res.ok) {
-            const data = await res.json();
-            if (data.url) fileUrls.push(data.url);
+            const res = await fetch(`${AI_API_BASE}/api/upload`, {
+              method: 'POST',
+              body: formData,
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (data.url) fileUrls.push(data.url);
+            }
           }
+        } else {
+          // Web preview: note files were selected but skip actual upload
+          fileUrls = bloodworkFiles.map(f => `[file: ${f.name}]`);
         }
-      } catch {
-        Alert.alert('Upload Error', 'Failed to upload bloodwork files.');
+      } catch (err) {
+        console.error('Upload error:', err);
+        Alert.alert('Upload Error', 'Failed to upload files. You can still paste your results as text.');
         setUploadingFiles(false);
-        return;
+        // Don't return — let them proceed with text-based analysis
       }
       setUploadingFiles(false);
     }

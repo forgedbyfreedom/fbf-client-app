@@ -15,7 +15,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../../lib/api';
-import { apiUpload } from '../../lib/api';
+import { supabase } from '../../lib/supabase';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { BodyScan } from '../../types';
@@ -49,7 +49,7 @@ export function BodyScanTracker({ clientId }: BodyScanTrackerProps) {
 
   const fetchScans = useCallback(async () => {
     try {
-      const res = await api.get<{ scans: BodyScan[] }>(`/api/body-scans/${clientId}`);
+      const res = await api.get<{ scans: BodyScan[] }>(`/api/clients/${clientId}/scans`);
       setScans(res.scans);
     } catch {
       setScans([]);
@@ -105,15 +105,28 @@ export function BodyScanTracker({ clientId }: BodyScanTrackerProps) {
     try {
       let fileUrl = null;
       if (scanFileUri) {
-        const uploadRes = await apiUpload<{ url: string }>('/api/upload', scanFileUri, {
-          lead_id: clientId,
-          category: 'body_scan',
-        });
-        fileUrl = uploadRes.url;
+        const filename = scanFileUri.split('/').pop() || 'scan.jpg';
+        const ext = filename.split('.').pop()?.toLowerCase() || 'jpg';
+        const mimeType = ext === 'pdf' ? 'application/pdf' : `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+        const filePath = `body-scans/${clientId}/${scanDate}_${filename}`;
+
+        const response = await fetch(scanFileUri);
+        const blob = await response.blob();
+        const arrayBuffer = await new Response(blob).arrayBuffer();
+
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(filePath, arrayBuffer, { contentType: mimeType, upsert: true });
+
+        if (uploadError) {
+          throw new Error('File upload failed: ' + uploadError.message);
+        }
+
+        const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
+        fileUrl = urlData.publicUrl;
       }
 
-      await api.post('/api/body-scans', {
-        client_id: clientId,
+      await api.post(`/api/clients/${clientId}/scans`, {
         scan_date: scanDate,
         scan_type: scanType,
         body_fat_pct: bodyFat ? parseFloat(bodyFat) : null,
@@ -123,7 +136,7 @@ export function BodyScanTracker({ clientId }: BodyScanTrackerProps) {
         skeletal_muscle_mass_lbs: smm ? parseFloat(smm) : null,
         basal_metabolic_rate: bmr ? parseInt(bmr) : null,
         visceral_fat_level: visceralFat ? parseFloat(visceralFat) : null,
-        scan_file_url: fileUrl,
+        file_url: fileUrl,
         notes: notes || null,
       });
 

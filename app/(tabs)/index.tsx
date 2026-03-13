@@ -9,8 +9,9 @@ import {
   Linking,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Redirect } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useAuth } from '../../hooks/useAuth';
+import { api } from '../../lib/api';
 import { Loading } from '../../components/ui/Loading';
 import { Button } from '../../components/ui/Button';
 import { OverviewCard } from '../../components/dashboard/OverviewCard';
@@ -20,13 +21,19 @@ import { TrendChart } from '../../components/dashboard/TrendChart';
 import { HistoryList } from '../../components/dashboard/HistoryList';
 import { BodyScanTracker } from '../../components/dashboard/BodyScanTracker';
 import { MetabolicMap } from '../../components/dashboard/MetabolicMap';
+import { VitalStatsCard } from '../../components/dashboard/VitalStatsCard';
 import { Card } from '../../components/ui/Card';
+import { BrandHeader } from '../../components/ui/BrandHeader';
+import { AIInsightsCard } from '../../components/dashboard/AIInsightsCard';
+import { ProgressProjection } from '../../components/dashboard/ProgressProjection';
 import { colors, fontSize, spacing } from '../../lib/theme';
 
 export default function DashboardScreen() {
   const { client, metrics, recentCheckins, streak, loading, clientError, refreshClientData, isAdmin } = useAuth();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [refreshing, setRefreshing] = React.useState(false);
+  const [settingUpCoach, setSettingUpCoach] = React.useState(false);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -36,18 +43,48 @@ export default function DashboardScreen() {
 
   if (loading) return <Loading />;
 
-  if (!client && isAdmin) {
-    return <Redirect href="/(tabs)/admin" />;
-  }
+  const setupCoachProfile = async () => {
+    setSettingUpCoach(true);
+    try {
+      await api.post('/api/client/setup-coach', {});
+      await refreshClientData();
+    } catch (err) {
+      console.error('Coach setup error:', err);
+    } finally {
+      setSettingUpCoach(false);
+    }
+  };
 
   if (!client) {
     return (
       <View style={[styles.errorContainer, { paddingTop: insets.top + spacing.xxxl }]}>
-        <Text style={styles.errorTitle}>Unable to Load Dashboard</Text>
-        <Text style={styles.errorText}>
-          {clientError || 'Could not connect to the server.'}
+        <BrandHeader />
+        <Text style={[styles.errorTitle, { marginTop: spacing.xl }]}>
+          {isAdmin ? 'Welcome, Coach' : 'Unable to Load Dashboard'}
         </Text>
-        <Button title="Retry" onPress={refreshClientData} style={{ marginTop: spacing.lg }} />
+        <Text style={styles.errorText}>
+          {isAdmin
+            ? 'Set up your personal profile to track your own training, nutrition, and check-ins alongside your clients.'
+            : clientError || 'Could not connect to the server.'}
+        </Text>
+        {isAdmin ? (
+          <>
+            <Button
+              title={settingUpCoach ? 'Setting up...' : 'Activate My Profile'}
+              onPress={setupCoachProfile}
+              loading={settingUpCoach}
+              style={{ marginTop: spacing.lg }}
+            />
+            <Button
+              title="Go to Admin"
+              variant="secondary"
+              onPress={() => router.push('/(tabs)/admin')}
+              style={{ marginTop: spacing.sm }}
+            />
+          </>
+        ) : (
+          <Button title="Retry" onPress={refreshClientData} style={{ marginTop: spacing.lg }} />
+        )}
       </View>
     );
   }
@@ -79,11 +116,18 @@ export default function DashboardScreen() {
         />
       }
     >
+      <BrandHeader />
       <OverviewCard client={client} latestCheckin={latestCheckin} />
 
       <StreakCard streak={streak} />
 
       <TargetsCard client={client} latestCheckin={latestCheckin} />
+
+      <VitalStatsCard client={client} metrics={metrics} latestCheckin={latestCheckin} />
+
+      <AIInsightsCard clientId={client.id} />
+
+      <ProgressProjection clientId={client.id} />
 
       {recentCheckins.length >= 2 && (
         <>

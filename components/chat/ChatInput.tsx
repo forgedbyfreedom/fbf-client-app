@@ -5,6 +5,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   Platform,
+  NativeSyntheticEvent,
+  TextInputKeyPressEventData,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, borderRadius } from '../../lib/theme';
@@ -20,8 +22,16 @@ export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
   const handleSend = () => {
     const trimmed = text.trim();
     if (!trimmed) return;
+    console.log('[ChatInput] sending:', trimmed);
     onSend(trimmed);
     setText('');
+  };
+
+  const handleKeyPress = (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+    if (Platform.OS === 'web' && e.nativeEvent.key === 'Enter' && !(e as any).shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
   };
 
   return (
@@ -35,13 +45,14 @@ export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
         multiline
         maxLength={2000}
         editable={!disabled}
-        onSubmitEditing={Platform.OS === 'web' ? handleSend : undefined}
+        onKeyPress={handleKeyPress}
         blurOnSubmit={false}
       />
       <TouchableOpacity
         style={[styles.sendBtn, !text.trim() && styles.sendBtnDisabled]}
         onPress={handleSend}
         disabled={!text.trim() || disabled}
+        activeOpacity={0.7}
       >
         <Ionicons
           name="send"

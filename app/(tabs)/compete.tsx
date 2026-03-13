@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { StreakCard } from '../../components/dashboard/StreakCard';
 import { BadgeGallery } from '../../components/gamification/BadgeGallery';
 import { LeaderboardCard } from '../../components/gamification/LeaderboardCard';
+import { BrandHeader } from '../../components/ui/BrandHeader';
 import { colors, fontSize, spacing } from '../../lib/theme';
 
 export default function CompeteScreen() {
@@ -35,7 +36,7 @@ export default function CompeteScreen() {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />
       }
     >
-      <Text style={styles.title}>Compete</Text>
+      <BrandHeader title="Compete" />
 
       <View style={styles.streakWrapper}>
         <StreakCard streak={streak} />

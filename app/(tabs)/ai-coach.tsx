@@ -41,21 +41,31 @@ type Tab = 'ask' | 'bloodwork';
 async function askCoach(question: string, clientId?: string): Promise<string> {
   // Try context-aware endpoint first, fall back to generic
   try {
+    const controller1 = new AbortController();
+    const timeout1 = setTimeout(() => controller1.abort(), 60000);
     const res = await fetch(`${AI_API_BASE}/api/coach-chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: question, client_id: clientId }),
+      signal: controller1.signal,
     });
+    clearTimeout(timeout1);
     const data = await res.json();
     if (data.reply) return data.reply;
-  } catch {}
+  } catch (err) {
+    console.log('coach-chat failed, trying /ask fallback:', err);
+  }
 
   // Fallback to generic /ask
+  const controller2 = new AbortController();
+  const timeout2 = setTimeout(() => controller2.abort(), 60000);
   const res = await fetch(`${AI_API_BASE}/ask`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ question }),
+    signal: controller2.signal,
   });
+  clearTimeout(timeout2);
   const data = await res.json();
   if (data.error) throw new Error(data.error);
   return data.answer || 'No answer returned.';

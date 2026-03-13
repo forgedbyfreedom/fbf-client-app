@@ -18,6 +18,7 @@ import { StatCard } from '../../components/admin/StatCard';
 import { QuickAddClientModal } from '../../components/admin/QuickAddClientModal';
 import { AlertFeed } from '../../components/admin/AlertFeed';
 import { AdminClient, OrgCoach } from '../../types';
+import { BrandHeader } from '../../components/ui/BrandHeader';
 import { colors, borderRadius, fontSize, spacing } from '../../lib/theme';
 
 export default function AdminDashboard() {
@@ -85,7 +86,7 @@ export default function AdminDashboard() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />
         }
       >
-        <Text style={styles.title}>Admin</Text>
+        <BrandHeader title="Admin" />
 
         <View style={styles.statsRow}>
           <StatCard value={activeClients} label="Clients" />

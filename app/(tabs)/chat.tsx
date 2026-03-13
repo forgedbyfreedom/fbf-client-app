@@ -23,7 +23,11 @@ import { ChatChannel, ChatMessage } from '../../types';
 
 export default function ChatScreen() {
   const insets = useSafeAreaInsets();
-  const { user } = useAuth();
+  const { user, organizationId, clientError } = useAuth();
+
+  useEffect(() => {
+    console.log('[Chat] user:', user?.id, 'orgId:', organizationId, 'clientError:', clientError);
+  }, [user, organizationId, clientError]);
   const [channels, setChannels] = useState<ChatChannel[]>([]);
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -42,6 +46,8 @@ export default function ChatScreen() {
         .from('chat_members')
         .select('channel_id, chat_channels(id, name, type, organization_id)')
         .eq('user_id', user.id);
+
+      console.log('[Chat] fetchChannels result:', { dataLen: data?.length, error: error?.message });
 
       if (error) {
         console.warn('Chat not available:', error.message);
@@ -68,13 +74,14 @@ export default function ChatScreen() {
 
   // Fetch messages for a specific channel
   const fetchMessages = useCallback(async (channelId: string) => {
-    const { data } = await supabaseRef.current
+    const { data, error } = await supabaseRef.current
       .from('chat_messages')
-      .select('id, content, created_at, user_id, profiles:user_id(full_name, avatar_url)')
+      .select('id, content, created_at, user_id')
       .eq('channel_id', channelId)
       .order('created_at', { ascending: true })
       .limit(100);
 
+    console.log('[Chat] fetchMessages:', { channelId, count: data?.length, error: error?.message });
     if (data) setMessages(data as unknown as ChatMessage[]);
   }, []);
 
@@ -99,7 +106,7 @@ export default function ChatScreen() {
         async (payload) => {
           const { data: msg } = await supabaseRef.current
             .from('chat_messages')
-            .select('id, content, created_at, user_id, profiles:user_id(full_name, avatar_url)')
+            .select('id, content, created_at, user_id')
             .eq('id', payload.new.id)
             .single();
           if (msg) {
@@ -114,12 +121,15 @@ export default function ChatScreen() {
   useEffect(() => {
     const init = async () => {
       const chs = await fetchChannels();
+      console.log('[Chat] init: channels=', chs.length, 'first=', chs[0]);
       if (chs.length > 0) {
-        // Default to first group channel (General) or first channel
         const defaultCh = chs.find((c: ChatChannel) => c.type === 'group') || chs[0];
-        setActiveChannelId(defaultCh.id);
-        await fetchMessages(defaultCh.id);
-        subscribeTo(defaultCh.id);
+        console.log('[Chat] init: defaultCh=', defaultCh?.id, defaultCh?.name, defaultCh?.type);
+        if (defaultCh?.id) {
+          setActiveChannelId(defaultCh.id);
+          await fetchMessages(defaultCh.id);
+          subscribeTo(defaultCh.id);
+        }
       }
       setLoading(false);
     };
@@ -143,11 +153,13 @@ export default function ChatScreen() {
   const sendMessage = async (content: string) => {
     if (!activeChannelId || !user) return;
 
-    await supabaseRef.current.from('chat_messages').insert({
+    console.log('[Chat] sendMessage:', { channelId: activeChannelId, userId: user.id, content });
+    const { data, error } = await supabaseRef.current.from('chat_messages').insert({
       channel_id: activeChannelId,
       user_id: user.id,
       content,
-    });
+    }).select();
+    console.log('[Chat] sendMessage result:', { data, error });
   };
 
   const handleNewChatCreated = async (channelId: string) => {

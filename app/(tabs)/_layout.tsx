@@ -55,6 +55,19 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="ai-coach"
+        options={{
+          title: 'AI Coach',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="fitness-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="podcast"
+        options={{ href: null }}
+      />
+      <Tabs.Screen
         name="compete"
         options={{
           title: 'Compete',

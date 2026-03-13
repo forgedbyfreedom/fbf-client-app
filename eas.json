@@ -6,9 +6,11 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "channel": "development"
     },
     "preview": {
+      "channel": "preview",
       "distribution": "internal",
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://sdrsoccfingecvlzrlym.supabase.co",
@@ -23,6 +25,7 @@
       }
     },
     "production": {
+      "channel": "production",
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://sdrsoccfingecvlzrlym.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_hZCl16bChwDHZ4d9OFZf1A_lshrzLx1",
@@ -41,6 +44,7 @@
     "production": {
       "ios": {
         "appleId": "forgedbyfreedom@gmail.com",
+        "ascAppId": "6759875666",
         "appleTeamId": "GX448CX85G"
       }
     }

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Forged by Freedom",
     "slug": "fbf-client-app",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.forgedbyfreedom.client",
-      "buildNumber": "5",
+      "buildNumber": "8",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -31,7 +31,8 @@
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.RECORD_AUDIO"
-      ]
+      ],
+      "versionCode": 2
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -54,7 +55,9 @@
           "cameraPermission": "Allow Forged by Freedom to access your camera for progress photos."
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-audio",
+      "expo-asset"
     ],
     "extra": {
       "router": {},

@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
+import { BrandHeader } from '../../components/ui/BrandHeader';
 import { colors, fontSize, spacing } from '../../lib/theme';
 
 const PUSH_PREF_KEY = 'fbf_push_enabled';
@@ -40,7 +41,7 @@ export default function ProfileScreen() {
         { paddingTop: insets.top + spacing.xl },
       ]}
     >
-      <Text style={styles.title}>Profile</Text>
+      <BrandHeader title="Profile" />
 
       <Card style={styles.card}>
         <View style={styles.infoRow}>
@@ -89,6 +90,12 @@ export default function ProfileScreen() {
 
       <Card style={styles.card}>
         <Text style={styles.sectionTitle}>Quick Links</Text>
+        <Button
+          title="My Web Dashboard"
+          variant="secondary"
+          onPress={() => Linking.openURL('https://fbf-dashboard.vercel.app/portal')}
+          style={styles.linkBtn}
+        />
         <Button
           title="Bloodwork AI Analysis"
           variant="secondary"

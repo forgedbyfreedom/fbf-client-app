@@ -9,7 +9,7 @@ import { SLEEP_QUALITY_LABELS } from '../../lib/constants';
 
 export function StepSleep() {
   const { form, updateForm } = useContext(CheckinContext);
-  const { available, requestPermission, getTodaySleep } = useHealthKit();
+  const { available, authorized, requestPermission, getTodaySleep } = useHealthKit();
 
   const handleHealthImport = async () => {
     await requestPermission();
@@ -27,13 +27,14 @@ export function StepSleep() {
 
   return (
     <View>
-      {available && (
-        <HealthKitImportButton
-          onImport={handleHealthImport}
-          label="Import sleep from Apple Health"
-          dataTypes="sleep duration, sleep stages"
-        />
-      )}
+      <HealthKitImportButton
+        onImport={handleHealthImport}
+        label="Import sleep from Apple Health"
+        dataTypes="sleep duration, sleep stages"
+        available={available}
+        authorized={authorized}
+        onRequestPermission={requestPermission}
+      />
 
       <Text style={styles.sectionTitle}>Sleep Duration</Text>
       <View style={styles.hourControl}>

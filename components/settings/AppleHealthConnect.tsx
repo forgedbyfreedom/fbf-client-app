@@ -25,7 +25,10 @@ export function AppleHealthConnect() {
     return () => sub.remove();
   }, [handleAppStateChange]);
 
-  if (Platform.OS !== 'ios') return null;
+  // Hide on Android only — show on iPad with "not available" message
+  if (Platform.OS === 'android') return null;
+
+  const isHealthKitAvailable = available;
 
   const handleToggle = async (value: boolean) => {
     if (value) {
@@ -49,15 +52,23 @@ export function AppleHealthConnect() {
         <View style={styles.info}>
           <Text style={styles.title}>Apple Health</Text>
           <Text style={styles.subtitle}>
-            {enabled ? 'Connected — auto-fills your daily check-ins' : 'Connect to auto-fill check-in data'}
+            {!isHealthKitAvailable
+              ? 'Apple Health is not available on this device'
+              : enabled
+              ? 'Connected — auto-fills your daily check-ins'
+              : 'Connect to auto-fill check-in data'}
           </Text>
         </View>
-        <Switch
-          value={enabled}
-          onValueChange={handleToggle}
-          trackColor={{ false: colors.border, true: '#FF2D55' }}
-          thumbColor="#fff"
-        />
+        {isHealthKitAvailable ? (
+          <Switch
+            value={enabled}
+            onValueChange={handleToggle}
+            trackColor={{ false: colors.border, true: '#FF2D55' }}
+            thumbColor="#fff"
+          />
+        ) : (
+          <Ionicons name="information-circle-outline" size={22} color={colors.textTertiary} />
+        )}
       </View>
 
       <View style={styles.dataList}>

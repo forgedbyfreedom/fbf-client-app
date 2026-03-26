@@ -30,11 +30,15 @@ import { DailyScoreCard } from '../../components/dashboard/DailyScoreCard';
 import { AIInsightsCard } from '../../components/dashboard/AIInsightsCard';
 import { ProgressProjection } from '../../components/dashboard/ProgressProjection';
 import { ActiveChallengesCard } from '../../components/challenges/ActiveChallengesCard';
+import { Ionicons } from '@expo/vector-icons';
+import { Platform } from 'react-native';
+import { useHealthKit } from '../../hooks/useHealthKit';
 import { colors, fontSize, spacing } from '../../lib/theme';
 
 export default function DashboardScreen() {
   const { client, metrics, recentCheckins, streak, loading, clientError, refreshClientData, isAdmin } = useAuth();
   const { totals: foodLogTotals, hasEntries: hasFoodLog } = useFoodLog();
+  const { available: hkAvailable, authorized: hkAuthorized, requestPermission: hkRequestPermission } = useHealthKit();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [refreshing, setRefreshing] = React.useState(false);
@@ -131,6 +135,46 @@ export default function DashboardScreen() {
       <ActiveChallengesCard />
 
       <TargetsCard client={client} latestCheckin={latestCheckin} foodLogTotals={hasFoodLog ? foodLogTotals : null} />
+
+      {/* Apple Health Integration Card — always visible on iOS for 2.5.1 compliance */}
+      {Platform.OS === 'ios' && (
+        <Card style={styles.healthCard}>
+          <View style={styles.healthCardHeader}>
+            <View style={styles.healthCardIcon}>
+              <Ionicons name="heart" size={22} color="#FF2D55" />
+            </View>
+            <View style={styles.healthCardInfo}>
+              <Text style={styles.healthCardTitle}>Apple Health Integration</Text>
+              <Text style={styles.healthCardStatus}>
+                {!hkAvailable
+                  ? 'Apple Health is not available on this device'
+                  : hkAuthorized
+                  ? 'Connected — health data auto-fills your daily check-ins'
+                  : 'Tap to connect and auto-fill your daily check-ins'}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.healthCardTypes}>
+            {['Steps', 'Sleep', 'Heart Rate', 'Body Temp', 'Calories', 'Workouts', 'Weight'].map((type) => (
+              <View key={type} style={styles.healthChip}>
+                <Ionicons name="heart" size={8} color={hkAuthorized ? '#FF2D55' : colors.textTertiary} />
+                <Text style={[styles.healthChipText, hkAuthorized && styles.healthChipTextActive]}>{type}</Text>
+              </View>
+            ))}
+          </View>
+          {hkAvailable && !hkAuthorized && (
+            <TouchableOpacity
+              style={styles.healthConnectBtn}
+              onPress={async () => { await hkRequestPermission(); }}
+            >
+              <Text style={styles.healthConnectBtnText}>Connect Apple Health</Text>
+            </TouchableOpacity>
+          )}
+          <Text style={styles.healthPrivacy}>
+            Your health data is never sold, shared, or used for advertising.
+          </Text>
+        </Card>
+      )}
 
       <VitalStatsCard client={client} metrics={metrics} latestCheckin={latestCheckin} />
 
@@ -248,6 +292,78 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  healthCard: {
+    borderColor: 'rgba(255, 45, 85, 0.3)',
+    borderWidth: 1,
+    marginBottom: spacing.lg,
+  },
+  healthCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 12,
+  },
+  healthCardIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 45, 85, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  healthCardInfo: {
+    flex: 1,
+  },
+  healthCardTitle: {
+    fontSize: fontSize.md,
+    fontWeight: '700',
+    color: '#FF2D55',
+  },
+  healthCardStatus: {
+    fontSize: fontSize.xs,
+    color: colors.textTertiary,
+    marginTop: 2,
+  },
+  healthCardTypes: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 10,
+  },
+  healthChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(255, 45, 85, 0.06)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  healthChipText: {
+    fontSize: 10,
+    color: colors.textTertiary,
+    fontWeight: '500',
+  },
+  healthChipTextActive: {
+    color: '#FF2D55',
+  },
+  healthConnectBtn: {
+    backgroundColor: '#FF2D55',
+    borderRadius: 8,
+    paddingVertical: 10,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  healthConnectBtnText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: fontSize.sm,
+  },
+  healthPrivacy: {
+    fontSize: 10,
+    color: colors.textTertiary,
+    textAlign: 'center',
   },
   content: {
     padding: spacing.lg,

@@ -12,7 +12,7 @@ import { DAYS_OF_WEEK } from '../../lib/constants';
 export function StepBodyWellness() {
   const { form, updateForm } = useContext(CheckinContext);
   const { client } = useAuth();
-  const { available, requestPermission, getTodayBodyTemp, getTodayHeartRate } = useHealthKit();
+  const { available, authorized, requestPermission, getTodayBodyTemp, getTodayHeartRate } = useHealthKit();
 
   const today = DAYS_OF_WEEK[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1];
   const isWeighInDay = client?.weigh_in_day?.toLowerCase() === today;
@@ -31,13 +31,14 @@ export function StepBodyWellness() {
 
   return (
     <View>
-      {available && (
-        <HealthKitImportButton
-          onImport={handleHealthImport}
-          label="Auto-fill from Apple Health"
-          dataTypes="body temperature, resting heart rate"
-        />
-      )}
+      <HealthKitImportButton
+        onImport={handleHealthImport}
+        label="Auto-fill from Apple Health"
+        dataTypes="body temperature, resting heart rate"
+        available={available}
+        authorized={authorized}
+        onRequestPermission={requestPermission}
+      />
       {isWeighInDay ? (
         <Input
           label="Weight (lbs)"

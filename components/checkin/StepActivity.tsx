@@ -12,7 +12,7 @@ import { TRAINING_TYPES } from '../../lib/constants';
 export function StepActivity() {
   const { form, updateForm } = useContext(CheckinContext);
   const { client } = useAuth();
-  const { available, requestPermission, getTodaySteps, getTodayCaloriesBurned, getTodayWorkouts, getTodayHeartRate } = useHealthKit();
+  const { available, authorized, requestPermission, getTodaySteps, getTodayCaloriesBurned, getTodayWorkouts, getTodayHeartRate } = useHealthKit();
 
   const handleHealthImport = async () => {
     await requestPermission();
@@ -46,13 +46,14 @@ export function StepActivity() {
 
   return (
     <View>
-      {available && (
-        <HealthKitImportButton
-          onImport={handleHealthImport}
-          label="Import activity from Apple Health"
-          dataTypes="steps, calories burned, workouts, heart rate"
-        />
-      )}
+      <HealthKitImportButton
+        onImport={handleHealthImport}
+        label="Import activity from Apple Health"
+        dataTypes="steps, calories burned, workouts, heart rate"
+        available={available}
+        authorized={authorized}
+        onRequestPermission={requestPermission}
+      />
 
       <Input
         label={`Steps${client?.target_steps ? ` (target: ${client.target_steps.toLocaleString()})` : ''}`}

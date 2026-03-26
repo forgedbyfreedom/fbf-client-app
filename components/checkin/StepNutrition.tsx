@@ -14,7 +14,7 @@ export function StepNutrition() {
   const { form, updateForm } = useContext(CheckinContext);
   const { client } = useAuth();
   const { totals, hasEntries } = useFoodLog();
-  const { available, requestPermission, getTodayCaloriesBurned } = useHealthKit();
+  const { available, authorized, requestPermission, getTodayCaloriesBurned } = useHealthKit();
 
   const handleHealthImport = async () => {
     await requestPermission();
@@ -42,13 +42,14 @@ export function StepNutrition() {
 
   return (
     <View>
-      {available && (
-        <HealthKitImportButton
-          onImport={handleHealthImport}
-          label="Import calories from Apple Health"
-          dataTypes="active energy burned"
-        />
-      )}
+      <HealthKitImportButton
+        onImport={handleHealthImport}
+        label="Import calories from Apple Health"
+        dataTypes="active energy burned (calories)"
+        available={available}
+        authorized={authorized}
+        onRequestPermission={requestPermission}
+      />
 
       {hasEntries && (
         <TouchableOpacity style={styles.foodLogImport} onPress={handleUseFoodLogTotals}>

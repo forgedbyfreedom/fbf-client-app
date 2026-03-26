@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.forgedbyfreedom.client",
-      "buildNumber": "28",
+      "buildNumber": "29",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "Allow Forged by Freedom to access your camera to scan food barcodes for nutrition tracking.",
@@ -79,7 +79,13 @@
         }
       ],
       "expo-web-browser",
-      "expo-sharing"
+      "expo-sharing",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Forged by Freedom uses your location to find nearby gyms and fitness facilities."
+        }
+      ]
     ],
     "extra": {
       "router": {},

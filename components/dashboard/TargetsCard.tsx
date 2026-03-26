@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Card } from '../ui/Card';
 import { colors, fontSize, spacing, borderRadius } from '../../lib/theme';
 import { Client, Checkin } from '../../types';
@@ -7,19 +8,27 @@ import { Client, Checkin } from '../../types';
 interface TargetsCardProps {
   client: Client;
   latestCheckin: Checkin | null;
+  foodLogTotals?: {
+    calories: number;
+    protein_g: number;
+    carbs_g: number;
+    fat_g: number;
+  } | null;
 }
 
-export function TargetsCard({ client, latestCheckin }: TargetsCardProps) {
+export function TargetsCard({ client, latestCheckin, foodLogTotals }: TargetsCardProps) {
+  const hasFoodLog = foodLogTotals && (foodLogTotals.calories > 0 || foodLogTotals.protein_g > 0);
+
   const targets = [
     {
-      label: 'Calories',
-      current: latestCheckin?.calories,
+      label: hasFoodLog ? 'Calories (Food Log)' : 'Calories',
+      current: hasFoodLog ? Math.round(foodLogTotals!.calories) : latestCheckin?.calories,
       target: client.target_calories,
       unit: 'kcal',
     },
     {
-      label: 'Protein',
-      current: latestCheckin?.protein_g,
+      label: hasFoodLog ? 'Protein (Food Log)' : 'Protein',
+      current: hasFoodLog ? Math.round(foodLogTotals!.protein_g) : latestCheckin?.protein_g,
       target: client.target_protein,
       unit: 'g',
     },
@@ -35,7 +44,15 @@ export function TargetsCard({ client, latestCheckin }: TargetsCardProps) {
 
   return (
     <Card>
-      <Text style={styles.title}>Daily Targets</Text>
+      <View style={styles.titleRow}>
+        <Text style={styles.title}>Daily Targets</Text>
+        {Platform.OS === 'ios' && (
+          <View style={styles.healthBadge}>
+            <Ionicons name="heart" size={10} color="#FF2D55" />
+            <Text style={styles.healthBadgeText}>Apple Health</Text>
+          </View>
+        )}
+      </View>
       {targets.map((t) => {
         const pct = t.current && t.target ? Math.min((t.current / t.target) * 100, 100) : 0;
         const progressColor =
@@ -46,7 +63,7 @@ export function TargetsCard({ client, latestCheckin }: TargetsCardProps) {
             <View style={styles.labelRow}>
               <Text style={styles.targetLabel}>{t.label}</Text>
               <Text style={styles.targetValue}>
-                {t.current?.toLocaleString() ?? '--'} / {t.target?.toLocaleString()}{' '}
+                {t.current?.toLocaleString() ?? '--'} / {t.target?.toLocaleString() ?? '--'}{' '}
                 {t.unit}
               </Text>
             </View>
@@ -66,11 +83,30 @@ export function TargetsCard({ client, latestCheckin }: TargetsCardProps) {
 }
 
 const styles = StyleSheet.create({
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
   title: {
     fontSize: fontSize.md,
     fontWeight: '600',
     color: colors.textPrimary,
-    marginBottom: spacing.md,
+  },
+  healthBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(255, 45, 85, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  healthBadgeText: {
+    fontSize: 10,
+    color: '#FF2D55',
+    fontWeight: '600',
   },
   target: {
     marginBottom: spacing.md,

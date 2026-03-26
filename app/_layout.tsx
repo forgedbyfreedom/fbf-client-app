@@ -89,6 +89,26 @@ export default function RootLayout() {
             animation: 'slide_from_bottom',
           }}
         />
+        <Stack.Screen
+          name="supplements/index"
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="gyms/index"
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="food-log/index"
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="challenges/index"
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="challenges/[id]"
+          options={{ animation: 'slide_from_right' }}
+        />
       </Stack>
       <RootNavigation />
       {Platform.OS !== 'web' && <PushNotificationHandler />}

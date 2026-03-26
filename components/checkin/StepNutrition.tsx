@@ -1,14 +1,37 @@
 import React, { useContext } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { CheckinContext } from '../../providers/CheckinProvider';
 import { useAuth } from '../../hooks/useAuth';
+import { useFoodLog } from '../../hooks/useFoodLog';
 import { Input } from '../ui/Input';
 import { WaterTracker } from './WaterTracker';
+import { HealthKitImportButton } from './HealthKitImportButton';
+import { useHealthKit } from '../../hooks/useHealthKit';
 import { colors, fontSize, spacing, borderRadius } from '../../lib/theme';
 
 export function StepNutrition() {
   const { form, updateForm } = useContext(CheckinContext);
   const { client } = useAuth();
+  const { totals, hasEntries } = useFoodLog();
+  const { available, requestPermission, getTodayCaloriesBurned } = useHealthKit();
+
+  const handleHealthImport = async () => {
+    await requestPermission();
+    const calories = await getTodayCaloriesBurned();
+    if (calories > 0) {
+      updateForm({ calories: String(calories) });
+    }
+  };
+
+  const handleUseFoodLogTotals = () => {
+    updateForm({
+      calories: String(Math.round(totals.calories)),
+      protein_g: String(Math.round(totals.protein_g)),
+      carbs_g: String(Math.round(totals.carbs_g)),
+      fat_g: String(Math.round(totals.fat_g)),
+    });
+  };
 
   const macros = [
     { key: 'calories' as const, label: 'Calories', target: client?.target_calories, unit: 'kcal' },
@@ -19,6 +42,29 @@ export function StepNutrition() {
 
   return (
     <View>
+      {available && (
+        <HealthKitImportButton
+          onImport={handleHealthImport}
+          label="Import calories from Apple Health"
+          dataTypes="active energy burned"
+        />
+      )}
+
+      {hasEntries && (
+        <TouchableOpacity style={styles.foodLogImport} onPress={handleUseFoodLogTotals}>
+          <View style={styles.foodLogImportLeft}>
+            <Ionicons name="nutrition" size={18} color={colors.accent} />
+            <View>
+              <Text style={styles.foodLogImportTitle}>Use Food Log Totals</Text>
+              <Text style={styles.foodLogImportSub}>
+                {Math.round(totals.calories)} cal | {Math.round(totals.protein_g)}g P | {Math.round(totals.carbs_g)}g C | {Math.round(totals.fat_g)}g F
+              </Text>
+            </View>
+          </View>
+          <Ionicons name="arrow-down-circle" size={20} color={colors.accent} />
+        </TouchableOpacity>
+      )}
+
       {macros.map((m) => {
         const current = parseFloat(form[m.key]) || 0;
         const pct = m.target ? Math.min((current / m.target) * 100, 100) : 0;
@@ -94,5 +140,32 @@ const styles = StyleSheet.create({
   barFill: {
     height: '100%',
     borderRadius: borderRadius.full,
+  },
+  foodLogImport: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.accentMuted,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  foodLogImportLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    flex: 1,
+  },
+  foodLogImportTitle: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    color: colors.accent,
+  },
+  foodLogImportSub: {
+    fontSize: fontSize.xs,
+    color: colors.textSecondary,
+    marginTop: 1,
   },
 });

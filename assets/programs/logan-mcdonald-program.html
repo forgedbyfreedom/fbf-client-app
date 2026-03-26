@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logan McDonald – FBF Coaching Program</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    @media print {
+      body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      .page-break { page-break-before: always; }
+      .no-print { display: none !important; }
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #0a0a0a;
+      color: #ffffff;
+      line-height: 1.6;
+    }
+
+    .program {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 40px;
+    }
+
+    /* ── Header / Cover ── */
+    .cover {
+      text-align: center;
+      padding: 60px 0 48px;
+      border-bottom: 2px solid #FF6A00;
+      margin-bottom: 48px;
+    }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .logo-circle {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, #FF6A00, #FF8533);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 900;
+      color: #0a0a0a;
+    }
+
+    .brand-name {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: #FF6A00;
+    }
+
+    .cover h1 {
+      font-size: 42px;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+
+    .cover h1 span { color: #FF6A00; }
+
+    .cover .subtitle {
+      font-size: 18px;
+      color: #888;
+      margin-bottom: 24px;
+    }
+
+    .client-badge {
+      display: inline-block;
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 16px 32px;
+      margin-top: 8px;
+    }
+
+    .client-badge .name {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .client-badge .date {
+      font-size: 13px;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    /* ── Sections ── */
+    .section {
+      margin-bottom: 48px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    .section-icon {
+      width: 36px;
+      height: 36px;
+      background: rgba(255, 106, 0, 0.15);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .section-header h2 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .section-header h2 span { color: #FF6A00; }
+
+    /* ── Stats Grid ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-card .label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .stat-card .value {
+      font-size: 24px;
+      font-weight: 800;
+      color: #FF6A00;
+    }
+
+    .stat-card .unit {
+      font-size: 13px;
+      color: #888;
+      font-weight: 400;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 12px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .card h3 {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .card h3 span { color: #FF6A00; }
+
+    .badge {
+      display: inline-block;
+      background: rgba(255, 106, 0, 0.15);
+      color: #FF6A00;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge.green {
+      background: rgba(34, 197, 94, 0.15);
+      color: #22c55e;
+    }
+
+    .badge.gold {
+      background: rgba(212, 160, 23, 0.15);
+      color: #D4A017;
+    }
+
+    .badge.red {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 8px 12px;
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    tbody td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #1a1a1a;
+      vertical-align: top;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .exercise-name {
+      font-weight: 600;
+    }
+
+    .exercise-note {
+      font-size: 12px;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    /* ── Meal Plan ── */
+    .meal-card {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 12px;
+    }
+
+    .meal-card h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #FF6A00;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .meal-card .meal-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .meal-card .meal-desc {
+      font-size: 13px;
+      color: #ccc;
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+
+    .macro-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .macro-item {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .macro-item strong {
+      color: #fff;
+    }
+
+    /* ── Supplement / Protocol Cards ── */
+    .protocol-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+    }
+
+    .protocol-card {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 18px;
+    }
+
+    .protocol-card h4 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .protocol-card .dose {
+      font-size: 13px;
+      color: #FF6A00;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .protocol-card .timing {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .protocol-card .notes {
+      font-size: 12px;
+      color: #666;
+      margin-top: 6px;
+      font-style: italic;
+    }
+
+    /* ── Callout Box ── */
+    .callout {
+      background: rgba(255, 106, 0, 0.08);
+      border: 1px solid rgba(255, 106, 0, 0.25);
+      border-left: 4px solid #FF6A00;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 16px 0;
+    }
+
+    .callout h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #FF6A00;
+      margin-bottom: 6px;
+    }
+
+    .callout p, .callout li {
+      font-size: 13px;
+      color: #ccc;
+      line-height: 1.6;
+    }
+
+    .callout ul {
+      padding-left: 18px;
+      margin-top: 6px;
+    }
+
+    /* ── Recomp Highlight ── */
+    .recomp-banner {
+      background: linear-gradient(135deg, rgba(255,106,0,0.12), rgba(212,160,23,0.08));
+      border: 1px solid rgba(255,106,0,0.3);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .recomp-banner h3 {
+      font-size: 20px;
+      font-weight: 800;
+      color: #FF6A00;
+      margin-bottom: 8px;
+    }
+
+    .recomp-banner p {
+      font-size: 14px;
+      color: #ccc;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ── Lists ── */
+    .checklist {
+      list-style: none;
+      padding: 0;
+    }
+
+    .checklist li {
+      padding: 8px 0;
+      font-size: 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .checklist li::before {
+      content: '▸';
+      color: #FF6A00;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .text-muted { color: #888; }
+    .text-accent { color: #FF6A00; }
+    .text-sm { font-size: 13px; }
+    .text-xs { font-size: 12px; }
+    .fw-700 { font-weight: 700; }
+    .mt-8 { margin-top: 8px; }
+    .mt-16 { margin-top: 16px; }
+    .mb-8 { margin-bottom: 8px; }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 40px 0 20px;
+      border-top: 1px solid #2a2a2a;
+      margin-top: 48px;
+    }
+
+    .footer .brand {
+      font-size: 16px;
+      font-weight: 800;
+      color: #FF6A00;
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+
+    .footer .tagline {
+      font-size: 12px;
+      color: #555;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .footer .disclaimer {
+      font-size: 11px;
+      color: #444;
+      margin-top: 16px;
+      line-height: 1.5;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
+</head>
+<body>
+<div class="program">
+
+  <!-- ═══════════════ COVER ═══════════════ -->
+  <div class="cover">
+    <div class="logo-row">
+      <div class="logo-circle">F</div>
+      <div>
+        <div class="brand-name">FORGED BY FREEDOM</div>
+      </div>
+    </div>
+    <h1>Custom <span>Coaching Program</span></h1>
+    <p class="subtitle">Comprehensive Recomposition Protocol</p>
+    <div class="client-badge">
+      <div class="name">Logan McDonald</div>
+      <div class="date">Program Start: March 24, 2026</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ CLIENT OVERVIEW ═══════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">📋</div>
+      <h2>Client <span>Overview</span></h2>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="label">Height</div>
+        <div class="value">6'4"</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Current Weight</div>
+        <div class="value">300 <span class="unit">lbs</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Goal Weight</div>
+        <div class="value">240 <span class="unit">lbs</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">To Lose</div>
+        <div class="value">60 <span class="unit">lbs</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Age</div>
+        <div class="value">Mid-30s</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <ul class="checklist">
+        <li><strong>Background:</strong>&nbsp; Former athlete — has a strong training foundation to rebuild on</li>
+        <li><strong>Occupation:</strong>&nbsp; Engineer — desk-based, long hours, sedentary during work</li>
+        <li><strong>Family:</strong>&nbsp; Young family — time is limited, efficiency matters</li>
+        <li><strong>Training Window:</strong>&nbsp; TBD (recommend early AM or lunch — get it done before family obligations)</li>
+        <li><strong>Medical:</strong>&nbsp; No known conditions — discuss TRT with physician (see below)</li>
+        <li><strong>Diet Approach:</strong>&nbsp; High protein, moderate carb, structured meal prep for family-friendly efficiency</li>
+        <li><strong>Weigh-In Day:</strong>&nbsp; Monday mornings (fasted, before eating)</li>
+      </ul>
+    </div>
+
+    <div class="callout">
+      <h4>Logan's Edge</h4>
+      <p>You used to be very athletic — that's a massive advantage. Your body has existing muscle memory (myonuclei don't go away), your CNS knows how to recruit motor units, and your frame at 6'4" can carry serious lean mass. You're not starting from scratch — you're reactivating a system that already knows how to perform. The combination of muscle memory + structured training + peptide support means you'll see results faster than a true beginner. The goal isn't just to lose weight — it's to uncover the athlete that's still in there.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════ DAILY TARGETS ═══════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🎯</div>
+      <h2>Daily <span>Targets</span></h2>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="label">Calories</div>
+        <div class="value">2,200</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Protein</div>
+        <div class="value">250<span class="unit">g</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Carbs</div>
+        <div class="value">150<span class="unit">g</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Fats</div>
+        <div class="value">65<span class="unit">g</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Daily Steps</div>
+        <div class="value">10,000</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Water</div>
+        <div class="value">140<span class="unit">oz</span></div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <h4>Why These Numbers</h4>
+      <p>At 300 lbs and 6'4", your estimated maintenance is ~3,200–3,400 calories. We're running a 1,000+ calorie deficit — aggressive but sustainable with the peptide support (Reta + Tesofensine will crush appetite). Protein is set at 250g (0.83g/lb) to protect lean mass during the cut and fuel muscle memory reactivation. Carbs are timed around training for performance. Fats are kept moderate for hormone support. As you lean down, we'll adjust — but this is the launchpad.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════ RECOMP PROTOCOL ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">🔥</div>
+      <h2>FBF <span>Recomp Protocol</span></h2>
+      <span class="badge gold">HIGHLY RECOMMENDED</span>
+    </div>
+
+    <div class="recomp-banner">
+      <h3>Body Recomposition — The Optimal Path</h3>
+      <p>At 300 lbs with an athletic background, you are in a prime recomp window. Your body is carrying significant stored energy and has dormant muscle memory waiting to be reactivated. With Retatrutide, Tesofensine, and structured progressive overload, you can simultaneously drop serious body fat while rebuilding lean muscle. This isn't a crash diet — it's a systematic transformation that preserves your metabolic rate and builds a physique, not just a smaller version of where you are now.</p>
+    </div>
+
+    <div class="card">
+      <h3>How the <span>Recomp Protocol</span> Works</h3>
+      <ul class="checklist mt-8">
+        <li><strong>High Protein Anchor (250g/day):</strong> Protein stays constant every single day. Non-negotiable — this is the guardrail that ensures you're losing fat, not muscle.</li>
+        <li><strong>Strategic Carb Placement:</strong> Carbs concentrated around training (pre/post workout) to fuel performance and recovery. Lower carb on rest days.</li>
+        <li><strong>Aggressive But Sustainable Deficit:</strong> 2,200 calories keeps you in a significant deficit (~1,000–1,200 below maintenance) but the peptide stack makes this feel manageable — not miserable.</li>
+        <li><strong>Progressive Overload Training:</strong> 5-day split hitting each muscle group hard once per week. The stimulus for muscle growth comes from systematically increasing weight/reps. Log everything.</li>
+        <li><strong>Muscle Memory Advantage:</strong> As a former athlete, your myonuclei are still there. Research shows previously trained individuals regain muscle 2–3x faster than true beginners. We're leveraging that.</li>
+        <li><strong>Peptide + Compound Synergy:</strong> Reta handles appetite and metabolic optimization, Tesofensine drives thermogenesis and dopamine-mediated motivation, and TRT (if cleared by your doc) ensures your hormonal foundation supports the recomp.</li>
+      </ul>
+    </div>
+
+    <div class="callout mt-16">
+      <h4>Expected Timeline</h4>
+      <p>Weeks 1–4: Body adapts to training stimulus, strength climbs rapidly (muscle memory), Reta titrates up. Scale should start moving 2–4 lbs/week. Weeks 5–12: Visible transformation — face thins out, clothes fit differently, lifts are jumping weekly. Expect 20–30 lbs down. Weeks 12–24: Deep recomp territory — 40–60 lbs of fat lost, significant lean mass regained. You'll look and feel like a completely different person. Target: 240 lbs at a dramatically different body composition.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════ TRAINING PROGRAM ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">🏋️</div>
+      <h2>Training <span>Program</span></h2>
+      <span class="badge">5-Day Bro Split + Cardio</span>
+    </div>
+
+    <p class="text-sm text-muted mb-8">Progressive overload: when you hit the top of the rep range with good form on all sets, increase weight by the smallest increment available next session. Log every set in the app. Dumbbells and machines over barbells for pressing — protects shoulders and allows better range of motion at your frame size.</p>
+
+    <!-- Day 1: Chest & Triceps -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Day 1 — <span>Chest & Triceps</span></h3>
+        <span class="badge">Monday</span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Rest</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="exercise-name">Dumbbell Incline Press</div>
+              <div class="exercise-note">30° incline, full stretch at bottom, drive up explosively</div>
+            </td>
+            <td>4</td><td>8–10</td><td>90s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Machine Chest Press (Flat)</div>
+              <div class="exercise-note">Slow 3-sec eccentric, squeeze at contraction</div>
+            </td>
+            <td>4</td><td>10–12</td><td>75s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Cable Fly (Low-to-High)</div>
+              <div class="exercise-note">Targets upper chest, cross hands slightly at top</div>
+            </td>
+            <td>3</td><td>12–15</td><td>60s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Dumbbell Flat Fly</div>
+              <div class="exercise-note">Deep stretch, slight bend in elbows, controlled tempo</div>
+            </td>
+            <td>3</td><td>10–12</td><td>60s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Tricep Rope Pushdown</div>
+              <div class="exercise-note">Spread the rope at bottom, squeeze and hold 1 sec</div>
+            </td>
+            <td>3</td><td>12–15</td><td>60s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Overhead Dumbbell Tricep Extension</div>
+              <div class="exercise-note">Seated, deep stretch at bottom, single DB or EZ bar</div>
+            </td>
+            <td>3</td><td>10–12</td><td>60s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Tricep Dip Machine</div>
+              <div class="exercise-note">Lean slightly forward, full lockout at top</div>
+            </td>
+            <td>3</td><td>10–12</td><td>60s</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Day 2: Legs -->
+    <div class="card page-break">
+      <div class="card-header">
+        <h3>Day 2 — <span>Legs (Quad & Hamstring Focus)</span></h3>
+        <span class="badge">Tuesday</span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Rest</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="exercise-name">Leg Press</div>
+              <div class="exercise-note">Feet shoulder width, mid-platform, full depth — your long legs are an advantage here</div>
+            </td>
+            <td>4</td><td>10–12</td><td>2 min</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Hack Squat</div>
+              <div class="exercise-note">Heels elevated on a plate if needed, deep range of motion</div>
+            </td>
+            <td>4</td><td>10–12</td><td>90s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Leg Extension</div>
+              <div class="exercise-note">Pause 2 sec at top, slow 3-sec eccentric</div>
+            </td>
+            <td>3</td><td>12–15</td><td>60s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Romanian Dumbbell Deadlift</div>
+              <div class="exercise-note">Dumbbells along sides, deep hinge, feel the hamstring stretch — your height gives great ROM</div>
+            </td>
+            <td>4</td><td>8–10</td><td>90s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Lying Leg Curl</div>
+              <div class="exercise-note">Squeeze at top, 3-sec negative</div>
+            </td>
+            <td>3</td><td>10–12</td><td>60s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Walking Dumbbell Lunges</div>
+              <div class="exercise-note">Controlled, long stride, don't rush — great for stability and athleticism</div>
+            </td>
+            <td>3</td><td>12/leg</td><td>75s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Standing Calf Raise (Machine)</div>
+              <div class="exercise-note">Full ROM, 2 sec pause at stretch, 1 sec squeeze at top</div>
+            </td>
+            <td>4</td><td>12–15</td><td>60s</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Day 3: Shoulders -->
+    <div class="card page-break">
+      <div class="card-header">
+        <h3>Day 3 — <span>Shoulders</span></h3>
+        <span class="badge">Wednesday</span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Rest</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="exercise-name">Dumbbell Shoulder Press (Seated)</div>
+              <div class="exercise-note">Neutral or pronated grip, no barbell — protects shoulders at your wingspan</div>
+            </td>
+            <td>4</td><td>8–10</td><td>90s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Machine Shoulder Press</div>
+              <div class="exercise-note">Controlled tempo, full range — use as a heavy secondary</div>
+            </td>
+            <td>3</td><td>10–12</td><td>75s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Cable Lateral Raise</div>
+              <div class="exercise-note">Behind the body, one arm at a time, controlled 2-sec up / 2-sec down</div>
+            </td>
+            <td>4</td><td>12–15</td><td>60s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Dumbbell Front Raise</div>
+              <div class="exercise-note">Alternating, slight lean forward, stop at eye level</div>
+            </td>
+            <td>3</td><td>12–15</td><td>60s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Machine Rear Delt Fly</div>
+              <div class="exercise-note">Light weight, squeeze and hold 2 sec — rear delts make or break the physique</div>
+            </td>
+            <td>4</td><td>15–20</td><td>45s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Face Pulls (Rope)</div>
+              <div class="exercise-note">Pull to forehead, externally rotate at end, 2-sec hold — critical for shoulder health</div>
+            </td>
+            <td>3</td><td>15–20</td><td>45s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Dumbbell Shrugs</div>
+              <div class="exercise-note">Heavy, hold at top 2 sec, controlled drop</div>
+            </td>
+            <td>3</td><td>12–15</td><td>60s</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Day 4: Back & Biceps -->
+    <div class="card page-break">
+      <div class="card-header">
+        <h3>Day 4 — <span>Back & Biceps</span></h3>
+        <span class="badge">Thursday</span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Rest</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="exercise-name">Lat Pulldown (Wide Grip)</div>
+              <div class="exercise-note">Full stretch at top, drive elbows to hips — your long arms = huge ROM advantage</div>
+            </td>
+            <td>4</td><td>8–10</td><td>90s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Seated Cable Row (V-Handle)</div>
+              <div class="exercise-note">Close grip, squeeze shoulder blades 2 sec, controlled return</div>
+            </td>
+            <td>4</td><td>10–12</td><td>75s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Dumbbell Row (Single Arm)</div>
+              <div class="exercise-note">Bench supported, full stretch at bottom, row to hip</div>
+            </td>
+            <td>3</td><td>10–12</td><td>75s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Chest-Supported T-Bar Row or Machine Row</div>
+              <div class="exercise-note">Takes lower back out of it, pure lat/rhomboid isolation</div>
+            </td>
+            <td>3</td><td>10–12</td><td>75s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Straight-Arm Lat Pulldown</div>
+              <div class="exercise-note">Slight lean forward, squeeze lats hard at bottom, great finisher</div>
+            </td>
+            <td>3</td><td>12–15</td><td>60s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Dumbbell Bicep Curl</div>
+              <div class="exercise-note">Alternating, controlled — no swinging, ego stays at the door</div>
+            </td>
+            <td>3</td><td>10–12</td><td>60s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Incline Dumbbell Hammer Curl</div>
+              <div class="exercise-note">45° bench, deep stretch, hits the long head and brachialis</div>
+            </td>
+            <td>3</td><td>10–12</td><td>60s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Cable Preacher Curl</div>
+              <div class="exercise-note">Constant tension, squeeze at top, 3-sec negative</div>
+            </td>
+            <td>3</td><td>12–15</td><td>60s</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Day 5: Longer Cardio Day -->
+    <div class="card page-break">
+      <div class="card-header">
+        <h3>Day 5 — <span>Extended Cardio & Core</span></h3>
+        <span class="badge">Friday</span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Activity</th><th>Duration</th><th>Intensity</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="exercise-name">Incline Treadmill Walk</div>
+              <div class="exercise-note">12–15% incline, 3.0–3.5 mph</div>
+            </td>
+            <td>30 min</td><td>Zone 2</td><td>Fat-burning sweet spot — you should be able to hold a conversation</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Stationary Bike or Rower</div>
+              <div class="exercise-note">Moderate resistance, steady pace</div>
+            </td>
+            <td>15 min</td><td>Zone 2–3</td><td>Switch it up — rower is great for your frame size</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Farmer's Walk</div>
+              <div class="exercise-note">Heavy dumbbells, walk the gym floor</div>
+            </td>
+            <td>4 x 40 yds</td><td>Heavy</td><td>Grip, traps, core, conditioning — athlete builder</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Hanging Knee Raise</div>
+              <div class="exercise-note">Controlled, no swinging — pause at top</div>
+            </td>
+            <td>3 x 12–15</td><td>—</td><td>Core stability for a big frame</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Cable Woodchops</div>
+              <div class="exercise-note">High-to-low, rotate through core</div>
+            </td>
+            <td>3 x 12/side</td><td>—</td><td>Rotational strength — athletic carryover</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Plank Hold</div>
+              <div class="exercise-note">Forearm plank, squeeze everything</div>
+            </td>
+            <td>3 x 45–60s</td><td>—</td><td>Foundational core — build up duration over weeks</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Day 6 & 7: Active Rest -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Days 6 & 7 — <span>Active Recovery (Weekend)</span></h3>
+        <span class="badge green">ACTIVE REST</span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Activity</th><th>Target</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="exercise-name">Steps</div>
+              <div class="exercise-note">Higher goal on weekends</div>
+            </td>
+            <td>12,000–15,000 steps</td>
+            <td>Take the kids to the park, walk the neighborhood, hike — make it family time</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Light Activity</div>
+              <div class="exercise-note">Nothing structured — just move</div>
+            </td>
+            <td>30–60 min</td>
+            <td>Bike ride with kids, shooting hoops, yard work, swimming — anything active and fun</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Stretching / Mobility</div>
+              <div class="exercise-note">Hip flexors, hamstrings, thoracic spine</div>
+            </td>
+            <td>10–15 min</td>
+            <td>Sitting at a desk all week tightens everything — especially hip flexors at your height. Do this daily but prioritize weekends.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <h4>Cardio Protocol — Full Week</h4>
+      <ul>
+        <li><strong>Monday–Thursday:</strong> 10,000 steps minimum + 15 min incline treadmill walk post-workout (12% incline, 3.0 mph)</li>
+        <li><strong>Friday:</strong> Extended cardio session (45+ min total — see Day 5 above). Step goal still applies.</li>
+        <li><strong>Saturday–Sunday:</strong> 12,000–15,000 steps. No gym required. Family-friendly activities count. Get outside.</li>
+        <li><strong>Weekly Step Total Target:</strong> 75,000+ steps</li>
+      </ul>
+      <p class="mt-8"><strong>Engineer Hack:</strong> Take all calls walking. Set a phone timer every 90 min to do a lap. Park at the far end of every lot. These micro-walks add up fast and break up the desk time that's killing your NEAT (non-exercise activity thermogenesis).</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════ MEAL PLAN ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">🍽️</div>
+      <h2>Meal <span>Plan</span></h2>
+      <span class="badge">High Protein · Tight Macros</span>
+    </div>
+
+    <p class="text-sm text-muted mb-8">This is a tight plan — every meal is calculated. You have a young family so these meals are designed to be batch-preppable on Sunday. Your wife and kids can eat the same base proteins/veggies — just adjust portions. No exotic ingredients, no complicated recipes.</p>
+
+    <!-- Meal 1 -->
+    <div class="meal-card">
+      <h4>Meal 1 — Morning (6:00 AM)</h4>
+      <div class="meal-title">Protein Oats + Egg Whites</div>
+      <div class="meal-desc">
+        1 scoop whey isolate stirred into 1/2 cup dry oats (cooked) with cinnamon. Side: 1.5 cups liquid egg whites scrambled with spinach and a splash of hot sauce.
+      </div>
+      <div class="macro-row">
+        <span class="macro-item"><strong>470</strong> cal</span>
+        <span class="macro-item"><strong>58g</strong> protein</span>
+        <span class="macro-item"><strong>35g</strong> carbs</span>
+        <span class="macro-item"><strong>8g</strong> fat</span>
+      </div>
+    </div>
+
+    <!-- Meal 2 -->
+    <div class="meal-card">
+      <h4>Meal 2 — Mid-Morning (9:30 AM)</h4>
+      <div class="meal-title">Chicken & Rice</div>
+      <div class="meal-desc">
+        8 oz grilled chicken breast, diced, with 2/3 cup cooked jasmine rice and 1 cup steamed broccoli. Season with garlic powder, salt, pepper, and a squeeze of lemon.
+      </div>
+      <div class="macro-row">
+        <span class="macro-item"><strong>480</strong> cal</span>
+        <span class="macro-item"><strong>56g</strong> protein</span>
+        <span class="macro-item"><strong>38g</strong> carbs</span>
+        <span class="macro-item"><strong>8g</strong> fat</span>
+      </div>
+    </div>
+
+    <!-- Meal 3 -->
+    <div class="meal-card">
+      <h4>Meal 3 — Lunch (12:30 PM)</h4>
+      <div class="meal-title">Ground Turkey Power Bowl</div>
+      <div class="meal-desc">
+        8 oz 99% lean ground turkey browned with taco seasoning, over 2 cups mixed greens. Top with 1/4 avocado, diced tomato, jalapeños, and 2 tbsp salsa. Side: 1/3 cup black beans.
+      </div>
+      <div class="macro-row">
+        <span class="macro-item"><strong>460</strong> cal</span>
+        <span class="macro-item"><strong>54g</strong> protein</span>
+        <span class="macro-item"><strong>25g</strong> carbs</span>
+        <span class="macro-item"><strong>14g</strong> fat</span>
+      </div>
+    </div>
+
+    <!-- Meal 4 -->
+    <div class="meal-card">
+      <h4>Meal 4 — Dinner (6:00 PM)</h4>
+      <div class="meal-title">Salmon & Roasted Vegetables</div>
+      <div class="meal-desc">
+        7 oz wild-caught salmon fillet, baked with lemon, garlic, and dill. Side: 1.5 cups roasted asparagus and zucchini tossed in 1 tsp olive oil. This is a meal the whole family can eat together.
+      </div>
+      <div class="macro-row">
+        <span class="macro-item"><strong>450</strong> cal</span>
+        <span class="macro-item"><strong>48g</strong> protein</span>
+        <span class="macro-item"><strong>10g</strong> carbs</span>
+        <span class="macro-item"><strong>24g</strong> fat</span>
+      </div>
+    </div>
+
+    <!-- Meal 5 -->
+    <div class="meal-card">
+      <h4>Meal 5 — Evening (8:30 PM)</h4>
+      <div class="meal-title">Casein Pudding + Cottage Cheese</div>
+      <div class="meal-desc">
+        1 scoop casein protein mixed thick with minimal water. Side: 3/4 cup low-fat cottage cheese with a sprinkle of cinnamon. Slow-digesting combo to fuel overnight recovery and muscle protein synthesis while you sleep.
+      </div>
+      <div class="macro-row">
+        <span class="macro-item"><strong>340</strong> cal</span>
+        <span class="macro-item"><strong>50g</strong> protein</span>
+        <span class="macro-item"><strong>12g</strong> carbs</span>
+        <span class="macro-item"><strong>8g</strong> fat</span>
+      </div>
+    </div>
+
+    <!-- Daily Totals -->
+    <div class="stats-grid mt-16">
+      <div class="stat-card">
+        <div class="label">Total Calories</div>
+        <div class="value">2,200</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Total Protein</div>
+        <div class="value">266<span class="unit">g</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Total Carbs</div>
+        <div class="value">120<span class="unit">g</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Total Fats</div>
+        <div class="value">62<span class="unit">g</span></div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <h4>Meal Prep Tips — Family Edition</h4>
+      <ul>
+        <li><strong>Sunday Prep (90 min):</strong> Bake all chicken breasts, cook ground turkey, bake salmon fillets. Roast all vegetables. Cook rice in bulk. Portion into containers.</li>
+        <li>Make it a family activity — kids can wash veggies, your wife can season proteins. Assembly line.</li>
+        <li>Pre-portion oats into jars with cinnamon — just add water in the morning.</li>
+        <li>Keep salsa, hot sauce, and lemon on hand — zero-cal flavor game changers.</li>
+        <li><strong>Water:</strong> 140 oz minimum daily. Get a gallon jug. Carry it everywhere. Mark time goals on it.</li>
+        <li><strong>Electrolytes:</strong> Critical at this deficit — LMNT or similar. 1–2 servings/day.</li>
+      </ul>
+    </div>
+
+    <div class="callout">
+      <h4>Swap Options (keep macros the same)</h4>
+      <ul>
+        <li><strong>Chicken →</strong> 99% lean turkey breast, shrimp, or white fish (same oz)</li>
+        <li><strong>Salmon →</strong> Cod + 1.5 tsp olive oil, tuna steak, or tilapia + avocado</li>
+        <li><strong>Jasmine Rice →</strong> Sweet potato (equal carb grams), or quinoa</li>
+        <li><strong>Egg whites →</strong> 2 whole eggs + 1 cup egg whites</li>
+        <li><strong>Ground turkey →</strong> 96% lean ground beef, bison, or chicken breast</li>
+        <li><strong>Broccoli →</strong> Green beans, Brussels sprouts, cauliflower, zucchini</li>
+      </ul>
+    </div>
+
+    <!-- ═══════════════ WEEKLY SHOPPING LIST ═══════════════ -->
+    <div class="card" style="margin-top: 24px;">
+      <div class="card-header">
+        <h3>Weekly <span>Shopping List</span></h3>
+        <span class="badge green">MEAL PREP</span>
+      </div>
+      <p class="text-sm text-muted mt-8 mb-8">Everything for one week. Quantities for Logan only. Shop Sunday, prep Sunday afternoon.</p>
+
+      <table>
+        <thead>
+          <tr><th>Item</th><th>Qty (7 days)</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="3" style="font-weight: 800; color: #FF6A00; padding-top: 16px; border-bottom: 1px solid #2a2a2a;">PROTEIN</td></tr>
+          <tr>
+            <td class="exercise-name">Chicken Breast (boneless, skinless)</td>
+            <td>3.5 lbs</td>
+            <td class="text-muted text-xs">8oz/day × 7 = 56oz. Account for cooking shrinkage.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">99% Lean Ground Turkey</td>
+            <td>3.5 lbs</td>
+            <td class="text-muted text-xs">8oz/day × 7 = 56oz. Two family packs.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Wild-Caught Salmon Fillets</td>
+            <td>3 lbs</td>
+            <td class="text-muted text-xs">7oz/day × 7 = 49oz. Fresh or frozen.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Liquid Egg Whites</td>
+            <td>3 cartons (32oz each)</td>
+            <td class="text-muted text-xs">1.5 cups/day × 7. Three cartons covers the week.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Low-Fat Cottage Cheese</td>
+            <td>2 large tubs (24oz)</td>
+            <td class="text-muted text-xs">3/4 cup per day for evening snack.</td>
+          </tr>
+
+          <tr><td colspan="3" style="font-weight: 800; color: #FF6A00; padding-top: 16px; border-bottom: 1px solid #2a2a2a;">PROTEIN POWDER</td></tr>
+          <tr>
+            <td class="exercise-name">Whey Protein Isolate</td>
+            <td>1 tub (2 lb)</td>
+            <td class="text-muted text-xs">1 scoop/day in oats. Lasts 2+ weeks.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Casein Protein</td>
+            <td>1 tub (2 lb)</td>
+            <td class="text-muted text-xs">1 scoop/day before bed. Lasts 2+ weeks.</td>
+          </tr>
+
+          <tr><td colspan="3" style="font-weight: 800; color: #FF6A00; padding-top: 16px; border-bottom: 1px solid #2a2a2a;">VEGETABLES & PRODUCE</td></tr>
+          <tr>
+            <td class="exercise-name">Broccoli (fresh crowns)</td>
+            <td>3–4 heads</td>
+            <td class="text-muted text-xs">1 cup/day steamed. Buy crowns for easy prep.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Asparagus</td>
+            <td>2 bunches</td>
+            <td class="text-muted text-xs">For dinner roast rotation.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Zucchini</td>
+            <td>4–5 medium</td>
+            <td class="text-muted text-xs">Roasted with dinner, low-cal volume food.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Baby Spinach</td>
+            <td>1 large container (16oz)</td>
+            <td class="text-muted text-xs">For egg white scrambles.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Mixed Greens</td>
+            <td>2 large containers (10oz each)</td>
+            <td class="text-muted text-xs">2 cups/day for lunch bowls.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Tomatoes</td>
+            <td>4–5</td>
+            <td class="text-muted text-xs">Diced for turkey bowls.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Avocados</td>
+            <td>2–3</td>
+            <td class="text-muted text-xs">1/4 per day. Buy firm.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Jalapeños</td>
+            <td>3–4</td>
+            <td class="text-muted text-xs">For turkey bowls. Optional.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Lemons</td>
+            <td>4–5</td>
+            <td class="text-muted text-xs">For chicken, salmon, and water.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Garlic</td>
+            <td>2 heads</td>
+            <td class="text-muted text-xs">For all proteins and roasted veggies.</td>
+          </tr>
+
+          <tr><td colspan="3" style="font-weight: 800; color: #FF6A00; padding-top: 16px; border-bottom: 1px solid #2a2a2a;">PANTRY & GRAINS</td></tr>
+          <tr>
+            <td class="exercise-name">Old-Fashioned Oats</td>
+            <td>1 canister (18oz)</td>
+            <td class="text-muted text-xs">1/2 cup dry per day. Lasts 2+ weeks.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Jasmine Rice</td>
+            <td>1 bag (2 lb)</td>
+            <td class="text-muted text-xs">2/3 cup cooked per day. Lasts 2+ weeks.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Black Beans (canned, no salt added)</td>
+            <td>3 cans (15oz)</td>
+            <td class="text-muted text-xs">1/3 cup per day. Drain and rinse.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Olive Oil (extra virgin)</td>
+            <td>1 bottle</td>
+            <td class="text-muted text-xs">For roasting. Lasts weeks.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Salsa (fresh or jarred)</td>
+            <td>1 jar (16oz)</td>
+            <td class="text-muted text-xs">2 tbsp/day for turkey bowls. Near zero cal.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Taco Seasoning (low sodium)</td>
+            <td>2 packets</td>
+            <td class="text-muted text-xs">For ground turkey bowls.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Cinnamon</td>
+            <td>1 jar</td>
+            <td class="text-muted text-xs">For oats and cottage cheese. Lasts months.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Hot Sauce</td>
+            <td>1 bottle</td>
+            <td class="text-muted text-xs">Zero cal flavor. Use liberally.</td>
+          </tr>
+
+          <tr><td colspan="3" style="font-weight: 800; color: #FF6A00; padding-top: 16px; border-bottom: 1px solid #2a2a2a;">BEVERAGES & ELECTROLYTES</td></tr>
+          <tr>
+            <td class="exercise-name">Water (gallon jugs or filter)</td>
+            <td>140oz/day target</td>
+            <td class="text-muted text-xs">Get a marked gallon jug. Carry it.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Sugar-Free Electrolyte Mix (LMNT)</td>
+            <td>1 box (30 ct) or 1 tub</td>
+            <td class="text-muted text-xs">1–2 servings/day. Non-negotiable at this deficit.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Coffee (black)</td>
+            <td>1 bag</td>
+            <td class="text-muted text-xs">Pre-workout or morning. Black only — no creamers.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout mt-16">
+        <h4>Prep Day Game Plan (Sunday)</h4>
+        <ul>
+          <li><strong>Step 1:</strong> Season and bake all chicken breasts and salmon fillets (425°F, 20–25 min)</li>
+          <li><strong>Step 2:</strong> While protein bakes — chop broccoli, asparagus, zucchini, toss with olive oil, roast on sheet pans (400°F, 25 min)</li>
+          <li><strong>Step 3:</strong> Brown all ground turkey with taco seasoning in a large skillet</li>
+          <li><strong>Step 4:</strong> Cook rice in bulk — rice cooker makes this brainless</li>
+          <li><strong>Step 5:</strong> Portion oats into 7 jars with cinnamon. Drain and portion black beans.</li>
+          <li><strong>Step 6:</strong> Wash and chop salad greens, tomatoes — store with paper towel</li>
+          <li><strong>Step 7:</strong> Assemble containers — protein + carb + veggie per meal. Label M1–M5 if needed.</li>
+          <li><strong>Total time:</strong> ~90 minutes. Put a game on. Get the family involved.</li>
+        </ul>
+      </div>
+
+      <div class="callout">
+        <h4>Estimated Weekly Grocery Cost</h4>
+        <ul>
+          <li><strong>Protein:</strong> ~$70–90 (chicken, turkey, salmon, egg whites, cottage cheese)</li>
+          <li><strong>Produce:</strong> ~$25–35 (vegetables, avocados, lemons, garlic)</li>
+          <li><strong>Pantry/Grains:</strong> ~$12–18 (oats, rice, beans, oils, seasonings)</li>
+          <li><strong>Beverages/Electrolytes:</strong> ~$15–20 (LMNT, coffee)</li>
+          <li><strong>Weekly total:</strong> ~$120–165 (first week slightly higher for pantry staples)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ SUPPLEMENT PROTOCOL ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">💊</div>
+      <h2>Supplement <span>Protocol</span></h2>
+    </div>
+
+    <div class="protocol-grid">
+      <div class="protocol-card">
+        <h4>Creatine Monohydrate</h4>
+        <div class="dose">5g/day</div>
+        <div class="timing">Any time — mix into oats, shake, or water</div>
+        <div class="notes">Most researched supplement ever. Strength, power, hydration, cognitive benefits. No loading phase needed — just 5g every day, forever. Safe, cheap, effective.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Potassium (Citrate or Gluconate)</h4>
+        <div class="dose">99–200mg supplemental, 2x/day</div>
+        <div class="timing">With meals</div>
+        <div class="notes">At a big deficit with high water intake, potassium gets depleted. Prevents cramping, supports heart rhythm, and helps with the "flat" feeling. Get the rest from food (salmon, avocado, black beans are all potassium-rich).</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Sodium (Electrolytes / LMNT)</h4>
+        <div class="dose">1,000–2,000mg supplemental/day</div>
+        <div class="timing">Morning + intra-workout</div>
+        <div class="notes">LMNT packets are the easiest play. At this deficit and water intake, you need more sodium than you think. Prevents brain fog, fatigue, dizziness, and headaches. Don't fear salt — you're not eating processed food.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Whey Protein Isolate</h4>
+        <div class="dose">1 scoop/day (25–30g protein)</div>
+        <div class="timing">Morning — in oats</div>
+        <div class="notes">Convenient protein delivery. Isolate over concentrate for lower calories/carbs per scoop.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Casein Protein</h4>
+        <div class="dose">1 scoop/day (25g protein)</div>
+        <div class="timing">Before bed — mixed thick</div>
+        <div class="notes">Slow-release for 6–8 hours of overnight muscle protein synthesis. This is when you grow.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Omega-3 Fish Oil</h4>
+        <div class="dose">2–3g EPA/DHA daily</div>
+        <div class="timing">With meals (split AM/PM)</div>
+        <div class="notes">Anti-inflammatory, joint support, heart health. Essential at your training volume. Get a quality brand — check the EPA/DHA per cap, not just "fish oil mg."</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Magnesium Glycinate</h4>
+        <div class="dose">400mg/day</div>
+        <div class="timing">Before bed</div>
+        <div class="notes">Sleep quality, muscle recovery, stress reduction. Most people are deficient. Glycinate form absorbs best and won't wreck your stomach.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Vitamin D3 + K2</h4>
+        <div class="dose">5,000 IU D3 + 100mcg K2</div>
+        <div class="timing">Morning with a fat-containing meal</div>
+        <div class="notes">Immune function, testosterone support, bone health. If you're inside engineering all day, you need this. K2 directs calcium to bones, not arteries.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Zinc (Optional)</h4>
+        <div class="dose">30mg/day</div>
+        <div class="timing">Before bed (with magnesium)</div>
+        <div class="notes">Supports testosterone production, immune function, and recovery. Especially useful if pursuing TRT conversation — optimize natural production first.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ COMPOUND RECOMMENDATIONS ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">🧬</div>
+      <h2>Compound <span>Recommendations</span></h2>
+      <span class="badge red">PHYSICIAN GUIDED</span>
+    </div>
+
+    <!-- Retatrutide -->
+    <div class="recomp-banner" style="border-color: rgba(239,68,68,0.3); background: linear-gradient(135deg, rgba(239,68,68,0.08), rgba(255,106,0,0.08));">
+      <h3>Retatrutide (Reta) — The Metabolic Game-Changer</h3>
+      <p>Retatrutide is a triple-hormone receptor agonist (GIP/GLP-1/Glucagon) that represents the most powerful metabolic compound available. At 300 lbs with 60 lbs to lose, Reta is the difference between a grind and a transformation. It crushes appetite, torches visceral fat, improves every metabolic marker, and makes adherence to this meal plan feel effortless.</p>
+    </div>
+
+    <div class="card">
+      <h3>Retatrutide — <span>Why It Matters for Logan</span></h3>
+      <ul class="checklist mt-8">
+        <li><strong>Appetite Suppression:</strong> The single biggest reason recomps fail is hunger. Reta eliminates this problem — you'll have to remind yourself to eat, not fight cravings.</li>
+        <li><strong>Visceral Fat Targeting:</strong> The glucagon receptor activation specifically targets deep abdominal fat — the metabolically dangerous stuff that drives inflammation, insulin resistance, and cardiovascular risk.</li>
+        <li><strong>Metabolic Rate Preservation:</strong> Unlike pure caloric restriction, Reta's glucagon activation increases resting metabolic rate — you burn more at rest even in a deficit.</li>
+        <li><strong>Clinical Results:</strong> Phase 2 trials showed up to 24% body weight reduction at 48 weeks. At your starting weight, that could mean 70+ lbs.</li>
+        <li><strong>Cholesterol/Lipids:</strong> Significant reductions in LDL, triglycerides, and inflammatory markers across all dose groups.</li>
+        <li><strong>Liver Health:</strong> Direct hepatic fat oxidation via glucagon receptor — dramatically reduces liver fat content.</li>
+      </ul>
+    </div>
+
+    <div class="callout">
+      <h4>Reta Titration Protocol (Discuss with Your Doctor)</h4>
+      <ul>
+        <li><strong>Week 1–4:</strong> 1mg/week subcutaneous injection</li>
+        <li><strong>Week 5–8:</strong> 2mg/week</li>
+        <li><strong>Week 9–12:</strong> 4mg/week</li>
+        <li><strong>Week 13+:</strong> 8mg/week (maintenance) or as tolerated</li>
+        <li>Inject once weekly — same day each week. Rotate injection sites (abdomen, thigh).</li>
+        <li>GI side effects (nausea, reduced appetite) are most common during titration. They subside. Stay hydrated.</li>
+      </ul>
+    </div>
+
+    <!-- Tesofensine -->
+    <div class="card" style="margin-top: 24px;">
+      <h3>Tesofensine — <span>The Thermogenic Accelerator</span></h3>
+      <ul class="checklist mt-8">
+        <li><strong>Mechanism:</strong> Triple monoamine reuptake inhibitor — blocks reuptake of serotonin, dopamine, and noradrenaline. This increases resting metabolic rate, suppresses appetite through a completely different pathway than Reta, and enhances motivation/mood.</li>
+        <li><strong>Why It Pairs with Reta:</strong> Reta works through gut hormones (GLP-1/GIP/Glucagon). Tesofensine works through brain neurotransmitters. Two completely different mechanisms = synergistic fat loss without diminishing returns.</li>
+        <li><strong>Thermogenic Effect:</strong> Clinical trials showed ~160 kcal/day increase in resting metabolic rate — that's an extra pound of fat loss every 3 weeks just from existing.</li>
+        <li><strong>Mood & Energy:</strong> The dopamine reuptake inhibition helps with the mental side of a big cut — better focus, motivation, and drive. Huge for an engineer who needs cognitive performance.</li>
+        <li><strong>Dosing:</strong> 0.25–0.5mg/day oral. Start at 0.25mg. Take in the morning — it can affect sleep if taken late.</li>
+        <li><strong>Monitoring:</strong> Can increase heart rate and blood pressure modestly. Track both weekly. Discuss with your physician.</li>
+      </ul>
+    </div>
+
+    <!-- TRT -->
+    <div class="card" style="margin-top: 24px; border-color: rgba(255,106,0,0.3);">
+      <h3>TRT (Testosterone Replacement) — <span>Discuss with Your Doctor</span></h3>
+      <ul class="checklist mt-8">
+        <li><strong>Why to Consider:</strong> At 300 lbs in your mid-30s, there's a high probability your testosterone is suboptimal. Excess body fat converts testosterone to estrogen via aromatase. Sedentary desk work, stress, and poor sleep compound this. Low T = harder fat loss, less muscle building, worse mood, lower energy.</li>
+        <li><strong>Step 1 — Get Labs:</strong> Request a comprehensive hormone panel: Total Testosterone, Free Testosterone, SHBG, Estradiol (sensitive), LH, FSH, Prolactin, TSH, Free T3/T4, CBC, CMP, Lipid Panel, HbA1c, Fasting Insulin.</li>
+        <li><strong>What to Look For:</strong> Total T below 400 ng/dL and/or Free T in the bottom quartile of the range — especially with symptoms (fatigue, brain fog, low libido, difficulty losing fat) — makes a strong case for TRT.</li>
+        <li><strong>If Prescribed:</strong> Typical protocol is 100–200mg testosterone cypionate per week, split into 2 injections (SubQ). Your doctor will dial in dosing based on labs at 6-week follow-up.</li>
+        <li><strong>Impact on Recomp:</strong> Optimized testosterone is a force multiplier — it dramatically accelerates muscle protein synthesis, improves fat oxidation, enhances recovery, and elevates mood/motivation. Combined with your training program and peptide stack, this completes the hormonal foundation.</li>
+        <li><strong>Important:</strong> Get bloodwork FIRST. Do not start TRT without a physician's supervision and baseline labs. We want data, not guesses.</li>
+      </ul>
+    </div>
+
+    <div class="callout mt-16">
+      <h4>Recommended Lab Panel — Get This Done Week 1</h4>
+      <ul>
+        <li><strong>Hormones:</strong> Total Testosterone, Free Testosterone, SHBG, Estradiol (sensitive), LH, FSH, Prolactin, DHEA-S, IGF-1</li>
+        <li><strong>Thyroid:</strong> TSH, Free T3, Free T4</li>
+        <li><strong>Metabolic:</strong> Fasting Glucose, Fasting Insulin, HbA1c, CMP (kidney/liver function)</li>
+        <li><strong>Lipids:</strong> Total Cholesterol, LDL, HDL, Triglycerides, Lp(a)</li>
+        <li><strong>Blood:</strong> CBC with differential</li>
+        <li><strong>Inflammation:</strong> hs-CRP, Homocysteine</li>
+        <li><strong>Vitamins:</strong> Vitamin D (25-OH), B12, Ferritin</li>
+        <li>Request this from your PCP or use a direct-to-consumer lab (Marek Health, Quest, LabCorp). Get a baseline NOW so we can track every marker as the program progresses.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══════════════ ADDITIONAL RECOMMENDATIONS ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">💡</div>
+      <h2>Coach <span>Recommendations</span></h2>
+    </div>
+
+    <div class="card">
+      <h3>Lifestyle Optimization — <span>The 20% That Drives 80% of Results</span></h3>
+      <ul class="checklist mt-8">
+        <li><strong>Sleep 7–8 Hours:</strong> This is where muscle is built and fat is burned. With a young family, this is hard — but it's the single most impactful variable. No screens 30 min before bed. Magnesium + casein pudding = your nighttime ritual. Dark, cool room.</li>
+        <li><strong>Standing Desk or Desk Converter:</strong> You're an engineer — you're sitting 8–10 hours. Get a standing desk converter (~$200–300) and alternate 30 min sitting / 30 min standing. This alone can burn 200+ extra calories/day via NEAT.</li>
+        <li><strong>Walking Meetings:</strong> Take every call you can while walking. AirPods + walk = steps + productivity. This is how you hit 10K steps without carving out extra time.</li>
+        <li><strong>Train Early or at Lunch:</strong> With a young family, evening workouts get blown up by dinner, bath time, bedtime routines. Lock in a morning or lunch slot that's non-negotiable. 60 minutes, in and out.</li>
+        <li><strong>Weigh Daily, Track Weekly:</strong> Step on the scale every morning (fasted, after bathroom). Don't react to daily fluctuations. Track the weekly average. That's your real number.</li>
+        <li><strong>Progress Photos:</strong> Same angle, same lighting, same time (morning, fasted) — every 2 weeks. At 300 lbs with muscle memory, you will see changes faster than you think. These photos will be your motivation when the scale stalls.</li>
+        <li><strong>InBody Scan:</strong> Get a baseline InBody scan (free at most gyms) in Week 1. Repeat monthly. This tracks lean mass vs fat mass — the scale doesn't tell the whole story during a recomp.</li>
+        <li><strong>Stress Management:</strong> Engineering + young family = high cortisol. Chronically elevated cortisol blocks fat loss and promotes visceral fat storage. The training, sleep, and peptide stack all help — but also consider 5–10 min of breathwork or a short walk when stress peaks.</li>
+      </ul>
+    </div>
+
+    <div class="card" style="margin-top: 12px;">
+      <h3>What to Expect — <span>Setting Honest Expectations</span></h3>
+      <ul class="checklist mt-8">
+        <li><strong>Week 1–2:</strong> Water weight drops fast (5–8 lbs). You'll feel hungry before Reta fully kicks in. Muscles will be sore — you haven't done this in a while. This is normal. Push through.</li>
+        <li><strong>Week 3–4:</strong> Reta titrating up, appetite fading. Energy stabilizing. Strength increasing rapidly (muscle memory). You'll start to feel like yourself again.</li>
+        <li><strong>Week 5–8:</strong> This is where it gets fun. Clothes fitting different. Face thinning. People start noticing. Lifts jumping every session. The athlete is waking back up.</li>
+        <li><strong>Week 9–12:</strong> Deep transformation territory. 20–30 lbs down. Significant lean mass regained. You look and feel like a different person. Labs should show dramatic improvements.</li>
+        <li><strong>Week 13–24:</strong> We'll adjust macros, training volume, and compound dosing based on progress. Target: 240 lbs at a body composition that makes the old 300 unrecognizable.</li>
+        <li><strong>The Scale Lie:</strong> There will be weeks where the scale doesn't move but your waist shrinks and your lifts go up. That's recomp — you're losing fat and building muscle simultaneously. Trust the process. Trust the photos. Trust the measurements.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══════════════ WEEKLY SCHEDULE ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">📅</div>
+      <h2>Weekly <span>Schedule</span></h2>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Day</th><th>Training</th><th>Cardio</th><th>Steps</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="fw-700 text-accent">Monday</td>
+            <td>Chest & Triceps</td>
+            <td>15 min incline walk post-workout</td>
+            <td>10,000</td>
+            <td>Weigh-in (fasted AM)</td>
+          </tr>
+          <tr>
+            <td class="fw-700 text-accent">Tuesday</td>
+            <td>Legs</td>
+            <td>15 min incline walk post-workout</td>
+            <td>10,000</td>
+            <td>Heaviest day — eat Meal 2 (chicken + rice) pre-workout</td>
+          </tr>
+          <tr>
+            <td class="fw-700 text-accent">Wednesday</td>
+            <td>Shoulders</td>
+            <td>15 min incline walk post-workout</td>
+            <td>10,000</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td class="fw-700 text-accent">Thursday</td>
+            <td>Back & Biceps</td>
+            <td>15 min incline walk post-workout</td>
+            <td>10,000</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td class="fw-700 text-accent">Friday</td>
+            <td>Extended Cardio + Core</td>
+            <td>45+ min (see Day 5)</td>
+            <td>10,000</td>
+            <td>No heavy lifting — conditioning focus</td>
+          </tr>
+          <tr>
+            <td class="fw-700 text-accent">Saturday</td>
+            <td>Active Recovery</td>
+            <td>Family activity</td>
+            <td>12,000–15,000</td>
+            <td>Outside. With the family. Have fun.</td>
+          </tr>
+          <tr>
+            <td class="fw-700 text-accent">Sunday</td>
+            <td>Active Recovery + Meal Prep</td>
+            <td>Walk / play with kids</td>
+            <td>12,000–15,000</td>
+            <td>Meal prep afternoon. Grocery shop AM.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════ DAILY CHECK-IN ═══════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">📱</div>
+      <h2>Daily <span>Check-In</span></h2>
+    </div>
+
+    <div class="card" style="text-align: center; padding: 32px;">
+      <h3 style="margin-bottom: 12px;">Log Your Daily Check-In</h3>
+      <p class="text-sm text-muted mb-8">Every day. No excuses. It takes 2 minutes. This is how we track progress and make adjustments. The data is everything.</p>
+      <a href="fbf://checkin" style="display: inline-block; background: linear-gradient(135deg, #FF6A00, #FF8533); color: #0a0a0a; font-weight: 800; font-size: 16px; padding: 14px 40px; border-radius: 10px; text-decoration: none; letter-spacing: 0.5px;">CHECK IN NOW</a>
+      <p class="text-xs text-muted mt-8">Opens in the FBF app</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════ DAILY TEMPERATURE CHECK ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">🌡️</div>
+      <h2>Daily <span>Temperature Check</span></h2>
+    </div>
+
+    <div class="card">
+      <h3>What Is a <span>Temperature Check?</span></h3>
+      <p class="text-sm text-muted mt-8">Your daily check-in isn't just busywork — it's a metabolic temperature reading. Every data point you log (weight, sleep, energy, hunger, training performance, mood) feeds into a pattern that tells us whether your metabolism is humming or stalling. Here's what we're watching:</p>
+
+      <table class="mt-16">
+        <thead>
+          <tr><th>Metric</th><th>Green (On Track)</th><th>Yellow (Watch)</th><th>Red (Adjust)</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="exercise-name">Weekly Weight Trend</td>
+            <td>Losing 2–4 lbs/week avg</td>
+            <td>Stalled 1 week</td>
+            <td>Stalled 2+ weeks or gaining</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Energy Level</td>
+            <td>Stable, good workouts</td>
+            <td>Dipping in afternoon</td>
+            <td>Consistently low, brain fog</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Sleep Quality</td>
+            <td>7+ hrs, waking rested</td>
+            <td>6–7 hrs, decent</td>
+            <td>Under 6 hrs, waking groggy</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Hunger Level</td>
+            <td>Manageable, Reta working</td>
+            <td>Moderate hunger by evening</td>
+            <td>Constant hunger, cravings</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Training Performance</td>
+            <td>Weights increasing or stable</td>
+            <td>Weights plateaued</td>
+            <td>Weights dropping, no energy</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Mood</td>
+            <td>Motivated, positive</td>
+            <td>Some irritability</td>
+            <td>Low mood, no motivation</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Steps</td>
+            <td>Hitting 10K+ daily</td>
+            <td>7–9K most days</td>
+            <td>Under 7K consistently</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout mt-16">
+        <h4>How We Use This Data</h4>
+        <p>If you're in the green across the board — we don't change anything. If yellow flags pop up, we investigate (sleep? stress? hydration?). If reds appear, we adjust — macros, training volume, compound dosing, or recovery strategies. The daily check-in is the data that drives every decision. Without it, we're guessing. With it, we're engineering your transformation.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ BASELINE ASSESSMENTS ═══════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🔬</div>
+      <h2>Baseline <span>Assessments</span></h2>
+    </div>
+
+    <div class="card">
+      <h3>Week 1 — <span>Get These Done</span></h3>
+      <ul class="checklist mt-8">
+        <li><strong>Blood Lab Panel:</strong> See recommended panel above. Get this done ASAP — we need baseline numbers before Reta and Tesofensine start. Request from PCP or order direct through Quest/LabCorp/Marek.</li>
+        <li><strong>InBody Scan:</strong> Free at most gyms (ask the front desk). Tracks lean mass, fat mass, water, and segmental analysis. This is your TRUE baseline — more useful than the scale alone. Repeat monthly.</li>
+        <li><strong>Blood Pressure:</strong> Get a baseline reading. Track weekly once Tesofensine starts. Home cuff is fine — Omron brand recommended.</li>
+        <li><strong>Resting Heart Rate:</strong> Note your baseline. Apple Watch or chest strap. Track weekly.</li>
+        <li><strong>Progress Photos:</strong> Front, side, back. Relaxed and flexed. Same lighting, same angle. Do this every 2 weeks. You'll thank yourself in 12 weeks.</li>
+        <li><strong>Measurements:</strong> Neck, chest, waist (at navel), hips, thigh, arm. Record and repeat bi-weekly.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══════════════ FOOTER ═══════════════ -->
+  <div class="footer">
+    <div class="brand">FORGED BY FREEDOM</div>
+    <div class="tagline">BUILD THE BODY · FREE THE MIND</div>
+    <div class="disclaimer">
+      This program is for informational purposes and does not constitute medical advice. All compound and peptide recommendations should be discussed with and supervised by a licensed physician. Always consult your doctor before starting any new supplement, medication, or exercise program. Forged by Freedom LLC is a coaching service and does not prescribe, diagnose, or treat medical conditions.
+      <br><br>
+      © 2026 Forged by Freedom LLC · All Rights Reserved · forgedbyfreedom.com · info@forgedbyfreedom.com
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,22 +1,31 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { colors, fontSize, spacing, borderRadius } from '../../lib/theme';
-import { MOOD_LABELS } from '../../lib/constants';
+import { MOOD_LABELS, STRESS_LABELS } from '../../lib/constants';
 
 interface MoodSelectorProps {
   value: number;
   onChange: (v: number) => void;
   label?: string;
   max?: number;
+  inverted?: boolean;
 }
 
-export function MoodSelector({ value, onChange, label = 'Mood', max = 10 }: MoodSelectorProps) {
+export function MoodSelector({ value, onChange, label = 'Mood', max = 10, inverted = false }: MoodSelectorProps) {
   const getMoodColor = (v: number) => {
+    if (inverted) {
+      // For stress: low = green (good), high = red (bad)
+      if (v <= 3) return colors.green;
+      if (v <= 6) return colors.yellow;
+      return colors.red;
+    }
     if (v <= 2) return colors.red;
     if (v <= 4) return colors.accent;
     if (v <= 5) return colors.yellow;
     return colors.green;
   };
+
+  const labels = inverted ? STRESS_LABELS : MOOD_LABELS;
 
   return (
     <View style={styles.container}>
@@ -24,7 +33,7 @@ export function MoodSelector({ value, onChange, label = 'Mood', max = 10 }: Mood
         <Text style={styles.label}>{label}</Text>
         <Text style={[styles.value, { color: getMoodColor(value) }]}>
           {value}/{max}
-          {MOOD_LABELS[value] ? ` - ${MOOD_LABELS[value]}` : ''}
+          {labels[value] ? ` - ${labels[value]}` : ''}
         </Text>
       </View>
       <View style={styles.row}>

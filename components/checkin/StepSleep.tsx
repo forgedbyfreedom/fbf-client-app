@@ -2,11 +2,23 @@ import React, { useContext } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { CheckinContext } from '../../providers/CheckinProvider';
 import { Input } from '../ui/Input';
+import { HealthKitImportButton } from './HealthKitImportButton';
+import { useHealthKit } from '../../hooks/useHealthKit';
 import { colors, fontSize, spacing, borderRadius } from '../../lib/theme';
 import { SLEEP_QUALITY_LABELS } from '../../lib/constants';
 
 export function StepSleep() {
   const { form, updateForm } = useContext(CheckinContext);
+  const { available, requestPermission, getTodaySleep } = useHealthKit();
+
+  const handleHealthImport = async () => {
+    await requestPermission();
+    const sleep = await getTodaySleep();
+    const updates: Record<string, any> = {};
+    if (sleep.hours > 0) updates.sleep_hours = sleep.hours;
+    if (sleep.quality > 0) updates.sleep_quality = sleep.quality;
+    if (Object.keys(updates).length > 0) updateForm(updates);
+  };
 
   const adjustHours = (delta: number) => {
     const next = Math.max(0, Math.min(24, form.sleep_hours + delta));
@@ -15,6 +27,14 @@ export function StepSleep() {
 
   return (
     <View>
+      {available && (
+        <HealthKitImportButton
+          onImport={handleHealthImport}
+          label="Import sleep from Apple Health"
+          dataTypes="sleep duration, sleep stages"
+        />
+      )}
+
       <Text style={styles.sectionTitle}>Sleep Duration</Text>
       <View style={styles.hourControl}>
         <TouchableOpacity

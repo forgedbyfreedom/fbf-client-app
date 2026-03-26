@@ -2,7 +2,7 @@
   "expo": {
     "name": "Forged by Freedom",
     "slug": "fbf-client-app",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -15,9 +15,16 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.forgedbyfreedom.client",
-      "buildNumber": "8",
+      "buildNumber": "28",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "Allow Forged by Freedom to access your camera to scan food barcodes for nutrition tracking.",
+        "NSHealthShareUsageDescription": "Forged by Freedom reads your health data (steps, sleep, heart rate, body temperature, workouts) to auto-fill your daily check-in.",
+        "NSHealthUpdateUsageDescription": "Forged by Freedom does not write any data to Apple Health.",
+        "NSLocationWhenInUseUsageDescription": "Forged by Freedom uses your location to find nearby gyms and fitness facilities."
+      },
+      "entitlements": {
+        "com.apple.developer.healthkit": true
       }
     },
     "android": {
@@ -30,7 +37,7 @@
       "package": "com.forgedbyfreedom.client",
       "permissions": [
         "android.permission.RECORD_AUDIO",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.CAMERA"
       ],
       "versionCode": 2
     },
@@ -56,8 +63,23 @@
         }
       ],
       "expo-font",
-      "expo-audio",
-      "expo-asset"
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow Forged by Freedom to use your microphone for voice notes.",
+          "enableBackgroundPlayback": false,
+          "enableBackgroundRecording": false
+        }
+      ],
+      "expo-asset",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Forged by Freedom to access your camera to scan food barcodes for nutrition tracking."
+        }
+      ],
+      "expo-web-browser",
+      "expo-sharing"
     ],
     "extra": {
       "router": {},

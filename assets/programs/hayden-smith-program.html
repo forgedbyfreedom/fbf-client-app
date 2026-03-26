@@ -1,0 +1,1866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hayden Smith – FBF Coaching Program</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    @media print {
+      body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      .page-break { page-break-before: always; }
+      .no-print { display: none !important; }
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #0a0a0a;
+      color: #ffffff;
+      line-height: 1.6;
+    }
+
+    .program {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 40px;
+    }
+
+    /* ── Header / Cover ── */
+    .cover {
+      text-align: center;
+      padding: 60px 0 48px;
+      border-bottom: 2px solid #FF6A00;
+      margin-bottom: 48px;
+    }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .logo-circle {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, #FF6A00, #FF8533);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 900;
+      color: #0a0a0a;
+    }
+
+    .brand-name {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: #FF6A00;
+    }
+
+    .cover h1 {
+      font-size: 42px;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+
+    .cover h1 span { color: #FF6A00; }
+
+    .cover .subtitle {
+      font-size: 18px;
+      color: #888;
+      margin-bottom: 24px;
+    }
+
+    .client-badge {
+      display: inline-block;
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 16px 32px;
+      margin-top: 8px;
+    }
+
+    .client-badge .name {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .client-badge .date {
+      font-size: 13px;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    /* ── Sections ── */
+    .section {
+      margin-bottom: 48px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    .section-icon {
+      width: 36px;
+      height: 36px;
+      background: rgba(255, 106, 0, 0.15);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .section-header h2 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .section-header h2 span { color: #FF6A00; }
+
+    /* ── Stats Grid ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-card .label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .stat-card .value {
+      font-size: 24px;
+      font-weight: 800;
+      color: #FF6A00;
+    }
+
+    .stat-card .unit {
+      font-size: 13px;
+      color: #888;
+      font-weight: 400;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 12px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .card h3 {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .card h3 span { color: #FF6A00; }
+
+    .badge {
+      display: inline-block;
+      background: rgba(255, 106, 0, 0.15);
+      color: #FF6A00;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge.green {
+      background: rgba(34, 197, 94, 0.15);
+      color: #22c55e;
+    }
+
+    .badge.gold {
+      background: rgba(212, 160, 23, 0.15);
+      color: #D4A017;
+    }
+
+    .badge.red {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 8px 12px;
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    tbody td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #1a1a1a;
+      vertical-align: top;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .exercise-name {
+      font-weight: 600;
+    }
+
+    .exercise-note {
+      font-size: 12px;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    /* ── Meal Plan ── */
+    .meal-card {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 12px;
+    }
+
+    .meal-card h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #FF6A00;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .meal-card .meal-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .meal-card .meal-desc {
+      font-size: 13px;
+      color: #ccc;
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+
+    .macro-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .macro-item {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .macro-item strong {
+      color: #fff;
+    }
+
+    /* ── Supplement / Protocol Cards ── */
+    .protocol-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+    }
+
+    .protocol-card {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 18px;
+    }
+
+    .protocol-card h4 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .protocol-card .dose {
+      font-size: 13px;
+      color: #FF6A00;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .protocol-card .timing {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .protocol-card .notes {
+      font-size: 12px;
+      color: #666;
+      margin-top: 6px;
+      font-style: italic;
+    }
+
+    /* ── Callout Box ── */
+    .callout {
+      background: rgba(255, 106, 0, 0.08);
+      border: 1px solid rgba(255, 106, 0, 0.25);
+      border-left: 4px solid #FF6A00;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 16px 0;
+    }
+
+    .callout h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #FF6A00;
+      margin-bottom: 6px;
+    }
+
+    .callout p, .callout li {
+      font-size: 13px;
+      color: #ccc;
+      line-height: 1.6;
+    }
+
+    .callout ul {
+      padding-left: 18px;
+      margin-top: 6px;
+    }
+
+    /* ── Recomp Highlight ── */
+    .recomp-banner {
+      background: linear-gradient(135deg, rgba(255,106,0,0.12), rgba(212,160,23,0.08));
+      border: 1px solid rgba(255,106,0,0.3);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .recomp-banner h3 {
+      font-size: 20px;
+      font-weight: 800;
+      color: #FF6A00;
+      margin-bottom: 8px;
+    }
+
+    .recomp-banner p {
+      font-size: 14px;
+      color: #ccc;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ── Lists ── */
+    .checklist {
+      list-style: none;
+      padding: 0;
+    }
+
+    .checklist li {
+      padding: 8px 0;
+      font-size: 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .checklist li::before {
+      content: '▸';
+      color: #FF6A00;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .text-muted { color: #888; }
+    .text-accent { color: #FF6A00; }
+    .text-sm { font-size: 13px; }
+    .text-xs { font-size: 12px; }
+    .fw-700 { font-weight: 700; }
+    .mt-8 { margin-top: 8px; }
+    .mt-16 { margin-top: 16px; }
+    .mb-8 { margin-bottom: 8px; }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 40px 0 20px;
+      border-top: 1px solid #2a2a2a;
+      margin-top: 48px;
+    }
+
+    .footer .brand {
+      font-size: 16px;
+      font-weight: 800;
+      color: #FF6A00;
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+
+    .footer .tagline {
+      font-size: 12px;
+      color: #555;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .footer .disclaimer {
+      font-size: 11px;
+      color: #444;
+      margin-top: 16px;
+      line-height: 1.5;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
+</head>
+<body>
+<div class="program">
+
+  <!-- ═══════════════ COVER ═══════════════ -->
+  <div class="cover">
+    <div class="logo-row">
+      <div class="logo-circle">F</div>
+      <div>
+        <div class="brand-name">FORGED BY FREEDOM</div>
+      </div>
+    </div>
+    <h1>Custom <span>Coaching Program</span></h1>
+    <p class="subtitle">Comprehensive Recomposition Protocol</p>
+    <div class="client-badge">
+      <div class="name">Hayden Smith</div>
+      <div class="date">Program Start: March 24, 2026</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ CLIENT OVERVIEW ═══════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">📋</div>
+      <h2>Client <span>Overview</span></h2>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="label">Height</div>
+        <div class="value">6'2"</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Current Weight</div>
+        <div class="value">235 <span class="unit">lbs</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Goal Weight</div>
+        <div class="value">205–210 <span class="unit">lbs</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">To Lose</div>
+        <div class="value">25–30 <span class="unit">lbs</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <ul class="checklist">
+        <li><strong>Activity Level:</strong>&nbsp; Very active — BJJ athlete (3–4x/week)</li>
+        <li><strong>Primary Sport:</strong>&nbsp; Brazilian Jiu-Jitsu</li>
+        <li><strong>Training Goal:</strong>&nbsp; Lean, functional, mat-ready at 205–210 lbs</li>
+        <li><strong>Diet Approach:</strong>&nbsp; Moderate carb (higher for BJJ glycogen demands), high protein</li>
+        <li><strong>Weigh-In Day:</strong>&nbsp; Monday mornings (fasted, before eating)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══════════════ DAILY TARGETS ═══════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🎯</div>
+      <h2>Daily <span>Targets</span></h2>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="label">Calories</div>
+        <div class="value">2,400</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Protein</div>
+        <div class="value">240<span class="unit">g</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Carbs</div>
+        <div class="value">180<span class="unit">g</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Fats</div>
+        <div class="value">70<span class="unit">g</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Daily Steps</div>
+        <div class="value">10,000</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Water</div>
+        <div class="value">120+ <span class="unit">oz</span></div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <h4>BJJ Nutrition Note</h4>
+      <p>As a very active BJJ athlete, your carb intake is intentionally higher than a standard recomp protocol. Rolling depletes glycogen rapidly — underfueling carbs will tank your performance on the mat, slow recovery, and increase injury risk. Carbs are timed around training and rolling sessions for maximum performance benefit. On rest days, you can pull carbs down to ~140g and redistribute those calories or simply eat slightly under target.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════ RECOMP PROTOCOL ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">🔥</div>
+      <h2>FBF <span>Recomp Protocol</span></h2>
+      <span class="badge gold">HIGHLY RECOMMENDED</span>
+    </div>
+
+    <div class="recomp-banner">
+      <h3>Body Recomposition — The Optimal Path</h3>
+      <p>Rather than a pure cut, we strongly recommend the FBF Recomp Protocol. At 235 lbs with a high training volume (lifting + BJJ), you are in an ideal position to simultaneously lose body fat and build lean muscle. This approach preserves performance on the mat, avoids muscle loss from aggressive dieting, and produces a more dramatic visual transformation while keeping you strong and competitive.</p>
+    </div>
+
+    <div class="card">
+      <h3>How the <span>Recomp Protocol</span> Works</h3>
+      <ul class="checklist mt-8">
+        <li><strong>High Protein Anchor (240g/day):</strong> Protein stays constant every single day. At 235 lbs with high training volume, you need ~1g/lb to drive muscle protein synthesis and recovery from both lifting and BJJ.</li>
+        <li><strong>Strategic Carb Placement:</strong> Carbs are timed around training and rolling sessions (pre/post) to fuel performance and glycogen replenishment. Higher carbs on BJJ days, slightly lower on rest days.</li>
+        <li><strong>Moderate Caloric Deficit:</strong> 2,400 calories keeps you in a deficit for fat loss (~400–500 below maintenance given your activity level) without compromising mat performance or recovery.</li>
+        <li><strong>Progressive Overload Training:</strong> The 4-day lifting program builds the strength and muscle that makes you dangerous on the mat. BJJ alone won't build the structural strength you need.</li>
+        <li><strong>BJJ Synergy:</strong> Your rolling sessions provide high-intensity cardio, grip endurance, and sport-specific conditioning. Combined with structured lifting, this is the ultimate recomp environment.</li>
+        <li><strong>Peptide Support:</strong> The recommended peptide stack accelerates fat oxidation, supports joint/tissue recovery (critical for grapplers), and enhances sleep quality — all drivers of recomp.</li>
+      </ul>
+    </div>
+
+    <div class="callout mt-16">
+      <h4>Expected Timeline</h4>
+      <p>Weeks 1–4: Body adapts, strength begins climbing, scale may not move much (this is normal — recomp is happening). Weeks 5–12: Visible changes in the mirror, clothes fit differently, strength PRs weekly, rolling feels easier at a lighter weight. Weeks 12–24: 25–30 lbs of fat lost, significant lean mass gained. Target weight of 205–210 lbs achieved with dramatically improved body composition, mat performance, and gas tank.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════ TRAINING PROGRAM ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">🏋️</div>
+      <h2>Training <span>Program</span></h2>
+      <span class="badge">4-Day Upper/Lower</span>
+    </div>
+
+    <p class="text-sm text-muted mb-8">Progressive overload: when you hit the top of the rep range with good form on all sets, increase weight by the smallest increment available next session. Log every set in the app. This program is designed to complement your BJJ training — grip work, rotational core, posterior chain emphasis, and shoulder prehab are built into every session.</p>
+
+    <!-- Day 1 -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Day 1 — <span>Upper Body Push + Shoulder Prehab</span></h3>
+        <span class="badge">Monday</span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Rest</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="exercise-name">Dumbbell Incline Press</div>
+              <div class="exercise-note">30–45° incline, full stretch at bottom, controlled tempo</div>
+            </td>
+            <td>4</td><td>8–10</td><td>90s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Machine Chest Press</div>
+              <div class="exercise-note">Slow eccentric (3 sec down), squeeze at top</div>
+            </td>
+            <td>3</td><td>10–12</td><td>75s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Dumbbell Shoulder Press (Seated)</div>
+              <div class="exercise-note">Neutral or standard grip — protect shoulders for rolling</div>
+            </td>
+            <td>3</td><td>10–12</td><td>75s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Cable Lateral Raise</div>
+              <div class="exercise-note">Behind body, controlled tempo, light weight</div>
+            </td>
+            <td>3</td><td>12–15</td><td>60s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Tricep Rope Pushdown</div>
+              <div class="exercise-note">Squeeze and spread at bottom</div>
+            </td>
+            <td>3</td><td>12–15</td><td>60s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Face Pulls (Rope)</div>
+              <div class="exercise-note">External rotation at top — shoulder health/prehab. Critical for grapplers.</div>
+            </td>
+            <td>3</td><td>15–20</td><td>45s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Band Pull-Aparts</div>
+              <div class="exercise-note">Rear delt/rotator cuff activation. Superset with face pulls.</div>
+            </td>
+            <td>3</td><td>20</td><td>30s</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Day 2 -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Day 2 — <span>Lower Body + Posterior Chain & Core</span></h3>
+        <span class="badge">Tuesday</span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Rest</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="exercise-name">Leg Press</div>
+              <div class="exercise-note">Feet shoulder width, mid-platform, full depth</div>
+            </td>
+            <td>4</td><td>10–12</td><td>2 min</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Romanian Dumbbell Deadlift</div>
+              <div class="exercise-note">Dumbbells along sides, hinge deep, feel hamstrings stretch — BJJ hip hinge power</div>
+            </td>
+            <td>4</td><td>8–10</td><td>90s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Walking Dumbbell Lunges</div>
+              <div class="exercise-note">Controlled, single-leg stability for grappling balance</div>
+            </td>
+            <td>3</td><td>12/leg</td><td>75s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Leg Curl (Lying or Seated)</div>
+              <div class="exercise-note">Pause 1 sec at contraction, slow eccentric</div>
+            </td>
+            <td>3</td><td>12–15</td><td>60s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Cable Pallof Press</div>
+              <div class="exercise-note">Anti-rotation core — directly transfers to framing and guard retention</div>
+            </td>
+            <td>3</td><td>12/side</td><td>60s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Hanging Knee Raises</div>
+              <div class="exercise-note">Controlled, no swinging — grip endurance bonus</div>
+            </td>
+            <td>3</td><td>12–15</td><td>60s</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Day 3 -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Day 3 — <span>Upper Body Pull + Grip Strength</span></h3>
+        <span class="badge">Thursday</span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Rest</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="exercise-name">Lat Pulldown (Wide Grip)</div>
+              <div class="exercise-note">Full stretch at top, drive elbows down — lat strength for guard pulling</div>
+            </td>
+            <td>4</td><td>8–10</td><td>90s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Seated Cable Row (Towel Grip)</div>
+              <div class="exercise-note">Wrap a gym towel over the handle — grip strength for gi grips</div>
+            </td>
+            <td>3</td><td>10–12</td><td>75s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Dumbbell Row (Single Arm)</div>
+              <div class="exercise-note">Bench supported, full stretch, squeeze at top</div>
+            </td>
+            <td>3</td><td>10–12</td><td>75s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Machine Rear Delt Fly</div>
+              <div class="exercise-note">Light weight, squeeze and hold — shoulder stability</div>
+            </td>
+            <td>3</td><td>15–20</td><td>45s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Dumbbell Bicep Curl</div>
+              <div class="exercise-note">Alternating, slight supination</div>
+            </td>
+            <td>3</td><td>10–12</td><td>60s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Farmer's Carries</div>
+              <div class="exercise-note">Heavy dumbbells, 40–60 yard walks — grip endurance is king in BJJ</div>
+            </td>
+            <td>3</td><td>40–60 yds</td><td>90s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Dead Hangs</div>
+              <div class="exercise-note">Hang from pull-up bar as long as possible — grip endurance + shoulder decompression</div>
+            </td>
+            <td>3</td><td>30–60s</td><td>60s</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Day 4 -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Day 4 — <span>Lower Body + Rotational Core & Hip Mobility</span></h3>
+        <span class="badge">Friday</span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Rest</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="exercise-name">Hip Thrust (Machine or Barbell)</div>
+              <div class="exercise-note">Pause 2 sec at top, full hip extension — bridging power for BJJ escapes</div>
+            </td>
+            <td>4</td><td>10–12</td><td>90s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Bulgarian Split Squat (Dumbbells)</div>
+              <div class="exercise-note">Rear foot on bench, controlled descent — single-leg strength for base</div>
+            </td>
+            <td>3</td><td>10/leg</td><td>75s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Leg Extension</div>
+              <div class="exercise-note">Pause 1 sec at top, slow eccentric</div>
+            </td>
+            <td>3</td><td>12–15</td><td>60s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Standing Calf Raise (Machine)</div>
+              <div class="exercise-note">Full ROM, 2 sec pause at bottom stretch</div>
+            </td>
+            <td>4</td><td>10–12</td><td>60s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Cable Woodchops</div>
+              <div class="exercise-note">High-to-low and low-to-high — rotational power for sweeps and throws</div>
+            </td>
+            <td>3</td><td>12/side</td><td>60s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Neck Curls / Neck Harness</div>
+              <div class="exercise-note">Light weight, high reps — neck strength is injury prevention for grapplers</div>
+            </td>
+            <td>3</td><td>15–20</td><td>45s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">90/90 Hip Switches (Bodyweight)</div>
+              <div class="exercise-note">Hip mobility flow — 90/90 position, switch sides smoothly. Do as finisher.</div>
+            </td>
+            <td>3</td><td>10/side</td><td>30s</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <h4>BJJ-Specific Training Notes</h4>
+      <ul>
+        <li><strong>Grip Strength:</strong> Towel grip rows, farmer's carries, and dead hangs are built into the program. Your grip is your first line of offense and defense on the mat.</li>
+        <li><strong>Neck Strengthening:</strong> Neck curls protect against guillotines, cranks, and general grappling forces. Start light and build gradually.</li>
+        <li><strong>Rotational Core:</strong> Pallof presses and cable woodchops develop the anti-rotation and rotational power needed for sweeps, guard retention, and scrambles.</li>
+        <li><strong>Hip Mobility:</strong> 90/90 switches at the end of lower body days keep your hips open for guard work. Add thoracic spine rotations during warm-ups.</li>
+        <li><strong>Shoulder Prehab:</strong> Face pulls and band pull-aparts every upper body day. Your shoulders take enormous stress from gripping, framing, and being stacked. Prehab prevents missed mat time.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══════════════ CARDIO PROTOCOL ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">🫁</div>
+      <h2>Cardio <span>Protocol</span></h2>
+      <span class="badge">BJJ-Integrated</span>
+    </div>
+
+    <div class="card">
+      <h3>BJJ as <span>Primary Cardio</span></h3>
+      <ul class="checklist mt-8">
+        <li><strong>BJJ Training (3–4x/week):</strong> Your rolling sessions ARE your high-intensity cardio. A 90-minute BJJ class with live rounds is equivalent to or exceeds any HIIT protocol. Do not add additional HIIT on BJJ days.</li>
+        <li><strong>Non-BJJ Days — Incline Walk:</strong> 20–25 min incline treadmill walk (10–12% incline, 3.0–3.5 mph). Low-impact, promotes recovery blood flow, burns fat without taxing your CNS or joints.</li>
+        <li><strong>Daily Step Target:</strong> 10,000 steps minimum. Walk the dog, take calls walking, park far. Steps are your fat-loss foundation.</li>
+        <li><strong>Weekends (Active Recovery):</strong> Light rolling, open mat, mobility/yoga, higher step goals (12,000+ steps). No intense lifting on weekends.</li>
+      </ul>
+    </div>
+
+    <div class="callout">
+      <h4>Hydration & Electrolytes — CRITICAL for BJJ Athletes</h4>
+      <p>You sweat more than almost any other athlete category. A 90-minute rolling session can dump 2–4 lbs of water weight. Dehydration kills performance, cognition, and recovery. <strong>120+ oz water daily</strong> is your minimum. On BJJ days, add an extra LMNT packet before or during class. Weigh yourself before and after rolling — every pound lost is ~16oz of water you need to replace.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════ MEAL PLAN ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">🍽️</div>
+      <h2>Meal <span>Plan</span></h2>
+      <span class="badge">High Protein · BJJ Performance</span>
+    </div>
+
+    <p class="text-sm text-muted mb-8">All meals are designed for easy batch prep. Family-friendly recipes that scale easily. Carbs are concentrated around training and rolling for maximum performance. Adjust portions on rest days (pull carbs down ~40g, keep protein the same).</p>
+
+    <!-- Meal 1 -->
+    <div class="meal-card">
+      <h4>Meal 1 — Morning (7:00 AM)</h4>
+      <div class="meal-title">Egg White & Turkey Scramble with Oats</div>
+      <div class="meal-desc">
+        1 cup liquid egg whites + 4 oz 99% lean ground turkey scrambled with spinach and bell peppers. Side: 1/2 cup dry oats cooked with cinnamon and 1 tbsp almond butter.
+      </div>
+      <div class="macro-row">
+        <span class="macro-item"><strong>520</strong> cal</span>
+        <span class="macro-item"><strong>52g</strong> protein</span>
+        <span class="macro-item"><strong>38g</strong> carbs</span>
+        <span class="macro-item"><strong>14g</strong> fat</span>
+      </div>
+    </div>
+
+    <!-- Meal 2 -->
+    <div class="meal-card">
+      <h4>Meal 2 — Pre-Training (11:00 AM)</h4>
+      <div class="meal-title">Chicken & Rice Power Bowl</div>
+      <div class="meal-desc">
+        8 oz grilled chicken breast over 3/4 cup jasmine rice. Top with 1/4 avocado, salsa, and a squeeze of lime. Side: steamed broccoli (1 cup).
+      </div>
+      <div class="macro-row">
+        <span class="macro-item"><strong>560</strong> cal</span>
+        <span class="macro-item"><strong>56g</strong> protein</span>
+        <span class="macro-item"><strong>48g</strong> carbs</span>
+        <span class="macro-item"><strong>12g</strong> fat</span>
+      </div>
+    </div>
+
+    <!-- Meal 3 -->
+    <div class="meal-card">
+      <h4>Meal 3 — Post-Training (3:00 PM)</h4>
+      <div class="meal-title">Whey Protein Shake + Banana + Rice Cakes</div>
+      <div class="meal-desc">
+        1.5 scoops whey protein isolate blended with water and ice. 1 medium banana. 2 plain rice cakes with a thin spread of honey. Fast-digesting carbs to replenish glycogen after rolling or lifting.
+      </div>
+      <div class="macro-row">
+        <span class="macro-item"><strong>380</strong> cal</span>
+        <span class="macro-item"><strong>42g</strong> protein</span>
+        <span class="macro-item"><strong>48g</strong> carbs</span>
+        <span class="macro-item"><strong>4g</strong> fat</span>
+      </div>
+    </div>
+
+    <!-- Meal 4 -->
+    <div class="meal-card">
+      <h4>Meal 4 — Dinner (6:30 PM)</h4>
+      <div class="meal-title">Salmon with Roasted Sweet Potato & Vegetables</div>
+      <div class="meal-desc">
+        7 oz wild-caught salmon fillet, baked with lemon and garlic. Side: 1 medium sweet potato (baked or cubed/roasted), 1.5 cups roasted broccoli and asparagus tossed in 1 tsp olive oil.
+      </div>
+      <div class="macro-row">
+        <span class="macro-item"><strong>580</strong> cal</span>
+        <span class="macro-item"><strong>50g</strong> protein</span>
+        <span class="macro-item"><strong>38g</strong> carbs</span>
+        <span class="macro-item"><strong>22g</strong> fat</span>
+      </div>
+    </div>
+
+    <!-- Meal 5 / Snack -->
+    <div class="meal-card">
+      <h4>Meal 5 — Evening (9:00 PM)</h4>
+      <div class="meal-title">Casein Pudding + Peanut Butter</div>
+      <div class="meal-desc">
+        1.5 scoops casein protein mixed thick with minimal water. Stir in 1.5 tbsp natural peanut butter. Slow-digesting to fuel overnight recovery and tissue repair from BJJ.
+      </div>
+      <div class="macro-row">
+        <span class="macro-item"><strong>340</strong> cal</span>
+        <span class="macro-item"><strong>40g</strong> protein</span>
+        <span class="macro-item"><strong>8g</strong> carbs</span>
+        <span class="macro-item"><strong>18g</strong> fat</span>
+      </div>
+    </div>
+
+    <!-- Daily Totals -->
+    <div class="stats-grid mt-16">
+      <div class="stat-card">
+        <div class="label">Total Calories</div>
+        <div class="value">2,380</div>
+        <div class="text-xs text-muted">~2,400 target</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Total Protein</div>
+        <div class="value">240<span class="unit">g</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Total Carbs</div>
+        <div class="value">180<span class="unit">g</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Total Fats</div>
+        <div class="value">70<span class="unit">g</span></div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <h4>Meal Prep Tips</h4>
+      <ul>
+        <li>Sunday: batch-cook chicken breasts, ground turkey, and salmon. Roast all vegetables and sweet potatoes for the week.</li>
+        <li>Pre-portion oats in jars with dry cinnamon — just add water in the morning.</li>
+        <li>Cook rice in bulk (3–4 cups dry). Portion into containers. Reheat with a splash of water.</li>
+        <li>Keep bananas and rice cakes stocked for quick post-training fuel.</li>
+        <li>Family-friendly: all meals scale easily. Double protein and carb portions for family prep.</li>
+        <li><strong>Water:</strong> Minimum 120 oz daily. On BJJ days, aim for 140+ oz. Keep a gallon jug visible.</li>
+      </ul>
+    </div>
+
+    <div class="callout">
+      <h4>Swap Options (variety without re-counting macros)</h4>
+      <ul>
+        <li><strong>Chicken →</strong> 93% lean ground turkey, shrimp, or white fish (same oz)</li>
+        <li><strong>Salmon →</strong> Cod + 1 tsp olive oil, or tuna steak</li>
+        <li><strong>Egg whites →</strong> 1.5 scoops whey + 2 whole eggs</li>
+        <li><strong>Jasmine rice →</strong> Sweet potato, quinoa, or whole wheat pasta (same cooked volume)</li>
+        <li><strong>Sweet potato →</strong> 3/4 cup jasmine rice or 1/2 cup butternut squash</li>
+        <li><strong>Broccoli →</strong> Zucchini, green beans, Brussels sprouts</li>
+        <li><strong>Banana →</strong> 1 cup berries or 2 tbsp honey in shake</li>
+      </ul>
+    </div>
+
+    <!-- ═══════════════ WEEKLY SHOPPING LIST ═══════════════ -->
+    <div class="card" style="margin-top: 24px;">
+      <div class="card-header">
+        <h3>Weekly <span>Shopping List</span></h3>
+        <span class="badge green">MEAL PREP</span>
+      </div>
+      <p class="text-sm text-muted mt-8 mb-8">Everything you need for one week of meal prep. Quantities are for Hayden only — adjust if prepping for the family. Shop Sunday, prep Sunday afternoon.</p>
+
+      <table>
+        <thead>
+          <tr><th>Item</th><th>Qty (7 days)</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="3" style="font-weight: 800; color: #FF6A00; padding-top: 16px; border-bottom: 1px solid #2a2a2a;">PROTEIN</td></tr>
+          <tr>
+            <td class="exercise-name">Chicken Breast (boneless, skinless)</td>
+            <td>3.5 lbs</td>
+            <td class="text-muted text-xs">8oz/day × 7 = ~56oz. Buy ~3.5 lbs to account for shrinkage.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">99% Lean Ground Turkey</td>
+            <td>2 lbs</td>
+            <td class="text-muted text-xs">4oz/day × 7 = 28oz. One family-size pack.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Wild-Caught Salmon Fillets</td>
+            <td>3 lbs</td>
+            <td class="text-muted text-xs">7oz/day × 7 = 49oz. Fresh or frozen — both work.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Liquid Egg Whites</td>
+            <td>2 cartons (32oz each)</td>
+            <td class="text-muted text-xs">1 cup/day × 7. Two standard cartons covers the week.</td>
+          </tr>
+
+          <tr><td colspan="3" style="font-weight: 800; color: #FF6A00; padding-top: 16px; border-bottom: 1px solid #2a2a2a;">DAIRY & PROTEIN POWDER</td></tr>
+          <tr>
+            <td class="exercise-name">Whey Protein Isolate</td>
+            <td>1 tub (2 lb)</td>
+            <td class="text-muted text-xs">1.5 scoops/day. Lasts ~2 weeks.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Casein Protein</td>
+            <td>1 tub (2 lb)</td>
+            <td class="text-muted text-xs">1.5 scoops/day. Lasts ~2 weeks.</td>
+          </tr>
+
+          <tr><td colspan="3" style="font-weight: 800; color: #FF6A00; padding-top: 16px; border-bottom: 1px solid #2a2a2a;">VEGETABLES & PRODUCE</td></tr>
+          <tr>
+            <td class="exercise-name">Broccoli (fresh crowns)</td>
+            <td>4–5 heads</td>
+            <td class="text-muted text-xs">Used in lunch bowls and dinner sides. Buy crowns for easy chopping.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Asparagus</td>
+            <td>2 bunches</td>
+            <td class="text-muted text-xs">Pairs with broccoli for dinner roast.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Baby Spinach</td>
+            <td>1 large container (16oz)</td>
+            <td class="text-muted text-xs">For morning scrambles. Pre-washed saves time.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Bell Peppers (any color)</td>
+            <td>4–5 peppers</td>
+            <td class="text-muted text-xs">For morning scramble. Dice and store in container.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Sweet Potatoes</td>
+            <td>5–6 medium</td>
+            <td class="text-muted text-xs">1 medium/day for dinner. Cube and roast in batch.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Avocados</td>
+            <td>2–3</td>
+            <td class="text-muted text-xs">1/4 per day in lunch bowl. Buy firm, they'll ripen through the week.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Bananas</td>
+            <td>7–8</td>
+            <td class="text-muted text-xs">1/day for post-training shake. Buy slightly green.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Lemons</td>
+            <td>3–4</td>
+            <td class="text-muted text-xs">For salmon prep and lunch bowls.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Limes</td>
+            <td>3–4</td>
+            <td class="text-muted text-xs">For chicken rice bowls.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Garlic (whole head)</td>
+            <td>2 heads</td>
+            <td class="text-muted text-xs">For salmon + roasted veggies. Mince in bulk.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Salsa (jar)</td>
+            <td>1 jar (16oz)</td>
+            <td class="text-muted text-xs">For chicken rice bowls. Low-sugar variety.</td>
+          </tr>
+
+          <tr><td colspan="3" style="font-weight: 800; color: #FF6A00; padding-top: 16px; border-bottom: 1px solid #2a2a2a;">PANTRY & GRAINS</td></tr>
+          <tr>
+            <td class="exercise-name">Jasmine Rice</td>
+            <td>2 lb bag</td>
+            <td class="text-muted text-xs">3/4 cup cooked per day. One bag lasts 2+ weeks.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Old-Fashioned Oats</td>
+            <td>1 canister (18oz)</td>
+            <td class="text-muted text-xs">1/2 cup dry per day. One canister lasts 2+ weeks.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Rice Cakes (plain)</td>
+            <td>1 package</td>
+            <td class="text-muted text-xs">2/day post-training. Lasts 1–2 weeks.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Honey</td>
+            <td>1 bottle (12oz)</td>
+            <td class="text-muted text-xs">Thin spread on rice cakes post-training. Lasts weeks.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Olive Oil (extra virgin)</td>
+            <td>1 bottle</td>
+            <td class="text-muted text-xs">For roasting veggies. Lasts multiple weeks.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Cinnamon (ground)</td>
+            <td>1 jar</td>
+            <td class="text-muted text-xs">For oats. Lasts months.</td>
+          </tr>
+
+          <tr><td colspan="3" style="font-weight: 800; color: #FF6A00; padding-top: 16px; border-bottom: 1px solid #2a2a2a;">NUTS & BUTTERS</td></tr>
+          <tr>
+            <td class="exercise-name">Almond Butter (natural)</td>
+            <td>1 jar (16oz)</td>
+            <td class="text-muted text-xs">1 tbsp/day in oats. No added sugar. Lasts 2+ weeks.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Natural Peanut Butter</td>
+            <td>1 jar (16oz)</td>
+            <td class="text-muted text-xs">1.5 tbsp/day in casein pudding. Ingredients: peanuts, salt.</td>
+          </tr>
+
+          <tr><td colspan="3" style="font-weight: 800; color: #FF6A00; padding-top: 16px; border-bottom: 1px solid #2a2a2a;">BEVERAGES & ELECTROLYTES</td></tr>
+          <tr>
+            <td class="exercise-name">LMNT Electrolyte Packets</td>
+            <td>2 boxes (30-ct each)</td>
+            <td class="text-muted text-xs">1–2 servings/day. CRITICAL for BJJ athletes. Use before/during rolling.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Water (gallon jugs or filter)</td>
+            <td>120+ oz/day target</td>
+            <td class="text-muted text-xs">Keep a gallon jug visible. 140+ oz on BJJ days.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Coffee (ground or beans)</td>
+            <td>1 bag (12oz)</td>
+            <td class="text-muted text-xs">Optional. Lasts 1–2 weeks.</td>
+          </tr>
+
+          <tr><td colspan="3" style="font-weight: 800; color: #FF6A00; padding-top: 16px; border-bottom: 1px solid #2a2a2a;">MEAL PREP SUPPLIES</td></tr>
+          <tr>
+            <td class="exercise-name">Glass Meal Prep Containers</td>
+            <td>14–20 containers</td>
+            <td class="text-muted text-xs">2–3 per day (lunch + dinner + extra). Glass reheats better than plastic.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Parchment Paper or Foil</td>
+            <td>1 roll</td>
+            <td class="text-muted text-xs">Line sheet pans for easy roasting cleanup.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout mt-16">
+        <h4>Prep Day Game Plan (Sunday)</h4>
+        <ul>
+          <li><strong>Step 1:</strong> Season and bake all chicken breasts and salmon fillets (425°F, 20–25 min)</li>
+          <li><strong>Step 2:</strong> While protein bakes — cube sweet potatoes, chop broccoli and asparagus, toss with olive oil, roast on separate sheet pans (400°F, 25 min)</li>
+          <li><strong>Step 3:</strong> Brown all ground turkey with diced peppers and spinach in a large skillet. Season with salt, pepper, garlic powder.</li>
+          <li><strong>Step 4:</strong> Cook rice in bulk (3–4 cups dry). Portion into 7 containers.</li>
+          <li><strong>Step 5:</strong> Portion oats into 7 jars with cinnamon. Slice bananas day-of (don't pre-slice).</li>
+          <li><strong>Step 6:</strong> Assemble containers — protein + veggies + carb source per meal. Label if helpful.</li>
+          <li><strong>Total time:</strong> ~90 minutes for a full week of meals. Faster with help.</li>
+        </ul>
+      </div>
+
+      <div class="callout">
+        <h4>Estimated Weekly Grocery Cost</h4>
+        <ul>
+          <li><strong>Protein:</strong> ~$60–80 (chicken, turkey, salmon, egg whites)</li>
+          <li><strong>Produce:</strong> ~$25–35 (vegetables, avocados, sweet potatoes, bananas, lemons)</li>
+          <li><strong>Pantry/Grains:</strong> ~$12–18 (rice, oats, rice cakes, honey, oils — many last multiple weeks)</li>
+          <li><strong>Nuts/Butters:</strong> ~$8–12 (almond butter, peanut butter — last 2+ weeks)</li>
+          <li><strong>Beverages/Electrolytes:</strong> ~$15–20 (LMNT, coffee)</li>
+          <li><strong>Weekly total:</strong> ~$120–165 for one person (first week slightly higher for pantry staples)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ SUPPLEMENT PROTOCOL ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">💊</div>
+      <h2>Supplement <span>Protocol</span></h2>
+    </div>
+
+    <div class="protocol-grid">
+      <div class="protocol-card">
+        <h4>Creatine Monohydrate</h4>
+        <div class="dose">5g/day</div>
+        <div class="timing">Any time (with meal)</div>
+        <div class="notes">Most researched supplement in existence. Strength, hydration, cognitive benefits. Improves power output for explosive grappling movements.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>LMNT Electrolytes</h4>
+        <div class="dose">1–2 servings/day</div>
+        <div class="timing">Morning + before/during BJJ</div>
+        <div class="notes">CRITICAL for BJJ athletes who sweat heavily. Sodium, potassium, magnesium. Prevents cramping, brain fog, and performance drop during rolling. Non-negotiable.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Potassium</h4>
+        <div class="dose">99–200mg 2x/day</div>
+        <div class="timing">With meals (AM + PM)</div>
+        <div class="notes">Additional potassium support beyond LMNT. Prevents cramping during intense rolling sessions. Essential for athletes in a caloric deficit.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Whey Protein Isolate</h4>
+        <div class="dose">1–1.5 scoops/day (25–38g protein)</div>
+        <div class="timing">Post-training shake</div>
+        <div class="notes">Fast-absorbing for post-training recovery. Low-carb isolate preferred.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Casein Protein</h4>
+        <div class="dose">1.5 scoops/day (38g protein)</div>
+        <div class="timing">Before bed</div>
+        <div class="notes">Slow-release for overnight recovery & muscle protein synthesis. Especially important for combat athletes with high tissue repair demands.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Omega-3 Fish Oil</h4>
+        <div class="dose">2–3g EPA/DHA daily</div>
+        <div class="timing">With meals (split dose)</div>
+        <div class="notes">Anti-inflammatory, joint support, brain health. Grapplers need this for joint longevity.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Magnesium Glycinate</h4>
+        <div class="dose">400mg/day</div>
+        <div class="timing">Before bed</div>
+        <div class="notes">Sleep quality, recovery, muscle relaxation. Most people are deficient. Helps with post-BJJ muscle tension.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Vitamin D3 + K2</h4>
+        <div class="dose">5,000 IU D3 + 100mcg K2</div>
+        <div class="timing">Morning with fat-containing meal</div>
+        <div class="notes">Immune function, bone health, testosterone support. Essential for athletes training at high intensity.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Zinc (Optional)</h4>
+        <div class="dose">30mg/day</div>
+        <div class="timing">Before bed (with magnesium)</div>
+        <div class="notes">Immune support, testosterone production, recovery. Important for athletes with high training volume. Take on an empty stomach.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ PEPTIDE PROTOCOL ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">🧬</div>
+      <h2>Peptide <span>Protocol</span></h2>
+      <span class="badge gold">FBF RECOMP STACK</span>
+    </div>
+
+    <div class="recomp-banner">
+      <h3>Recommended Recomp Peptide Stack</h3>
+      <p>This peptide combination is the backbone of the FBF Recomp Protocol. It enhances fat burning, dramatically improves recovery (critical for BJJ athletes), deepens sleep, and accelerates tissue repair from the daily micro-trauma of grappling. All peptides are administered via subcutaneous (SubQ) injection only.</p>
+    </div>
+
+    <div class="protocol-grid">
+      <div class="protocol-card">
+        <h4>CJC-1295 / Ipamorelin</h4>
+        <div class="dose">300mcg CJC / 300mcg Ipamorelin</div>
+        <div class="timing">Subcutaneous injection — before bed (fasted 2+ hours)</div>
+        <div class="notes">Growth hormone releasing peptide combo. Enhances deep sleep, accelerates fat loss, supports lean muscle growth. The cornerstone of the recomp stack. Does not interfere with natural GH pulsatility. <strong>BJJ Relevance:</strong> Improved recovery between sessions means you can train harder and more frequently. Better sleep = faster central nervous system recovery after intense rolling.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>BPC-157</h4>
+        <div class="dose">250–500mcg/day</div>
+        <div class="timing">Subcutaneous injection — AM or split AM/PM</div>
+        <div class="notes">HUGE for BJJ athletes. Accelerates tissue repair, tendon/ligament healing, gut health, and joint recovery. Grapplers put enormous stress on fingers, wrists, shoulders, elbows, and knees. BPC-157 speeds repair of all connective tissue. This is your #1 longevity peptide for combat sports. Can be injected near the site of injury for localized benefit.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Tesamorelin</h4>
+        <div class="dose">2mg/day</div>
+        <div class="timing">Subcutaneous injection — before bed (fasted)</div>
+        <div class="notes">FDA-approved GHRH analog. Specifically targets visceral (belly) fat reduction. Ideal for recomp — preserves lean mass while reducing the most dangerous fat compartment. Synergistic with CJC/Ipamorelin for enhanced GH release. <strong>BJJ Relevance:</strong> Better power-to-weight ratio on the mat without sacrificing strength.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Thymosin Alpha-1</h4>
+        <div class="dose">1.6mg 2x/week</div>
+        <div class="timing">Subcutaneous injection — any time</div>
+        <div class="notes">Immune modulator. BJJ gyms are petri dishes — staph, ringworm, and respiratory infections are constant risks. Thymosin Alpha-1 enhances immune resilience and T-cell function. <strong>BJJ Relevance:</strong> Constant skin-to-skin contact and shared mats mean your immune system needs every advantage.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>PT-141 (Bremelanotide)</h4>
+        <div class="dose">1–2mg as needed</div>
+        <div class="timing">Subcutaneous injection — 1-2 hours before desired effect</div>
+        <div class="notes">Melanocortin receptor agonist for sexual wellness and libido enhancement. Works centrally via the nervous system rather than vascularly. Use as needed, not daily. Do not exceed 2mg per dose or use more than 8 doses per month.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Thymosin Beta-4 (TB-500)</h4>
+        <div class="dose">2.5–5mg 2x/week</div>
+        <div class="timing">Subcutaneous injection — AM or PM</div>
+        <div class="notes">Powerful tissue repair, anti-inflammatory, and flexibility-enhancing peptide. Promotes angiogenesis and cell migration to injury sites. <strong>BJJ Relevance:</strong> Perfect for grapplers — helps repair the constant micro-tears in muscles, tendons, and ligaments from rolling. Improves flexibility and range of motion for guard play and submissions. Synergistic with BPC-157 for accelerated healing.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>GHK-Cu</h4>
+        <div class="dose">1–2mg/day</div>
+        <div class="timing">Subcutaneous injection — AM</div>
+        <div class="notes">Copper peptide for skin rejuvenation, collagen synthesis, and wound healing. Stimulates production of glycosaminoglycans, decorin, and other structural proteins. <strong>BJJ Relevance:</strong> Accelerates healing of mat burns, gi rash, and skin abrasions that are constant in grappling. Supports connective tissue integrity long-term.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Epithalon</h4>
+        <div class="dose">5–10mg/day SubQ (10–20 day cycles)</div>
+        <div class="timing">Subcutaneous injection — AM or before bed</div>
+        <div class="notes">Telomere lengthening peptide. Activates telomerase to protect chromosomal integrity. Anti-aging, improved sleep quality, and enhanced melatonin production. Run in 10–20 day cycles, then take 4–6 months off. <strong>BJJ Relevance:</strong> Better sleep quality = faster recovery. Longevity peptide for athletes who want to train into their 40s, 50s, and beyond.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Selank</h4>
+        <div class="dose">250–500mcg/day</div>
+        <div class="timing">Subcutaneous injection ONLY — NOT nasal</div>
+        <div class="notes">Anxiolytic and cognitive-enhancing peptide. Modulates GABA, serotonin, and dopamine. Reduces anxiety without sedation or cognitive impairment. Administered via SubQ injection only. <strong>BJJ Relevance:</strong> Competition anxiety management — stay calm and focused under pressure. Enhances strategic thinking during matches without the fog of traditional anti-anxiety compounds.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Semax</h4>
+        <div class="dose">200–600mcg/day</div>
+        <div class="timing">Subcutaneous injection ONLY — NOT nasal</div>
+        <div class="notes">Nootropic peptide derived from ACTH. Enhances BDNF (brain-derived neurotrophic factor), improves memory, focus, and neuroprotection. Administered via SubQ injection only. <strong>BJJ Relevance:</strong> BJJ is chess with your body — Semax sharpens pattern recognition, reaction time, and the ability to chain techniques. Ideal for drilling and competition prep.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>MOTS-c</h4>
+        <div class="dose">5–10mg SubQ 3x/week</div>
+        <div class="timing">Subcutaneous injection — AM, preferably on training days</div>
+        <div class="notes">Mitochondrial-derived peptide and exercise mimetic. Activates AMPK, improves insulin sensitivity, enhances fatty acid oxidation, and optimizes metabolic function. <strong>BJJ Relevance:</strong> Improves muscular endurance and metabolic efficiency — critical for 5-minute rounds. Helps your cells produce energy more efficiently so you don't gas out during late rounds.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>AOD-9604</h4>
+        <div class="dose">300mcg/day</div>
+        <div class="timing">Subcutaneous injection — AM on empty stomach</div>
+        <div class="notes">Modified fragment of human growth hormone (HGH fragment 176-191). Specifically stimulates lipolysis and inhibits lipogenesis without affecting blood sugar or growth. <strong>BJJ Relevance:</strong> Clean fat loss without muscle catabolism — make weight for competition while maintaining strength and mat performance. Stacks well with Tesamorelin for enhanced body composition.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Dihexa</h4>
+        <div class="dose">10–20mg SubQ 3x/week</div>
+        <div class="timing">Subcutaneous injection — AM</div>
+        <div class="notes"><strong>Research peptide — discuss with physician.</strong> Potent cognitive enhancer, reported to be 10 million times more potent than BDNF at forming new synaptic connections. Supports neuroplasticity and memory. <strong>BJJ Relevance:</strong> Accelerates learning of new techniques and positional concepts. Enhances the neural pathways that make movements automatic under pressure.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>NAD+ (Injectable)</h4>
+        <div class="dose">50–100mg SubQ or IV</div>
+        <div class="timing">Subcutaneous injection — AM (IV via clinic)</div>
+        <div class="notes">Nicotinamide adenine dinucleotide — essential coenzyme for cellular energy production, DNA repair, and sirtuin activation. Anti-aging at the cellular level. <strong>BJJ Relevance:</strong> Faster recovery from training, improved cellular repair after hard rolling sessions. Combats the accelerated aging that high-volume training can cause. Supports mitochondrial function for sustained energy on the mat.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Pentosan Polysulfate (PPS)</h4>
+        <div class="dose">2–3mg/kg SubQ weekly</div>
+        <div class="timing">Subcutaneous injection — once weekly</div>
+        <div class="notes">Semi-synthetic polysaccharide with potent chondroprotective properties. Promotes joint cartilage repair, stimulates synovial fluid production, and supports intervertebral disc regeneration. <strong>BJJ Relevance:</strong> Extremely relevant for grapplers — constant guard passing pressure, stacking, and spinal compression degrade cartilage and discs over time. PPS directly addresses the joint and spinal wear that ends BJJ careers. Protects knees, hips, and spine.</div>
+      </div>
+    </div>
+
+    <!-- Layering Schedule -->
+    <div class="callout mt-16">
+      <h4>Peptide Layering Schedule</h4>
+      <p style="margin-bottom: 8px;">Don't start everything at once. Layer peptides in over 8 weeks to assess tolerance and response:</p>
+      <ul>
+        <li><strong>Weeks 1–2:</strong> CJC-1295/Ipamorelin + BPC-157 — establish the GH + recovery foundation</li>
+        <li><strong>Weeks 3–4:</strong> Add Tesamorelin + TB-500 — layer in visceral fat targeting and deep tissue repair</li>
+        <li><strong>Weeks 5–6:</strong> Add GHK-Cu + Epithalon cycle (10–20 days) — collagen, anti-aging, sleep optimization</li>
+        <li><strong>Weeks 7–8:</strong> Add MOTS-c + AOD-9604 — metabolic optimization and additional fat loss</li>
+        <li><strong>Layer in others as desired:</strong> Selank/Semax for competition prep, PT-141 as needed, Thymosin Alpha-1 for immune support, NAD+ for cellular energy, PPS for joint/cartilage protection, Dihexa for cognitive goals</li>
+      </ul>
+    </div>
+
+    <div class="callout mt-16">
+      <h4>Important Peptide Notes</h4>
+      <ul>
+        <li>All peptides are administered via subcutaneous (SubQ) injection ONLY — no nasal sprays for any peptide</li>
+        <li>Follow the layering schedule above to assess individual response and tolerance</li>
+        <li>Store all peptides refrigerated. Reconstitute with bacteriostatic water only</li>
+        <li>Rotate injection sites (abdomen, thigh, glute) to prevent lipodystrophy</li>
+        <li>BPC-157 and TB-500 can be injected near the site of injury/pain for localized benefit (e.g., shoulder, knee, elbow)</li>
+        <li>Epithalon is run in cycles (10–20 days on, 4–6 months off) — do not run continuously</li>
+        <li>Dihexa is a research peptide — use under physician guidance only</li>
+        <li>NAD+ can be administered SubQ at home or via IV infusion at a clinic for higher bioavailability</li>
+        <li>Coordinate with your physician — provide this protocol sheet at your next appointment</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══════════════ COMPOUND RECOMMENDATIONS ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">💬</div>
+      <h2>Compound <span>Recommendations</span></h2>
+      <span class="badge red">PHYSICIAN GUIDED</span>
+    </div>
+
+    <p class="text-sm text-muted mb-8">The following compounds are worth discussing with your physician. These are not self-prescribed — they require medical supervision, lab monitoring, and a doctor's guidance. Bring this document to your next appointment.</p>
+
+    <!-- Retatrutide -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Retatrutide <span>(Reta)</span></h3>
+        <span class="badge red">DISCUSS WITH DOC</span>
+      </div>
+
+      <div class="recomp-banner" style="border-color: rgba(239,68,68,0.3); background: linear-gradient(135deg, rgba(239,68,68,0.08), rgba(255,106,0,0.08));">
+        <h3>Next-Generation Triple Agonist (GIP/GLP-1/Glucagon)</h3>
+        <p>Retatrutide is a triple-hormone receptor agonist with clinical data showing profound improvements across nearly every metabolic marker. For BJJ athletes, it offers body composition improvement without sacrificing strength, cardio capacity, or mat performance.</p>
+      </div>
+
+      <h3 class="mt-16">Why Reta Matters for <span>BJJ Athletes</span></h3>
+      <ul class="checklist mt-8">
+        <li><strong>Body composition without performance loss:</strong> Unlike aggressive cutting, Reta helps shed fat while preserving lean mass and strength — you get lighter without getting weaker</li>
+        <li><strong>Visceral fat targeting:</strong> The glucagon receptor activation specifically targets the deep abdominal fat, improving your power-to-weight ratio on the mat</li>
+        <li><strong>Improved insulin sensitivity:</strong> Better glucose management means more stable energy during long rolling sessions</li>
+        <li><strong>Appetite regulation:</strong> Superior satiety signaling makes hitting your 2,400 cal target effortless</li>
+        <li><strong>Resting metabolic rate:</strong> The glucagon receptor activation increases resting metabolic rate — you burn more calories at rest</li>
+      </ul>
+
+      <div class="callout mt-16">
+        <h4>Titration Protocol (Physician-Guided)</h4>
+        <ul>
+          <li><strong>Weeks 1–4:</strong> 1mg/week subcutaneous injection — assess tolerance, monitor GI side effects</li>
+          <li><strong>Weeks 5–8:</strong> 2mg/week — body adapts, appetite regulation kicks in</li>
+          <li><strong>Weeks 9–12:</strong> 4mg/week — full therapeutic dose, maximum metabolic benefit</li>
+          <li><strong>Weeks 13+:</strong> Maintain at 4mg or adjust per physician guidance and lab results</li>
+          <li>Inject once weekly, same day each week. Rotate injection sites.</li>
+          <li>Monitor: weight, body composition, blood glucose, GI symptoms, energy levels</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Tesofensine -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Tesofensine</h3>
+        <span class="badge red">DISCUSS WITH DOC</span>
+      </div>
+      <ul class="checklist mt-8">
+        <li><strong>Mechanism:</strong> Triple monoamine reuptake inhibitor — blocks reuptake of serotonin, dopamine, and norepinephrine</li>
+        <li><strong>Fat loss:</strong> Clinical trials showed 2x the weight loss of existing medications at the time of study</li>
+        <li><strong>Thermogenic:</strong> Increases resting metabolic rate and fat oxidation — you burn more calories at rest</li>
+        <li><strong>Mood & Focus:</strong> Dopamine and serotonin reuptake inhibition provides significant mood elevation, mental clarity, and focus — beneficial for athletes managing training stress, work, and family</li>
+        <li><strong>Appetite suppression:</strong> Powerful satiety signal that makes deficit adherence easy without feeling deprived</li>
+        <li><strong>BJJ relevance:</strong> The cognitive and mood benefits help with the mental game — focus during rolls, motivation during tough training blocks, and reduced perception of effort</li>
+        <li><strong>Typical dose:</strong> 0.25–0.5mg/day oral, physician-guided titration</li>
+        <li><strong>Monitor:</strong> Heart rate, blood pressure, sleep quality (can be stimulating — take AM only)</li>
+      </ul>
+    </div>
+
+    <!-- TRT -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Testosterone Replacement <span>Therapy (TRT)</span></h3>
+        <span class="badge red">LABS FIRST</span>
+      </div>
+      <ul class="checklist mt-8">
+        <li><strong>Why it matters for combat athletes:</strong> Recovery demands from BJJ are extreme — you're essentially doing full-body resistance training against another human 3–4x/week on top of your lifting program. Optimal testosterone levels are critical for recovery, tissue repair, and body composition.</li>
+        <li><strong>Get labs first:</strong> Total testosterone, free testosterone, SHBG, estradiol, LH, FSH, prolactin. Do NOT start TRT without baseline labs.</li>
+        <li><strong>Signs of low T to watch for:</strong> Persistent fatigue despite good sleep, difficulty recovering between sessions, stalled strength gains, low motivation, brain fog, decreased libido</li>
+        <li><strong>If labs indicate low/suboptimal T:</strong> Discuss TRT with your physician. Typical protocol: 100–200mg testosterone cypionate/week via SubQ or intramuscular injection, split into 2 doses/week for stable levels</li>
+        <li><strong>Competition note:</strong> If you compete in IBJJF or other sanctioned BJJ events, be aware of anti-doping policies. Discuss with your coach and physician.</li>
+        <li><strong>Monitoring:</strong> Re-test labs at 6 weeks, then every 3–6 months. Monitor hematocrit, PSA, lipids, estradiol</li>
+      </ul>
+    </div>
+
+    <!-- Recommended Lab Panel -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Recommended <span>Lab Panel</span></h3>
+        <span class="badge">BASELINE + ONGOING</span>
+      </div>
+      <p class="text-sm text-muted mt-8 mb-8">Get these labs done before starting any compounds. Re-test at 12 weeks and every 3–6 months thereafter.</p>
+      <ul class="checklist mt-8">
+        <li><strong>Metabolic Panel:</strong> Fasting glucose, fasting insulin, HbA1c</li>
+        <li><strong>Lipid Panel:</strong> Total cholesterol, LDL, HDL, triglycerides, VLDL</li>
+        <li><strong>Liver Panel:</strong> ALT, AST, GGT, alkaline phosphatase, bilirubin</li>
+        <li><strong>Kidney Function:</strong> BUN, creatinine, eGFR, uric acid</li>
+        <li><strong>Thyroid:</strong> TSH, Free T3, Free T4</li>
+        <li><strong>Hormones:</strong> Total testosterone, free testosterone, SHBG, estradiol, LH, FSH, prolactin</li>
+        <li><strong>Inflammation:</strong> hs-CRP, ESR, homocysteine</li>
+        <li><strong>CBC:</strong> Complete blood count with differential (monitor hematocrit if on TRT)</li>
+        <li><strong>Vitamins:</strong> Vitamin D (25-OH), B12, ferritin, iron</li>
+        <li><strong>PSA:</strong> Prostate-specific antigen (baseline before any TRT consideration)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══════════════ BASELINE ASSESSMENTS ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">🔬</div>
+      <h2>Baseline <span>Assessments</span></h2>
+      <span class="badge red">ACTION REQUIRED</span>
+    </div>
+
+    <p class="text-sm text-muted mb-8">Before we begin, we need two baseline data points to track your progress accurately and make informed adjustments throughout your program. Both should be completed within your first week.</p>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>1. Blood Lab <span>Panel</span></h3>
+        <span class="badge">Upload to App</span>
+      </div>
+      <p class="text-sm mt-8">Obtain a current or recent comprehensive blood panel (within the last 60 days). If you don't have one, request the full panel listed in the Compound Recommendations section from your physician.</p>
+      <ul class="checklist mt-8">
+        <li><strong>Metabolic Panel:</strong> Fasting glucose, fasting insulin, HbA1c</li>
+        <li><strong>Lipid Panel:</strong> Total cholesterol, LDL, HDL, triglycerides, VLDL</li>
+        <li><strong>Liver Panel:</strong> ALT, AST, GGT, alkaline phosphatase, bilirubin</li>
+        <li><strong>Kidney Function:</strong> BUN, creatinine, eGFR, uric acid</li>
+        <li><strong>Thyroid:</strong> TSH, Free T3, Free T4</li>
+        <li><strong>Hormones:</strong> Total testosterone, free testosterone, SHBG, estradiol</li>
+        <li><strong>Inflammation:</strong> hs-CRP, ESR, homocysteine</li>
+        <li><strong>CBC:</strong> Complete blood count with differential</li>
+        <li><strong>Vitamins:</strong> Vitamin D (25-OH), B12, ferritin, iron</li>
+      </ul>
+      <div class="callout mt-16">
+        <h4>Why This Matters</h4>
+        <p>Your blood work gives us a complete picture of your metabolic health before we start. We'll re-test at 12 weeks and 24 weeks to measure improvements in cholesterol, liver enzymes, inflammation markers, and hormone levels. These objective markers — combined with your body composition changes and mat performance — tell the full story of your transformation. Upload your results directly in the FBF app under your profile, or send a photo/PDF to your coach via chat.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>2. InBody <span>Composition Scan</span></h3>
+        <span class="badge green">FREE AT YOUR GYM</span>
+      </div>
+      <p class="text-sm mt-8">Most gyms have an InBody scanner available to members at no charge. Complete your baseline scan within the first week.</p>
+      <ul class="checklist mt-8">
+        <li><strong>What it measures:</strong> Body fat %, lean muscle mass (per limb), visceral fat level, total body water, basal metabolic rate</li>
+        <li><strong>When to scan:</strong> Morning, fasted (same conditions as your weigh-in). Before your Monday workout is ideal.</li>
+        <li><strong>How often:</strong> Baseline (Week 1), then every 4 weeks. The InBody tracks skeletal muscle vs. fat changes — this is how we measure recomp, not just the scale.</li>
+        <li><strong>What to expect:</strong> Takes ~60 seconds. Stand on the machine, grip the handles, hold still. Ask the front desk to print your results sheet.</li>
+        <li><strong>Upload:</strong> Take a photo of your InBody results sheet and upload it to the FBF app with your first check-in, or send it via chat.</li>
+      </ul>
+      <div class="callout mt-16">
+        <h4>Why InBody Over Scale Weight</h4>
+        <p>During a recomp, the scale can be misleading. You might lose 8 lbs of fat and gain 4 lbs of muscle — the scale only shows a 4 lb change, but your body looks completely different and you feel stronger on the mat. The InBody scan separates fat from muscle so we can verify that the protocol is working: fat going down, muscle going up. This is the gold standard for tracking recomp progress.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ CHECK-IN PROTOCOL ═══════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">📱</div>
+      <h2>Daily <span>Check-In</span></h2>
+    </div>
+
+    <div class="recomp-banner">
+      <h3>Log Your Daily Check-In</h3>
+      <p>Consistency is everything. Your daily check-in takes less than 2 minutes and gives your coach the data needed to keep your program dialed in. Tap the link below to open your check-in directly in the FBF app.</p>
+      <div style="margin-top: 24px; display: flex; align-items: center; justify-content: center; gap: 32px; flex-wrap: wrap;">
+        <div>
+          <a href="fbf://checkin" style="display: inline-block; background: linear-gradient(135deg, #FF6A00, #FF8533); color: #0a0a0a; font-weight: 800; font-size: 16px; padding: 14px 36px; border-radius: 12px; text-decoration: none; letter-spacing: 0.5px;">Open Daily Check-In</a>
+          <p style="margin-top: 10px; font-size: 12px; color: #666;">fbf://checkin</p>
+        </div>
+        <div style="text-align: center;">
+          <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiCAIAAADS3EjhAAAE70lEQVR4nO3dQW4jNxBAUTvISn3JHC2XVNbZZtWYoOebReq9vSVL1gcFuFD8fr1eX0Dpj/TRAZnBT3CaQU5mkJMZ5GQGOZlBTmaQkxnkZAY5mUFOZpCTGeRkBjmZQU5mkJMZ5GQGOZlB7s8nP/z+65+vs1x/v6J348kjP3nezv0r8tn4L6cZ5GQGOZlBTmaQkxnkZAY5mUFOZpCTGcyeArnXzT08sWo64cmMyJPfeeZf4fqwz4bTDHIyg5zMICczyMkMcjKDnMwgJzPIyQx2ngJZ9R/387Zu3DtvguS94WfjntMMcjKDnMwgJzPIyQxyMoOczCAnM8jJDM6dAvk0M7df8DOcZpCTGeRkBjmZQU5mkJMZ5GQGOZlBTmaQMwWywSTHk+ftNoXw65xmkJMZ5GQGOZlBTmaQkxnkZAY5mUFOZnDuFMh5uzG6u1c+bVbjOu6z4TSDnMwgJzPIyQxyMoOczCAnM8jJDHIyg52nQM6bXbh/RasmOZ48b/ezn/bZuOc0g5zMICczyMkMcjKDnMwgJzPIyQxyMoPc9+t12t6FmWZuCjlv68ZMTjPIyQxyMoOczCAnM8jJDHIyg5zMICczOPdGmPNmJlY98qdNcrw3nHpxmkFOZpCTGeRkBjmZQU5mkJMZ5GQGOZnB7F0gM+/1mDkVMfO9emLHG2EuUyBwKl8aISczyMkMcjKDnMwgJzPIyQxyMoPZu0BWzQF82k6O7n3ecZKj071XTjPIyQxyMoOczCAnM8jJDHIyg5zMICczyB24C2TmBMmq6YTzXtG9ma/XaQY5mUFOZpCTGeRkBjmZQU5mkJMZ5GQGO0+BzNzY8eSRZ74b572ia9H0yT27QGA0XxohJzPIyQxyMoOczCAnM8jJDHIyg9k3wnSe/Me9myHonnfHrRs7Tp9ciz4bTjPIyQxyMoOczCAnM8jJDHIyg5zMICcz2HkKZNWtHzN3kKx6vavmHmbOebztAoFT+dIIOZlBTmaQkxnkZAY5mUFOZpCTGeS2vBHm3qp5iye6d+OJHbduvEf+Vk4zyMkMcjKDnMwgJzPIyQxyMoOczCAnMzj3RphuVmPVvofOjntTZs61rJogcZpBTmaQkxnkZAY5mUFOZpCTGcgM9uc0g9m7QD7NjptCPm0zyjVyf4nTDHIyg5zMICczyMkMcjKDnMwgJzPIyQxm7wLZcd/DvVWTDTPvT5n5eq/sZ+0CgY350gg5mUFOZpCTGeRkBjmZQU5mkJMZ7HwjzMzbVVbt1Vg1f7DqRpjz/vpPOM0gJzPIyQxyMoOczCAnM8jJDHIyg5zMYOcpkFX/j595U8mq5+3mPGa+G9eiLSP3nGaQkxnkZAY5mUFOZpCTGeRkBjmZQU5mcO4UCL9u1S6QJ4987xr5vG6EgY350gg5mUFOZpCTGeRkBjmZQU5mkJMZ5EyB/A+r7k/pphN23EFyZY/ccZpBTmaQkxnkZAY5mUFOZpCTGeRkBjmZwblTIN3swkyrZhe6G1Jm3ggzk9MMcjKDnMwgJzPIyQxyMoOczCAnM8jJDHaeAtnxv/X8rh0kq/7616K7Zu45zSAnM8jJDHIyg5zMICczyMkMcjKDnMwg9/16fdZODvh5TjPIyQxyMoOczCAnM8jJDHIyg5zMICczyMkMcjKDnMwgJzPIyQxyMoOczCAnM8jJDHIyg6/av+iLVgr/CkCNAAAAAElFTkSuQmCC" alt="Check-In QR Code" style="width: 160px; height: 160px; border-radius: 12px; border: 2px solid #2a2a2a;" />
+          <p style="margin-top: 8px; font-size: 12px; color: #888; font-weight: 600;">Scan to Check In</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>What to Log <span>Every Day</span></h3>
+      <ul class="checklist mt-8">
+        <li><strong>Temperature:</strong> Waking oral body temperature — immediately upon waking, before getting out of bed (see Temperature Check section below for details)</li>
+        <li><strong>Body:</strong> Morning weight (scale), how you look/feel, any progress photos</li>
+        <li><strong>Nutrition:</strong> Meals eaten, calorie/macro adherence, water intake</li>
+        <li><strong>Activity:</strong> Workout completed (exercises, weights, reps), step count, BJJ session details (duration, intensity, rounds)</li>
+        <li><strong>Sleep:</strong> Hours slept, quality rating (1–10), any disruptions</li>
+        <li><strong>Supplements:</strong> Which supplements/peptides were taken (compliance tracking)</li>
+        <li><strong>Notes:</strong> Energy level, mood, hunger, soreness, any injuries/tweaks from rolling</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Weekly Check-In <span>(Monday AM)</span></h3>
+      <ul class="checklist mt-8">
+        <li><strong>Weigh in</strong> first thing Monday morning — after bathroom, before food/water</li>
+        <li><strong>Progress photos</strong> every 2 weeks (front, side, back) — same lighting, same time</li>
+        <li><strong>Rate your week</strong> 1–10 in the notes section — energy, mood, hunger, soreness, mat performance</li>
+        <li><strong>BJJ log:</strong> Number of sessions, total rolling time, any injuries or joint issues</li>
+        <li><strong>InBody scan</strong> every 4 weeks (fasted, Monday morning before workout)</li>
+      </ul>
+    </div>
+
+    <div class="callout">
+      <h4>Communication</h4>
+      <p>Message your coach anytime through the FBF app chat. Response time is typically same-day. For injuries sustained during rolling, see a sports medicine physician — this program is designed to complement your medical care, not replace it.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════ DAILY TEMPERATURE CHECK ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">🌡️</div>
+      <h2>Daily <span>Temperature Check</span></h2>
+      <span class="badge gold">METABOLIC TRACKING</span>
+    </div>
+
+    <div class="recomp-banner">
+      <h3>Why We Track Your Morning Temperature</h3>
+      <p>Your waking body temperature is one of the most underused and powerful biomarkers in coaching. It gives us a direct, daily window into your metabolic rate, thyroid function, recovery status, and overall hormonal health — all without a blood draw. This single data point, tracked consistently, can reveal problems weeks before they show up on lab work or the scale.</p>
+    </div>
+
+    <div class="card">
+      <h3>How to <span>Take Your Temperature</span></h3>
+      <ul class="checklist mt-8">
+        <li><strong>When:</strong> Immediately upon waking, before getting out of bed, before drinking water, before any activity</li>
+        <li><strong>How:</strong> Use a digital oral thermometer. Place under your tongue for the full reading cycle (usually 30–60 seconds). Do not talk or breathe through your mouth.</li>
+        <li><strong>Where to log:</strong> Record it in your daily check-in in the FBF app under the body/notes section</li>
+        <li><strong>Keep your thermometer on your nightstand</strong> — if you forget and get up first, the reading is no longer valid for that day</li>
+        <li><strong>Consistency is key:</strong> Same thermometer, same method, every single morning. The trend over days and weeks is what matters, not any single reading.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>What Your Temperature <span>Tells Us</span></h3>
+
+      <div class="card" style="border-color: rgba(34,197,94,0.3); margin-top: 12px;">
+        <h3 style="color: #22c55e;">Metabolic Rate & Thyroid Function</h3>
+        <p class="text-sm mt-8">Your basal body temperature is a direct reflection of your metabolic rate — how much energy your body is producing at rest. Thyroid hormones (T3 and T4) are the primary regulators of this process.</p>
+        <ul class="checklist mt-8">
+          <li><strong>Healthy range: 97.8°F – 98.6°F</strong> upon waking indicates a well-functioning metabolism and adequate thyroid output</li>
+          <li><strong>Consistently below 97.6°F</strong> is a red flag for metabolic downregulation — your body is slowing its engine to conserve energy. This is the earliest warning sign that calories may be too low, the deficit has been running too long, or thyroid function is suppressed.</li>
+          <li>If we see a sustained drop, we can increase calories (refeed), adjust carb timing, or flag it for your physician to check thyroid labs — all before you hit a plateau or feel run down.</li>
+        </ul>
+      </div>
+
+      <div class="card" style="border-color: rgba(255,106,0,0.3); margin-top: 12px;">
+        <h3 style="color: #FF6A00;">Adaptive Thermogenesis & Diet Response</h3>
+        <p class="text-sm mt-8">When you diet — especially in a caloric deficit — your body can fight back through a process called adaptive thermogenesis. It literally turns down the thermostat to burn fewer calories and protect its fat stores.</p>
+        <ul class="checklist mt-8">
+          <li><strong>A gradual temperature decline (0.3–0.5°F over 2–3 weeks)</strong> while in a deficit tells us your metabolism is adapting. This is normal to a degree, but if it drops too far or too fast, we need to act.</li>
+          <li><strong>What we do about it:</strong> Strategic refeed days (temporary calorie increase, especially carbs) to signal to your body that it's not starving. This resets leptin signaling and bumps thermogenesis back up.</li>
+          <li><strong>Why the recomp approach helps:</strong> By keeping your deficit moderate (2,400 cal, not extreme) and protein very high (240g), we minimize adaptive thermogenesis. Your body has less reason to panic because it's getting enough fuel and building blocks.</li>
+        </ul>
+      </div>
+
+      <div class="card" style="border-color: rgba(212,160,23,0.3); margin-top: 12px;">
+        <h3 style="color: #D4A017;">Recovery, Stress & Overtraining</h3>
+        <p class="text-sm mt-8">Your temperature also reflects your autonomic nervous system balance. For a BJJ athlete training 3–4x/week plus 4 lifting sessions, overtraining is a real risk.</p>
+        <ul class="checklist mt-8">
+          <li><strong>A sudden temperature drop (0.5°F+ from your baseline)</strong> after a hard training week can indicate overreaching — your nervous system is fatigued and recovery systems are taxed</li>
+          <li><strong>A spike above your normal range</strong> can indicate acute stress, inflammation, infection onset, or an immune response</li>
+          <li><strong>Pattern recognition:</strong> Over 4–6 weeks of data, we'll know your personal baseline. Then deviations become incredibly informative — we can see when your body needs a deload week, more sleep, or a protocol adjustment before you even feel it subjectively.</li>
+          <li><strong>Cortisol connection:</strong> Chronically elevated cortisol (from under-recovery, poor sleep, or life stress) suppresses thyroid conversion (T4→T3) and lowers waking temperature. If we see this pattern, we address stress and recovery, not just training volume.</li>
+        </ul>
+      </div>
+
+      <div class="card" style="border-color: rgba(34,197,94,0.3); margin-top: 12px;">
+        <h3 style="color: #22c55e;">Hormonal Health & Peptide Response</h3>
+        <p class="text-sm mt-8">Temperature is a downstream marker of your entire hormonal cascade — not just thyroid, but testosterone, growth hormone, insulin sensitivity, and more.</p>
+        <ul class="checklist mt-8">
+          <li><strong>Tracking response to peptides:</strong> When we introduce CJC/Ipamorelin and Tesamorelin, we expect to see improved sleep, better recovery, and a stable or slightly elevated waking temperature over 4–6 weeks. If temperature doesn't respond, it tells us the peptide dose or timing may need adjustment.</li>
+          <li><strong>Testosterone correlation:</strong> Low waking temperature combined with fatigue, low motivation, and stalled strength gains can indicate low testosterone — something we'd flag for bloodwork to confirm.</li>
+          <li><strong>Sleep quality feedback loop:</strong> Peptides like CJC/Ipamorelin enhance deep sleep, which is when your body does the most recovery and hormone production. Improved sleep → better hormone output → higher waking temperature.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>What to <span>Expect</span></h3>
+      <table>
+        <thead>
+          <tr><th>Temperature</th><th>What It Means</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="fw-700 text-accent">98.0–98.6°F</td>
+            <td>Optimal. Metabolism humming, thyroid healthy, well-recovered.</td>
+            <td style="color: #22c55e;">Stay the course. Protocol is working.</td>
+          </tr>
+          <tr>
+            <td class="fw-700" style="color: #D4A017;">97.6–97.9°F</td>
+            <td>Acceptable low-normal. Common during a caloric deficit. Monitor trend.</td>
+            <td style="color: #D4A017;">Watch for downward trend over 7–10 days. May schedule a refeed.</td>
+          </tr>
+          <tr>
+            <td class="fw-700" style="color: #ef4444;">Below 97.5°F</td>
+            <td>Metabolic suppression likely. Thyroid, recovery, or caloric intake issue.</td>
+            <td style="color: #ef4444;">Notify coach immediately. Likely need calorie increase, deload, or thyroid labs.</td>
+          </tr>
+          <tr>
+            <td class="fw-700" style="color: #ef4444;">Above 99.0°F</td>
+            <td>Possible infection, acute inflammation, or severe stress response.</td>
+            <td style="color: #ef4444;">Monitor. If sustained 2+ days, check with physician. Note any illness symptoms.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout mt-16">
+      <h4>The Bottom Line</h4>
+      <p>Most coaching programs only look at the scale and the mirror. We go deeper. Your daily temperature reading — combined with your weight, training logs, sleep data, and periodic InBody scans — gives us a complete metabolic picture. It takes 10 seconds each morning and gives your coach data that no other single metric can provide. Over time, this one habit will be one of the most valuable tools in your transformation toolkit.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════ COACH RECOMMENDATIONS ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">🥋</div>
+      <h2>Coach <span>Recommendations</span></h2>
+      <span class="badge">BJJ-SPECIFIC</span>
+    </div>
+
+    <div class="card">
+      <h3>BJJ-Specific <span>Recovery</span></h3>
+      <ul class="checklist mt-8">
+        <li><strong>Contrast Showers (Post-BJJ):</strong> 30 sec cold / 60 sec hot, 3–5 cycles. Reduces inflammation, speeds recovery, improves circulation. Do this after every rolling session.</li>
+        <li><strong>Sleep Optimization:</strong> Target 7.5–9 hours per night. This is where ALL your recovery happens. Dark room, cool (65–68°F), no screens 30 min before bed. Magnesium glycinate + CJC/Ipamorelin before bed enhances deep sleep quality.</li>
+        <li><strong>Stress Management:</strong> Between BJJ, lifting, work, and family — total stress load matters. If life stress is high, consider pulling back one BJJ session that week rather than pushing through and accumulating fatigue.</li>
+        <li><strong>Skin Care:</strong> Shower immediately after every BJJ session. Use Defense Soap or tea tree body wash. Check for any cuts, scrapes, or suspicious skin changes daily. BJJ gyms carry staph and ringworm — Thymosin Alpha-1 helps, but hygiene is your first line of defense.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>BJJ-Specific <span>Mobility Work</span></h3>
+      <ul class="checklist mt-8">
+        <li><strong>Hip Mobility (daily):</strong> 90/90 switches, pigeon pose, frog stretch — 5 min minimum. Open hips = better guard, better passing, fewer back injuries.</li>
+        <li><strong>Thoracic Spine (daily):</strong> Foam roller T-spine extensions, open book rotations, cat/cow — 5 min. Critical for posture, framing, and preventing upper back stiffness from grappling.</li>
+        <li><strong>Shoulder Mobility (training days):</strong> Wall slides, band dislocates, sleeper stretch — 3 min before every upper body session. Your shoulders are your most vulnerable joint in BJJ.</li>
+        <li><strong>Grip Recovery (post-BJJ):</strong> Finger extensor band work, rice bucket, forearm stretching. Your grip is your weapon — take care of it.</li>
+        <li><strong>Neck Stretches (daily):</strong> Gentle cervical ROM work — chin tucks, lateral flexion holds, levator scapulae stretch. Never crank or force. Neck health = career longevity in grappling.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══════════════ WEEKLY SCHEDULE ═══════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">📅</div>
+      <h2>Weekly <span>Schedule</span></h2>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Day</th><th>Training</th><th>Cardio / BJJ</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="fw-700 text-accent">Monday</td>
+            <td>Upper Push + Shoulder Prehab</td>
+            <td>BJJ (evening)</td>
+            <td>Weigh-in (fasted AM). High carb day.</td>
+          </tr>
+          <tr>
+            <td class="fw-700 text-accent">Tuesday</td>
+            <td>Lower Body + Core</td>
+            <td>20 min incline walk post-lift</td>
+            <td>No BJJ — recovery from Monday double</td>
+          </tr>
+          <tr>
+            <td class="fw-700 text-accent">Wednesday</td>
+            <td>OFF (lifting)</td>
+            <td>BJJ (evening)</td>
+            <td>Steps only (10K). High carb day.</td>
+          </tr>
+          <tr>
+            <td class="fw-700 text-accent">Thursday</td>
+            <td>Upper Pull + Grip Work</td>
+            <td>20 min incline walk post-lift</td>
+            <td>No BJJ — let grip recover</td>
+          </tr>
+          <tr>
+            <td class="fw-700 text-accent">Friday</td>
+            <td>Lower Body + Rotational Core</td>
+            <td>BJJ (evening)</td>
+            <td>High carb day.</td>
+          </tr>
+          <tr>
+            <td class="fw-700">Saturday</td>
+            <td>OFF</td>
+            <td>Open mat (light rolling) or mobility/yoga</td>
+            <td>Active recovery. 12K+ steps. Meal prep.</td>
+          </tr>
+          <tr>
+            <td class="fw-700">Sunday</td>
+            <td>OFF</td>
+            <td>Steps only (12K+)</td>
+            <td>Full rest. Meal prep. Mobility work.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <h4>Schedule Flexibility</h4>
+      <p>This schedule pairs lifting and BJJ on the same day (AM lift / PM roll) on Monday, Wednesday, and Friday. If your gym schedule or energy doesn't allow doubles, you can shift BJJ to Tue/Thu/Sat and keep lifting Mon/Tue/Thu/Fri. The key principle: never do two hard BJJ sessions on consecutive days without a lifting-only or rest day in between. Listen to your body — if you feel crushed after 3 BJJ sessions, drop to 2 that week and add an extra incline walk day.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════ FOOTER ═══════════════ -->
+  <div class="footer">
+    <div class="brand">FORGED BY FREEDOM</div>
+    <div class="tagline">Build the body. Free the mind.</div>
+    <div class="disclaimer">
+      This program is designed for Hayden Smith as a personalized coaching plan. It is not medical advice.
+      All supplement, peptide, and compound recommendations should be reviewed with a licensed healthcare provider.
+      Coordinate all protocol changes with your physician. Injuries sustained during BJJ training should be evaluated by a sports medicine professional.
+      <br><br>
+      © 2026 Forged by Freedom Coaching. All rights reserved. | forgedbyfreedom@proton.me
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

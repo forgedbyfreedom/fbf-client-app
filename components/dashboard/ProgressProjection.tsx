@@ -7,7 +7,7 @@ const API_BASE = 'https://forged-by-freedom-api-nm4f.onrender.com';
 
 interface ProjectionData {
   current_weight: number;
-  goal_weight: number;
+  goal_weight: number | null;
   weekly_rate: number;
   phase: string;
   rate_assessment: string;
@@ -15,7 +15,7 @@ interface ProjectionData {
   eta_date: string | null;
   projections: { week: number; projected_weight: number }[];
   data_points: number;
-  trend_direction: 'losing' | 'gaining' | 'maintaining';
+  trend_direction?: 'losing' | 'gaining' | 'maintaining';
 }
 
 interface Props {
@@ -63,11 +63,13 @@ export function ProgressProjection({ clientId }: Props) {
 
   if (!data) return null;
 
-  const directionIcon = data.trend_direction === 'losing' ? '↓' : data.trend_direction === 'gaining' ? '↑' : '→';
+  // Derive trend_direction from weekly_rate if not provided
+  const trendDirection = data.trend_direction || (data.weekly_rate < -0.1 ? 'losing' : data.weekly_rate > 0.1 ? 'gaining' : 'maintaining');
+  const directionIcon = trendDirection === 'losing' ? '↓' : trendDirection === 'gaining' ? '↑' : '→';
   const directionColor = data.phase === 'cutting'
-    ? (data.trend_direction === 'losing' ? colors.green : colors.red)
+    ? (trendDirection === 'losing' ? colors.green : colors.red)
     : data.phase === 'bulking'
-      ? (data.trend_direction === 'gaining' ? colors.green : colors.yellow)
+      ? (trendDirection === 'gaining' ? colors.green : colors.yellow)
       : colors.textSecondary;
 
   const rateColor = data.rate_assessment === 'optimal' ? colors.green
@@ -75,10 +77,8 @@ export function ProgressProjection({ clientId }: Props) {
     : data.rate_assessment === 'slow' ? colors.yellow
     : colors.textSecondary;
 
-  const remaining = Math.abs(data.current_weight - data.goal_weight);
-  const progressPct = data.goal_weight !== data.current_weight
-    ? Math.min(100, Math.max(0, 100 - (remaining / Math.abs(data.projections[data.projections.length - 1]?.projected_weight - data.goal_weight || 1)) * 100))
-    : 100;
+  const goalWeight = data.goal_weight;
+  const hasGoal = goalWeight != null;
 
   return (
     <View style={styles.card}>
@@ -105,8 +105,10 @@ export function ProgressProjection({ clientId }: Props) {
         <View style={styles.statDivider} />
         <View style={styles.statBox}>
           <Text style={styles.statLabel}>Goal</Text>
-          <Text style={[styles.statValue, { color: colors.accent }]}>{data.goal_weight.toFixed(1)}</Text>
-          <Text style={styles.statUnit}>lbs</Text>
+          <Text style={[styles.statValue, { color: colors.accent }]}>
+            {hasGoal ? goalWeight.toFixed(1) : '—'}
+          </Text>
+          <Text style={styles.statUnit}>{hasGoal ? 'lbs' : 'not set'}</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statBox}>
@@ -153,17 +155,19 @@ export function ProgressProjection({ clientId }: Props) {
               <View key={p.week} style={styles.projCol}>
                 <Text style={styles.projWeight}>{p.projected_weight.toFixed(0)}</Text>
                 <View style={[styles.projBar, {
-                  height: Math.max(4, Math.min(40, Math.abs(p.projected_weight - data.goal_weight) * 2)),
-                  backgroundColor: Math.abs(p.projected_weight - data.goal_weight) < 2 ? colors.green : colors.accent,
+                  height: Math.max(4, Math.min(40, hasGoal ? Math.abs(p.projected_weight - goalWeight) * 2 : 20)),
+                  backgroundColor: hasGoal && Math.abs(p.projected_weight - goalWeight) < 2 ? colors.green : colors.accent,
                 }]} />
                 <Text style={styles.projWeek}>W{p.week}</Text>
               </View>
             ))}
           </View>
-          <View style={styles.goalLine}>
-            <View style={styles.goalDash} />
-            <Text style={styles.goalLineLabel}>Goal: {data.goal_weight.toFixed(0)} lbs</Text>
-          </View>
+          {hasGoal && (
+            <View style={styles.goalLine}>
+              <View style={styles.goalDash} />
+              <Text style={styles.goalLineLabel}>Goal: {goalWeight.toFixed(0)} lbs</Text>
+            </View>
+          )}
         </View>
       )}
     </View>

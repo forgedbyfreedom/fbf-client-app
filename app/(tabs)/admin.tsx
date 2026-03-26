@@ -164,6 +164,23 @@ export default function AdminDashboard() {
           <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
         </TouchableOpacity>
 
+        <TouchableOpacity
+          style={styles.navCard}
+          onPress={() => router.push('/admin/inventory')}
+          activeOpacity={0.7}
+        >
+          <View style={styles.navLeft}>
+            <View style={[styles.navIcon, { backgroundColor: 'rgba(212, 160, 23, 0.15)' }]}>
+              <Ionicons name="cube" size={22} color="#D4A017" />
+            </View>
+            <View>
+              <Text style={styles.navTitle}>Peptide Inventory</Text>
+              <Text style={styles.navSub}>Orders, tracking, stock levels</Text>
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
+        </TouchableOpacity>
+
         <AlertFeed
           onClientPress={(clientId) =>
             router.push({ pathname: '/admin/client-detail', params: { id: clientId } })
@@ -213,6 +230,7 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: spacing.md,
   },
   sectionLabel: {

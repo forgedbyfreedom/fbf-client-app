@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FBF Peptide Consulting Guide</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    @media print {
+      body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      .page-break { page-break-before: always; }
+      .no-print { display: none !important; }
+    }
+    body { font-family: 'Inter', -apple-system, sans-serif; background: #0a0a0a; color: #ffffff; line-height: 1.6; }
+    .guide { max-width: 900px; margin: 0 auto; padding: 48px 40px; }
+
+    /* Cover */
+    .cover { text-align: center; padding: 60px 0 48px; border-bottom: 2px solid #FF6A00; margin-bottom: 48px; }
+    .logo-row { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 32px; }
+    .logo-circle { width: 56px; height: 56px; background: linear-gradient(135deg, #FF6A00, #FF8533); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900; color: #0a0a0a; }
+    .brand-name { font-size: 28px; font-weight: 900; letter-spacing: 2px; color: #FF6A00; }
+    .cover h1 { font-size: 38px; font-weight: 900; line-height: 1.1; margin-bottom: 8px; }
+    .cover h1 span { color: #FF6A00; }
+    .cover .subtitle { font-size: 18px; color: #888; margin-bottom: 24px; }
+    .cover .desc { font-size: 14px; color: #666; max-width: 600px; margin: 0 auto; line-height: 1.6; }
+
+    /* Section */
+    .section { margin-bottom: 48px; }
+    .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #2a2a2a; }
+    .section-icon { width: 36px; height: 36px; background: rgba(255,106,0,0.15); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .section-header h2 { font-size: 22px; font-weight: 800; letter-spacing: 0.5px; }
+    .section-header h2 span { color: #FF6A00; }
+
+    /* Peptide Card */
+    .peptide-card { background: #141414; border: 1px solid #2a2a2a; border-radius: 14px; padding: 28px; margin-bottom: 24px; }
+    .peptide-card.highlight { border-color: rgba(255,106,0,0.4); }
+    .pc-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+    .pc-name { font-size: 22px; font-weight: 800; color: #FF6A00; }
+    .pc-aka { font-size: 12px; color: #888; margin-top: 2px; }
+    .pc-category { display: inline-block; background: rgba(255,106,0,0.15); color: #FF6A00; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .pc-category.green { background: rgba(34,197,94,0.15); color: #22c55e; }
+    .pc-category.gold { background: rgba(212,160,23,0.15); color: #D4A017; }
+    .pc-category.blue { background: rgba(59,130,246,0.15); color: #3b82f6; }
+    .pc-headline { font-size: 15px; color: #ccc; font-style: italic; margin-bottom: 20px; line-height: 1.5; }
+
+    /* Subsections within peptide */
+    .pc-sub { margin-bottom: 20px; }
+    .pc-sub h4 { font-size: 14px; font-weight: 700; color: #FF6A00; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #1a1a1a; }
+    .pc-sub h4.green { color: #22c55e; }
+    .pc-sub h4.gold { color: #D4A017; }
+    .pc-sub h4.red { color: #ef4444; }
+    .pc-sub h4.blue { color: #3b82f6; }
+    .pc-sub p { font-size: 13px; color: #ccc; line-height: 1.7; margin-bottom: 8px; }
+    .pc-sub ul { list-style: none; padding: 0; }
+    .pc-sub li { padding: 5px 0; font-size: 13px; color: #ccc; display: flex; align-items: flex-start; gap: 8px; line-height: 1.6; }
+    .pc-sub li::before { content: '▸'; color: #FF6A00; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+
+    /* Dosing table */
+    .dose-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0; }
+    .dose-table th { text-align: left; font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 1px; padding: 8px 10px; border-bottom: 1px solid #2a2a2a; }
+    .dose-table td { padding: 8px 10px; border-bottom: 1px solid #1a1a1a; color: #ccc; }
+    .dose-table tr:last-child td { border-bottom: none; }
+    .dose-table .rec { color: #22c55e; font-weight: 600; }
+
+    /* Warning/Note boxes */
+    .warn-box { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-left: 4px solid #ef4444; border-radius: 8px; padding: 12px 16px; margin: 12px 0; }
+    .warn-box p { font-size: 12px; color: #ef4444; line-height: 1.5; }
+    .info-box { background: rgba(255,106,0,0.06); border: 1px solid rgba(255,106,0,0.2); border-left: 4px solid #FF6A00; border-radius: 8px; padding: 12px 16px; margin: 12px 0; }
+    .info-box h5 { font-size: 13px; font-weight: 700; color: #FF6A00; margin-bottom: 4px; }
+    .info-box p { font-size: 12px; color: #ccc; line-height: 1.5; }
+    .green-box { background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.2); border-left: 4px solid #22c55e; border-radius: 8px; padding: 12px 16px; margin: 12px 0; }
+    .green-box h5 { font-size: 13px; font-weight: 700; color: #22c55e; margin-bottom: 4px; }
+    .green-box p { font-size: 12px; color: #ccc; line-height: 1.5; }
+
+    /* Equipment list */
+    .equip-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+    .equip-item { background: #1a1a1a; border-radius: 6px; padding: 8px 12px; font-size: 12px; color: #ccc; }
+    .equip-item strong { color: #fff; }
+
+    /* Footer */
+    .footer { text-align: center; padding: 40px 0 20px; border-top: 1px solid #2a2a2a; margin-top: 48px; }
+    .footer .brand { font-size: 16px; font-weight: 800; color: #FF6A00; letter-spacing: 2px; margin-bottom: 4px; }
+    .footer .tagline { font-size: 12px; color: #555; letter-spacing: 2px; text-transform: uppercase; }
+    .footer .disclaimer { font-size: 11px; color: #444; margin-top: 16px; line-height: 1.5; max-width: 600px; margin-left: auto; margin-right: auto; }
+
+    .text-muted { color: #888; }
+    .text-sm { font-size: 13px; }
+    .mt-8 { margin-top: 8px; }
+    .mt-16 { margin-top: 16px; }
+    .mb-8 { margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+<div class="guide">
+
+  <!-- ═══════════════ COVER ═══════════════ -->
+  <div class="cover">
+    <div class="logo-row">
+      <div class="logo-circle">F</div>
+      <div><div class="brand-name">FORGED BY FREEDOM</div></div>
+    </div>
+    <h1>Peptide <span>Consulting Guide</span></h1>
+    <p class="subtitle">Complete Protocol Reference — 16 Compounds</p>
+    <p class="desc">This document is your comprehensive reference for every peptide and compound in the FBF protocol catalog. Each entry covers mechanism of action, dosing strategies, reconstitution, equipment, cycling, stacking, contraindications, and realistic expectations. Bring this to your physician for consultation.</p>
+  </div>
+
+  <!-- ═══════════════ UNIVERSAL EQUIPMENT & SAFETY ═══════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🧰</div>
+      <h2>Universal <span>Equipment & Safety</span></h2>
+    </div>
+
+    <div class="peptide-card">
+      <div class="pc-sub">
+        <h4>Required Equipment (for all injectable peptides)</h4>
+        <div class="equip-grid">
+          <div class="equip-item"><strong>Insulin Syringes:</strong> 29g or 31g × 1/2" (1cc/100 unit)</div>
+          <div class="equip-item"><strong>Bacteriostatic Water (BAC):</strong> For reconstitution only — never use sterile water</div>
+          <div class="equip-item"><strong>Alcohol Swabs:</strong> 70% isopropyl, for vial tops and injection sites</div>
+          <div class="equip-item"><strong>Sharps Container:</strong> For safe needle disposal</div>
+          <div class="equip-item"><strong>Refrigerator:</strong> Store reconstituted peptides at 36–46°F (2–8°C)</div>
+          <div class="equip-item"><strong>Digital Thermometer:</strong> Verify fridge temperature</div>
+        </div>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="green">Universal Reconstitution Method</h4>
+        <ul>
+          <li><strong>Step 1:</strong> Remove peptide vial and BAC water from fridge. Let peptide vial reach room temperature (~5 min). Do not shake.</li>
+          <li><strong>Step 2:</strong> Swab the top of both the peptide vial and the BAC water vial with an alcohol pad.</li>
+          <li><strong>Step 3:</strong> Draw the desired amount of BAC water into an insulin syringe (see individual peptide sections for exact amounts).</li>
+          <li><strong>Step 4:</strong> Insert needle into the peptide vial at an angle, aiming at the glass wall — NOT directly onto the powder. Let the water trickle down the side of the vial slowly.</li>
+          <li><strong>Step 5:</strong> Do NOT shake. Gently swirl or roll the vial between your palms until the powder is fully dissolved. This may take 1–3 minutes. The solution should be clear.</li>
+          <li><strong>Step 6:</strong> Label the vial with: peptide name, reconstitution date, concentration (mcg per unit), and discard date (28 days from reconstitution).</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="gold">Injection Technique (Subcutaneous)</h4>
+        <ul>
+          <li><strong>Sites:</strong> Lower abdomen (2 inches from navel), outer thigh, or rear deltoid area. Rotate sites daily to prevent lipodystrophy.</li>
+          <li><strong>Technique:</strong> Pinch a fold of skin, insert needle at 45° angle, inject slowly (5–10 seconds), hold for 3 seconds, withdraw.</li>
+          <li><strong>Timing:</strong> Most peptides are best administered fasted (2+ hours since last meal) unless otherwise noted.</li>
+          <li><strong>Never reuse needles.</strong> One syringe per injection. Dispose in sharps container immediately.</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="red">Storage Rules</h4>
+        <ul>
+          <li><strong>Unreconstituted (lyophilized powder):</strong> Room temperature for short term, refrigerated for long term, freezer for 6+ months</li>
+          <li><strong>Reconstituted:</strong> Refrigerate immediately. Use within 28 days. Never freeze reconstituted peptides.</li>
+          <li><strong>Never expose to direct sunlight, extreme heat, or repeated temperature cycling.</strong></li>
+          <li><strong>If the solution becomes cloudy, discolored, or has particles after reconstitution — discard. Do not use.</strong></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ 1. CJC-1295 WITH DAC ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">1</div>
+      <h2>CJC-1295 <span>with DAC</span></h2>
+    </div>
+
+    <div class="peptide-card highlight">
+      <div class="pc-header">
+        <div>
+          <div class="pc-name">CJC-1295 with DAC</div>
+          <div class="pc-aka">Also known as: Modified GRF(1-29) with Drug Affinity Complex · DAC:GRF</div>
+        </div>
+        <span class="pc-category">GH Releasing</span>
+      </div>
+      <div class="pc-headline">A long-acting growth hormone releasing hormone (GHRH) analog that stimulates your pituitary gland to produce more of your own growth hormone naturally. The DAC (Drug Affinity Complex) binds to albumin in the blood, extending the half-life from ~30 minutes to approximately 8 days — allowing for convenient once-weekly dosing with sustained, steady GH elevation.</div>
+
+      <div class="pc-sub">
+        <h4>What It Does</h4>
+        <p>CJC-1295 with DAC signals your pituitary gland to release growth hormone in a sustained fashion. Unlike synthetic HGH which provides a flat, supraphysiological dose, CJC-1295 amplifies your body's own GH production. Growth hormone affects virtually every system: it drives fat metabolism (particularly visceral and subcutaneous fat), supports lean muscle growth and repair, enhances deep wave sleep, improves skin quality and collagen production, strengthens bone density, and supports cognitive function. GH levels naturally decline ~15% per decade after age 30 — CJC-1295 reverses this decline.</p>
+      </div>
+
+      <div class="pc-sub">
+        <h4>Reconstitution (10mg vial)</h4>
+        <ul>
+          <li>Add <strong>2mL (200 units) of bacteriostatic water</strong> to the 10mg vial</li>
+          <li>This gives you a concentration of <strong>5mg per mL</strong> (5,000mcg per mL, or 50mcg per unit on an insulin syringe)</li>
+          <li>For a 1mg dose: draw <strong>20 units</strong>. For a 2mg dose: draw <strong>40 units</strong>.</li>
+          <li>One 10mg vial = 5–10 weekly doses depending on your protocol</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="green">Dosing Strategies</h4>
+        <table class="dose-table">
+          <thead><tr><th>Protocol</th><th>Dose</th><th>Frequency</th><th>Best For</th></tr></thead>
+          <tbody>
+            <tr><td>Conservative</td><td>1mg</td><td>Once weekly</td><td>Anti-aging, sleep, skin, general wellness</td></tr>
+            <tr class="rec"><td>Standard (Recommended)</td><td>1.5mg</td><td>Once weekly</td><td>Recomp, fat loss, muscle recovery</td></tr>
+            <tr><td>Aggressive</td><td>2mg</td><td>Once weekly</td><td>Maximum GH elevation, advanced users</td></tr>
+          </tbody>
+        </table>
+        <ul>
+          <li><strong>Timing:</strong> Inject before bed on an empty stomach (fasted 2+ hours). This amplifies the natural nighttime GH pulse.</li>
+          <li><strong>Consistency matters more than dose.</strong> Pick a day of the week and stick to it.</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="gold">Cycling</h4>
+        <ul>
+          <li><strong>Recommended cycle:</strong> 12–16 weeks on, 4–8 weeks off. This prevents pituitary desensitization.</li>
+          <li><strong>Extended use:</strong> Some protocols run 6 months continuous with periodic blood work to monitor IGF-1 levels.</li>
+          <li><strong>Off-cycle:</strong> GH levels will gradually return to baseline over 2–3 weeks after cessation.</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4>Stacking & Pairing</h4>
+        <ul>
+          <li><strong>Excellent with:</strong> Tesamorelin (synergistic GH release), BPC-157 (recovery), MOTS-c (metabolic), NAD+ (energy/longevity)</li>
+          <li><strong>Classic combo:</strong> CJC-1295 DAC + Tesamorelin = the two most powerful GH-releasing peptides combined. CJC provides the sustained baseline elevation; Tesamorelin adds pulsatile visceral-fat-targeting GH release.</li>
+          <li><strong>Works alongside:</strong> GLP-1 drugs (Reta, semaglutide), testosterone therapy, thyroid medications</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="red">Contraindications & Cautions</h4>
+        <ul>
+          <li><strong>Do not use if:</strong> Active cancer or history of cancer (GH can accelerate tumor growth), untreated pituitary disorders</li>
+          <li><strong>Use caution with:</strong> Diabetes (GH can increase insulin resistance — monitor blood glucose), carpal tunnel syndrome (may worsen), edema-prone conditions</li>
+          <li><strong>Do not combine with:</strong> Synthetic HGH at the same time (redundant and can suppress natural production). Choose one approach.</li>
+          <li><strong>Blood work:</strong> Check IGF-1 and fasting glucose at baseline, 8 weeks, and 16 weeks</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="blue">Realistic Expectations — What You Will (and Won't) Feel</h4>
+        <ul>
+          <li><strong>Week 1–2:</strong> Most people notice improved sleep quality first — deeper, more restful sleep with more vivid dreams. You may wake up feeling more refreshed. This is the earliest and most reliable sign it's working.</li>
+          <li><strong>Week 3–4:</strong> Subtle improvements in skin quality (less dryness, more elasticity), faster recovery from workouts, slightly more energy throughout the day.</li>
+          <li><strong>Week 6–8:</strong> Noticeable changes in body composition if combined with training and nutrition — slightly leaner, muscles feel fuller. Nails and hair may grow faster.</li>
+          <li><strong>Week 12+:</strong> Cumulative benefits become significant — measurable fat loss, improved lean mass, better bloodwork markers.</li>
+          <li><strong>What you WON'T feel:</strong> There is no immediate "rush" or acute sensation from CJC-1295. It is not a stimulant. If someone tells you they "feel it working" within minutes, that's placebo. The benefits are gradual, cumulative, and best measured objectively (body scans, bloodwork, photos) rather than by subjective "feeling."</li>
+          <li><strong>Possible side effects:</strong> Mild water retention in the first 1–2 weeks (resolves), occasional injection site redness, rare: tingling in hands/feet (reduce dose if persistent).</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ 2. BPC-157 ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">2</div>
+      <h2>BPC-157 <span>Body Protection Compound</span></h2>
+    </div>
+
+    <div class="peptide-card highlight">
+      <div class="pc-header">
+        <div>
+          <div class="pc-name">BPC-157</div>
+          <div class="pc-aka">Body Protection Compound-157 · Gastric Pentadecapeptide · Bepecin</div>
+        </div>
+        <span class="pc-category green">Healing & Repair</span>
+      </div>
+      <div class="pc-headline">A 15-amino-acid peptide derived from a naturally occurring protective protein found in human gastric juice. BPC-157 is your body's own repair signal, amplified. It dramatically accelerates the healing of tendons, ligaments, muscles, gut lining, and even bone. According to the FBF Cycle Design Guide: "BPC-157: 250-500mcg daily — protects gut from heavy food intake, heals tendons under heavy loads."</div>
+
+      <div class="pc-sub">
+        <h4>What It Does</h4>
+        <p>BPC-157 promotes angiogenesis (new blood vessel formation) at injury sites, upregulates growth factor receptors (VEGF, FGF, EGF), and modulates the nitric oxide system. It has powerful anti-inflammatory effects without the side effects of NSAIDs. It repairs the GI tract, which is especially valuable for clients on GLP-1 medications that can cause gut irritation. It also has neuroprotective properties — protecting dopamine neurons and reducing anxiety-like behavior in research. It is one of the most well-tolerated peptides with virtually no reported adverse effects across extensive research.</p>
+      </div>
+
+      <div class="pc-sub">
+        <h4>Reconstitution (20mg vial)</h4>
+        <ul>
+          <li>Add <strong>2mL (200 units) of bacteriostatic water</strong> to the 20mg vial</li>
+          <li>Concentration: <strong>10mg per mL</strong> (10,000mcg per mL, or 100mcg per unit)</li>
+          <li>For 250mcg dose: draw <strong>2.5 units</strong>. For 500mcg: draw <strong>5 units</strong>.</li>
+          <li>One 20mg vial at 375mcg/day = ~53 days of use</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="green">Dosing Strategies</h4>
+        <table class="dose-table">
+          <thead><tr><th>Protocol</th><th>Dose</th><th>Frequency</th><th>Best For</th></tr></thead>
+          <tbody>
+            <tr><td>Maintenance</td><td>250mcg</td><td>Once daily</td><td>General gut health, joint maintenance, wellness</td></tr>
+            <tr class="rec"><td>Standard (Recommended)</td><td>250–500mcg</td><td>Once daily</td><td>Active injury repair, GLP-1 gut support, recovery</td></tr>
+            <tr><td>Aggressive / Injury</td><td>500mcg</td><td>Twice daily (AM/PM)</td><td>Acute tendon/ligament injury, post-surgery, severe gut issues</td></tr>
+            <tr><td>Localized</td><td>250–500mcg</td><td>SubQ near injury site</td><td>Targeted healing (inject closest to the injured area)</td></tr>
+          </tbody>
+        </table>
+        <ul>
+          <li><strong>Timing:</strong> Can be taken fasted or with food — BPC-157 is stable in gastric acid (it's derived from stomach juice). Morning or split AM/PM for injury protocols.</li>
+          <li><strong>Localized injection:</strong> For a specific injury (knee, elbow, shoulder), inject subcutaneously as close to the injury site as possible for maximum local effect.</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="gold">Cycling</h4>
+        <ul>
+          <li><strong>Injury protocol:</strong> Run continuously for 4–8 weeks until healed, then discontinue.</li>
+          <li><strong>Maintenance/wellness:</strong> 8–12 weeks on, 4 weeks off. Can be run longer with periodic breaks.</li>
+          <li><strong>With GLP-1 therapy:</strong> Can be run continuously alongside GLP-1 drugs to mitigate GI side effects.</li>
+          <li><strong>No tolerance or dependence develops.</strong> Safe for extended use.</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4>Stacking & Pairing</h4>
+        <ul>
+          <li><strong>Classic healing stack:</strong> BPC-157 + TB-500 = the gold standard for tissue repair. BPC handles local repair and angiogenesis; TB-500 handles systemic repair and cell migration. Together they're significantly more effective than either alone.</li>
+          <li><strong>GLP-1 support:</strong> BPC-157 + any GLP-1 drug (Reta, sema, tirz) = protects the gut from GLP-1-induced nausea and GI distress</li>
+          <li><strong>Recovery stack:</strong> BPC-157 + CJC-1295 DAC + GHK-Cu = accelerated healing from multiple pathways</li>
+          <li><strong>Works alongside:</strong> Virtually everything. BPC-157 has no known negative interactions.</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="red">Contraindications & Cautions</h4>
+        <ul>
+          <li><strong>Caution with active cancer:</strong> BPC-157 promotes angiogenesis (blood vessel growth). Theoretically, this could support tumor vascularization. If you have active cancer, discuss with your oncologist.</li>
+          <li><strong>Pregnancy/nursing:</strong> Not studied — avoid.</li>
+          <li><strong>No known drug interactions.</strong> One of the safest peptides available.</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="blue">Realistic Expectations</h4>
+        <ul>
+          <li><strong>Day 1–3:</strong> You will not feel anything acutely. No sensation, no rush, no warmth. If you're expecting to "feel" BPC-157 working, you won't.</li>
+          <li><strong>Week 1–2:</strong> If you have gut issues (bloating, acid reflux, IBS symptoms), you may notice improvement within the first 7–14 days. Gut healing is the fastest observable benefit.</li>
+          <li><strong>Week 2–4:</strong> Tendon and joint pain begins to decrease. Injuries that have been nagging for months start to feel better. Range of motion improves.</li>
+          <li><strong>Week 4–8:</strong> Significant healing progress on tendons, ligaments, and muscle injuries. Some clients report injuries they've had for years finally resolving.</li>
+          <li><strong>What you WON'T feel:</strong> Energy boost, mood change, appetite change, or any stimulant-like effect. BPC-157 is purely a repair peptide. Its benefits are measured by reduction in pain, faster healing times, and improved gut function — not by subjective "feeling."</li>
+          <li><strong>Side effects:</strong> Extremely rare. Occasional mild nausea if injected on a completely empty stomach. Rare injection site redness.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- I'm going to continue with condensed but still comprehensive entries for the remaining 14 peptides -->
+
+  <!-- ═══════════════ 3. TESAMORELIN ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">3</div>
+      <h2>Tesamorelin <span>FDA-Approved GHRH Analog</span></h2>
+    </div>
+
+    <div class="peptide-card highlight">
+      <div class="pc-header">
+        <div>
+          <div class="pc-name">Tesamorelin</div>
+          <div class="pc-aka">Egrifta · GHRH Analog · TH9507</div>
+        </div>
+        <span class="pc-category">GH Releasing · FDA Approved</span>
+      </div>
+      <div class="pc-headline">The only FDA-approved peptide specifically indicated for reducing visceral adipose tissue. Tesamorelin is a growth hormone releasing hormone (GHRH) analog that stimulates natural, pulsatile GH release — preserving your body's feedback loops while targeting the most dangerous fat compartment. Per the FBF knowledge base: "Tesamorelin: FDA-approved GHRH analog specifically reduces visceral (abdominal) fat."</div>
+
+      <div class="pc-sub">
+        <h4>What It Does</h4>
+        <p>Tesamorelin binds to GHRH receptors on the pituitary gland, triggering the release of growth hormone in natural pulses. This is fundamentally different from synthetic HGH, which provides a flat dose. The pulsatile release targets visceral fat specifically — the deep abdominal fat surrounding your organs that drives insulin resistance, cardiovascular disease, and systemic inflammation. Clinical trials showed an average 18% reduction in visceral fat. It also reduces liver fat, improves liver enzymes (ALT, AST), lowers triglycerides, and improves cognitive function.</p>
+      </div>
+
+      <div class="pc-sub">
+        <h4>Reconstitution (10mg vial)</h4>
+        <ul>
+          <li>Add <strong>2mL (200 units) of BAC water</strong> to the 10mg vial</li>
+          <li>Concentration: <strong>5mg per mL</strong> (50mcg per unit)</li>
+          <li>For 2mg dose: draw <strong>40 units</strong></li>
+          <li>One 10mg vial = 5 daily doses</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="green">Dosing Strategies</h4>
+        <table class="dose-table">
+          <thead><tr><th>Protocol</th><th>Dose</th><th>Frequency</th><th>Best For</th></tr></thead>
+          <tbody>
+            <tr><td>Standard / FDA</td><td>2mg</td><td>Once daily</td><td>Visceral fat reduction, the clinically studied dose</td></tr>
+            <tr class="rec"><td>Recommended (FBF)</td><td>2mg</td><td>Once daily before bed, fasted</td><td>Recomp protocol — maximize nighttime GH pulse</td></tr>
+            <tr><td>Conservative</td><td>1mg</td><td>Once daily</td><td>Cost-conscious or GH-sensitive clients</td></tr>
+          </tbody>
+        </table>
+        <ul>
+          <li><strong>Timing:</strong> Before bed, fasted 2+ hours. This is non-negotiable — food (especially carbs/fat) blunts the GH release.</li>
+          <li><strong>Note:</strong> Tesamorelin burns through vials quickly at 2mg/day. Budget accordingly.</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="gold">Cycling</h4>
+        <ul>
+          <li><strong>Recommended:</strong> 12–24 weeks on continuously. Clinical trials ran 26 weeks.</li>
+          <li><strong>Off-cycle:</strong> 4–8 weeks. Visceral fat may partially return if diet/exercise are not maintained.</li>
+          <li><strong>Long-term:</strong> Can be run indefinitely with medical supervision and periodic IGF-1 monitoring.</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4>Stacking & Pairing</h4>
+        <ul>
+          <li><strong>Best combo:</strong> Tesamorelin + CJC-1295 DAC = sustained + pulsatile GH release. The two most powerful GH peptides combined.</li>
+          <li><strong>Recomp stack:</strong> Tesamorelin + Reta + Tesofensine = visceral fat destruction from three different pathways</li>
+          <li><strong>Do NOT combine with:</strong> Synthetic HGH (redundant, choose one approach)</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="red">Contraindications</h4>
+        <ul>
+          <li>Active cancer, pituitary disorders, pregnancy/nursing</li>
+          <li>Monitor: IGF-1, fasting glucose, HbA1c (GH can affect insulin sensitivity)</li>
+          <li>May cause transient injection site reactions, joint pain, or paresthesia (tingling)</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="blue">Realistic Expectations</h4>
+        <ul>
+          <li><strong>Week 1–2:</strong> Improved sleep quality (similar to CJC-1295). No visible body changes yet.</li>
+          <li><strong>Week 4–6:</strong> Subtle reduction in abdominal bloating. Waistband fits slightly looser. Scale may not change (recomp).</li>
+          <li><strong>Week 8–12:</strong> Measurable reduction in visceral fat on InBody scan. Improved triglycerides and liver enzymes on bloodwork.</li>
+          <li><strong>Week 16–24:</strong> Significant visible reduction in belly fat. Improved cognitive clarity reported by many users.</li>
+          <li><strong>What you WON'T feel:</strong> No acute sensation. No energy rush. Benefits are measured by waist circumference, body scans, and bloodwork — not by "feeling."</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ 4. THYMOSIN ALPHA-1 ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">4</div>
+      <h2>Thymosin <span>Alpha-1</span></h2>
+    </div>
+
+    <div class="peptide-card">
+      <div class="pc-header">
+        <div>
+          <div class="pc-name">Thymosin Alpha-1</div>
+          <div class="pc-aka">TA1 · Zadaxin · Thymalfasin</div>
+        </div>
+        <span class="pc-category gold">Immune Modulation</span>
+      </div>
+      <div class="pc-headline">Master regulator of immune function — FDA-approved in 35+ countries. TA1 activates dendritic cells, enhances T-cell maturation, and modulates (not suppresses) the immune response. Particularly valuable for autoimmune conditions and for preventing illness during intense training phases.</div>
+
+      <div class="pc-sub">
+        <h4>Reconstitution (10mg vial)</h4>
+        <ul>
+          <li>Add <strong>1mL (100 units) BAC water</strong> → 10mg/mL (100mcg per unit)</li>
+          <li>For 1.6mg dose: draw <strong>16 units</strong></li>
+          <li>One 10mg vial = ~6 doses (3 weeks at 2x/week)</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="green">Dosing Strategies</h4>
+        <table class="dose-table">
+          <thead><tr><th>Protocol</th><th>Dose</th><th>Frequency</th><th>Best For</th></tr></thead>
+          <tbody>
+            <tr class="rec"><td>Standard</td><td>1.6mg</td><td>2x/week (e.g., Mon/Thu)</td><td>General immune optimization, training support</td></tr>
+            <tr><td>Acute illness</td><td>1.6mg</td><td>Daily for 5–7 days</td><td>Active infection, cold/flu, immune challenge</td></tr>
+            <tr><td>Autoimmune support</td><td>1.6mg</td><td>3x/week</td><td>Hashimoto's, T1D, autoimmune overlap — modulate, don't suppress</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="gold">Cycling</h4>
+        <ul>
+          <li>8–12 weeks on, 4 weeks off. Can be run continuously with medical oversight.</li>
+          <li>Many longevity physicians keep patients on TA1 year-round with periodic breaks.</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4>Stacking</h4>
+        <ul>
+          <li><strong>Recomp support:</strong> TA1 prevents the immune dip from intense training that leads to illness and missed gym days</li>
+          <li><strong>Pairs well with:</strong> Everything. No known negative interactions.</li>
+          <li><strong>Especially valuable with:</strong> High-dose training, GLP-1 drugs, any protocol that stresses the body</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="blue">Realistic Expectations</h4>
+        <ul>
+          <li>You will NOT feel TA1 working. There is no acute sensation.</li>
+          <li>What you'll notice over 4–8 weeks: fewer colds, faster recovery from illness, less training-related immune suppression.</li>
+          <li>The benefit is measured by what DOESN'T happen — you stop getting sick as often.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ 5. TB-500 ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">5</div>
+      <h2>TB-500 <span>Thymosin Beta-4</span></h2>
+    </div>
+
+    <div class="peptide-card">
+      <div class="pc-header">
+        <div>
+          <div class="pc-name">TB-500</div>
+          <div class="pc-aka">Thymosin Beta-4 · TB4 · Tβ4</div>
+        </div>
+        <span class="pc-category green">Healing & Repair</span>
+      </div>
+      <div class="pc-headline">A naturally occurring 43-amino-acid peptide that promotes cell migration, blood vessel growth, and tissue repair throughout the body. Per the FBF Cycle Design Guide: "TB-500: Promotes cell migration, blood vessel growth, tissue repair — particularly valuable for bodybuilders and athletes under intense physical stress."</div>
+
+      <div class="pc-sub">
+        <h4>Reconstitution (20mg vial)</h4>
+        <ul>
+          <li>Add <strong>2mL BAC water</strong> → 10mg/mL (100mcg per unit)</li>
+          <li>For 2.5mg dose: draw <strong>25 units</strong></li>
+          <li>One 20mg vial = 8 doses (4 weeks at 2x/week)</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="green">Dosing Strategies</h4>
+        <table class="dose-table">
+          <thead><tr><th>Protocol</th><th>Dose</th><th>Frequency</th><th>Best For</th></tr></thead>
+          <tbody>
+            <tr><td>Loading (first 4 weeks)</td><td>5mg</td><td>2x/week</td><td>Acute injury, jumpstart healing</td></tr>
+            <tr class="rec"><td>Standard</td><td>2.5mg</td><td>2x/week</td><td>Ongoing repair, maintenance, training support</td></tr>
+            <tr><td>Maintenance</td><td>2.5mg</td><td>1x/week</td><td>Long-term joint and tissue health</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="gold">Cycling</h4>
+        <ul>
+          <li>Loading: 4 weeks at higher dose, then drop to maintenance</li>
+          <li>Standard: 8–12 weeks on, 4 weeks off</li>
+          <li>Can be run longer for chronic injury repair</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4>Stacking</h4>
+        <ul>
+          <li><strong>Gold standard:</strong> TB-500 + BPC-157 = the most effective healing combination available. TB-500 works systemically (whole body); BPC-157 works locally (injection site). Together they cover all bases.</li>
+          <li><strong>Available as a blend:</strong> BPC/TB combo vials (10mg or 20mg) for convenience</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="blue">Realistic Expectations</h4>
+        <ul>
+          <li>Similar to BPC-157 — no acute sensation. Benefits measured by reduced pain, improved mobility, faster healing.</li>
+          <li>Week 2–4: Noticeable improvement in chronic injuries. Week 6–8: Significant healing of tendons and ligaments.</li>
+          <li>TB-500 works systemically — even if you inject in your abdomen, it reaches injuries throughout the body.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ 6. RETATRUTIDE ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">6</div>
+      <h2>Retatrutide <span>(Reta)</span></h2>
+    </div>
+
+    <div class="peptide-card highlight">
+      <div class="pc-header">
+        <div>
+          <div class="pc-name">Retatrutide</div>
+          <div class="pc-aka">Reta · LY3437943 · Triple Agonist GLP-1</div>
+        </div>
+        <span class="pc-category">Weight Management · Triple Agonist</span>
+      </div>
+      <div class="pc-headline">The most advanced weight management compound available — a triple receptor agonist that simultaneously activates GIP, GLP-1, and glucagon receptors. Per the FBF knowledge base: "Retatrutide activates GLP-1, GIP, and glucagon receptors simultaneously, making it the most powerful GLP-1 class drug currently available. The glucagon component creates a fundamentally different metabolic effect."</div>
+
+      <div class="pc-sub">
+        <h4>What It Does</h4>
+        <p>Retatrutide works through three pathways simultaneously: GLP-1 receptor activation suppresses appetite and slows gastric emptying. GIP receptor activation enhances insulin secretion and fat metabolism. Glucagon receptor activation — the unique third mechanism — directly drives visceral fat oxidation, increases resting metabolic rate, and promotes liver fat burning. Clinical trials showed up to 24% body weight loss at 48 weeks. It also significantly improves insulin sensitivity, HbA1c, cholesterol panel (LDL, triglycerides, total cholesterol), liver enzymes, and blood pressure.</p>
+      </div>
+
+      <div class="pc-sub">
+        <h4>Reconstitution (30mg vial)</h4>
+        <ul>
+          <li>Add <strong>3mL BAC water</strong> → 10mg/mL (100mcg per unit)</li>
+          <li>For 1mg dose: draw <strong>10 units</strong>. For 2mg: <strong>20 units</strong>. For 4mg: <strong>40 units</strong>.</li>
+          <li>One 30mg vial = 7.5–30 weekly doses depending on titration phase</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="green">Dosing Strategies — Titration is Critical</h4>
+        <table class="dose-table">
+          <thead><tr><th>Week</th><th>Dose</th><th>Frequency</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>Week 1–2</td><td>1mg</td><td>Once weekly</td><td>Assess tolerance, GI response</td></tr>
+            <tr><td>Week 3–4</td><td>2mg</td><td>Once weekly</td><td>Most clients tolerate this well</td></tr>
+            <tr class="rec"><td>Week 5–8</td><td>3–4mg</td><td>Once weekly</td><td>Therapeutic range for most clients</td></tr>
+            <tr><td>Week 9+</td><td>4–8mg</td><td>Once weekly</td><td>Advanced — titrate based on response and tolerance</td></tr>
+          </tbody>
+        </table>
+        <ul>
+          <li><strong>NEVER start at full dose.</strong> Titration prevents severe nausea and GI distress.</li>
+          <li><strong>Timing:</strong> Inject same day each week. Morning or evening, consistency matters more than timing.</li>
+          <li><strong>If you experience significant nausea:</strong> Stay at current dose for an extra week before increasing.</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="gold">Cycling</h4>
+        <ul>
+          <li><strong>Standard protocol:</strong> 24–48 weeks continuous with titration</li>
+          <li><strong>Maintenance:</strong> After reaching goal weight, taper to lowest effective dose rather than stopping abruptly</li>
+          <li><strong>Discontinuation:</strong> Gradual taper over 4–6 weeks to minimize rebound appetite</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4>Stacking</h4>
+        <ul>
+          <li><strong>Synergistic with:</strong> Tesofensine (central appetite control — different pathway), Cagrilintide (amylin — different pathway), BPC-157 (GI protection)</li>
+          <li><strong>Recomp stack:</strong> Reta + Tesamorelin + CJC-1295 DAC = fat loss + GH optimization + muscle preservation</li>
+          <li><strong>Do NOT combine with:</strong> Other GLP-1 drugs (semaglutide, tirzepatide) — redundant and increases GI side effects</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="red">Contraindications</h4>
+        <ul>
+          <li>Personal or family history of medullary thyroid carcinoma or MEN2 syndrome</li>
+          <li>Severe gastroparesis, history of pancreatitis</li>
+          <li>Diabetes: Requires insulin/medication dose adjustments as insulin sensitivity improves</li>
+          <li>Monitor: Blood glucose closely, especially first 4 weeks. Liver enzymes, lipids at 8 and 16 weeks.</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="blue">Realistic Expectations</h4>
+        <ul>
+          <li><strong>Week 1–2:</strong> Reduced appetite (may be dramatic). Possible nausea, especially after fatty meals. This is the GLP-1 receptor activation — it's working.</li>
+          <li><strong>Week 3–4:</strong> Appetite suppression normalizes to a manageable level. You feel full faster and food noise quiets significantly. GI side effects typically resolve.</li>
+          <li><strong>Week 4–8:</strong> Visible weight loss begins — 1–2 lbs/week is typical. Clothes fit differently. Cravings for high-calorie foods diminish.</li>
+          <li><strong>Week 8–16:</strong> Significant body composition changes. Visceral fat reduction measurable on InBody scan. Bloodwork improvements (cholesterol, liver, glucose).</li>
+          <li><strong>Week 16–24:</strong> Approaching goal weight if adherent to nutrition and training. Dramatic physical transformation.</li>
+          <li><strong>What you WILL feel:</strong> Unlike most peptides, Reta has noticeable effects — reduced hunger, earlier satiety, possibly nausea during titration. You will genuinely want less food.</li>
+          <li><strong>What you WON'T feel:</strong> Energy boost, stimulant effect, or mood change. Reta works on appetite and metabolism, not on energy or mood.</li>
+          <li><strong>Common side effects:</strong> Nausea (especially weeks 1–4), constipation or diarrhea, acid reflux. All typically resolve with titration and time. BPC-157 can help manage GI effects.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ 7. TESOFENSINE ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">7</div>
+      <h2>Tesofensine <span>Triple Reuptake Inhibitor</span></h2>
+    </div>
+
+    <div class="peptide-card highlight">
+      <div class="pc-header">
+        <div>
+          <div class="pc-name">Tesofensine</div>
+          <div class="pc-aka">NS-2330 · Triple Monoamine Reuptake Inhibitor</div>
+        </div>
+        <span class="pc-category">Weight Management · Oral</span>
+      </div>
+      <div class="pc-headline">Per the FBF Cycle Design Guide: "Tesofensine is a triple monoamine reuptake inhibitor that blocks the reuptake of serotonin, dopamine, and norepinephrine in the brain, leading to increased levels of these neurotransmitters and a subsequent decrease in appetite." The only oral compound in our catalog — no injections required.</div>
+
+      <div class="pc-sub">
+        <h4>What It Does</h4>
+        <p>Tesofensine blocks the reuptake of three key neurotransmitters simultaneously: serotonin (satiety and mood), dopamine (motivation and reward), and noradrenaline (energy expenditure and focus). By keeping these neurotransmitters active longer in the brain, it powerfully suppresses appetite, increases resting metabolic rate by 6–8%, enhances motivation and mental clarity, and preserves lean muscle during fat loss. It works through the central nervous system — completely different from GLP-1 drugs which work through the gut — making it ideal for stacking.</p>
+      </div>
+
+      <div class="pc-sub">
+        <h4>No Reconstitution Required</h4>
+        <ul>
+          <li>Tesofensine comes as <strong>pre-made oral capsules (500mcg each)</strong></li>
+          <li><strong>100 capsules per bottle</strong></li>
+          <li>Store at room temperature in a dry place, away from light</li>
+          <li>No needles, no mixing, no refrigeration</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="green">Dosing Strategies</h4>
+        <table class="dose-table">
+          <thead><tr><th>Protocol</th><th>Dose</th><th>Frequency</th><th>Best For</th></tr></thead>
+          <tbody>
+            <tr><td>Starting / Titration</td><td>250mcg (half cap)</td><td>Once daily AM</td><td>First 1–2 weeks to assess tolerance</td></tr>
+            <tr class="rec"><td>Standard</td><td>500mcg (1 cap)</td><td>Once daily AM</td><td>Most clients, therapeutic dose</td></tr>
+            <tr><td>Conservative</td><td>250mcg</td><td>Once daily AM</td><td>Stimulant-sensitive individuals, smaller body weight</td></tr>
+          </tbody>
+        </table>
+        <ul>
+          <li><strong>Take in the morning with or without food.</strong> The noradrenaline activity can disrupt sleep if taken too late.</li>
+          <li><strong>Do not exceed 500mcg/day.</strong></li>
+          <li><strong>Do not take with other stimulants</strong> (high-dose caffeine, DMAA, ephedrine) — additive cardiovascular effects.</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="gold">Cycling</h4>
+        <ul>
+          <li><strong>Recommended:</strong> 8–12 weeks on, 4 weeks off</li>
+          <li><strong>Extended:</strong> Up to 16 weeks with medical monitoring (HR, BP)</li>
+          <li><strong>Off-cycle:</strong> Appetite will return to baseline gradually over 1–2 weeks</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4>Stacking</h4>
+        <ul>
+          <li><strong>Best combo:</strong> Tesofensine (brain) + Retatrutide (gut) = dual-pathway appetite destruction. Different mechanisms, compounding results.</li>
+          <li><strong>Also pairs with:</strong> CJC-1295 DAC, Tesamorelin, BPC-157, all healing peptides</li>
+          <li><strong>Avoid combining with:</strong> Other CNS stimulants, MAOIs, SSRIs (serotonin syndrome risk). Discuss all medications with your physician.</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="red">Contraindications</h4>
+        <ul>
+          <li>Uncontrolled hypertension, history of cardiovascular events, arrhythmias</li>
+          <li>Current SSRI/SNRI/MAOI use — serotonin syndrome risk</li>
+          <li>Anxiety disorders that are poorly controlled — noradrenaline can worsen anxiety</li>
+          <li>Monitor: Heart rate and blood pressure weekly for first 4 weeks, then monthly</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="blue">Realistic Expectations</h4>
+        <ul>
+          <li><strong>Day 1–3:</strong> You WILL feel this one. Reduced appetite within hours. Increased focus and mental clarity. Mild stimulant-like feeling similar to a strong cup of coffee. Some clients report a slight euphoria from dopamine elevation.</li>
+          <li><strong>Week 1–2:</strong> Appetite suppression becomes consistent. Food noise quiets dramatically. Energy and motivation are noticeably higher. May feel slightly wired — this normalizes.</li>
+          <li><strong>Week 3–8:</strong> Steady weight loss (often 1.5–2.5 lbs/week), improved body composition, sustained mental clarity. The stimulant feeling normalizes but the appetite and metabolic benefits persist.</li>
+          <li><strong>What you WILL feel:</strong> This is one of the few compounds with immediately noticeable effects. Reduced hunger, enhanced focus, improved mood, increased energy.</li>
+          <li><strong>Possible side effects:</strong> Elevated heart rate (+5–10 BPM), mild blood pressure increase, dry mouth, insomnia if taken too late in the day, anxiety in sensitive individuals. These typically diminish after week 2.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ 8. CAGRILINTIDE ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">8</div>
+      <h2>Cagrilintide <span>Long-Acting Amylin Analog</span></h2>
+    </div>
+
+    <div class="peptide-card">
+      <div class="pc-header">
+        <div>
+          <div class="pc-name">Cagrilintide</div>
+          <div class="pc-aka">NN9838 · Long-Acting Amylin Receptor Agonist</div>
+        </div>
+        <span class="pc-category gold">Weight Management · Satiety</span>
+      </div>
+      <div class="pc-headline">A long-acting amylin receptor agonist that replaces the "forgotten" pancreatic hormone. Amylin is co-secreted with insulin and regulates satiety, gastric emptying, and post-meal glucose. In Type 1 diabetics, amylin production is severely impaired alongside insulin — making cagrilintide genuine hormone replacement, not just pharmacological appetite suppression.</div>
+
+      <div class="pc-sub">
+        <h4>Reconstitution (10mg vial)</h4>
+        <ul>
+          <li>Add <strong>1mL BAC water</strong> → 10mg/mL (100mcg per unit)</li>
+          <li>For 1mg dose: draw <strong>10 units</strong>. For 1.5mg: <strong>15 units</strong>. For 2mg: <strong>20 units</strong>.</li>
+          <li>One 10mg vial = 5–10 weekly doses</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="green">Dosing Strategies</h4>
+        <table class="dose-table">
+          <thead><tr><th>Protocol</th><th>Dose</th><th>Frequency</th><th>Best For</th></tr></thead>
+          <tbody>
+            <tr><td>Titration</td><td>0.5–1mg</td><td>Once weekly</td><td>First 2–4 weeks</td></tr>
+            <tr class="rec"><td>Standard</td><td>1.5–2mg</td><td>Once weekly</td><td>Therapeutic dose, sustained satiety</td></tr>
+            <tr><td>Advanced (CagriSema)</td><td>2mg + semaglutide</td><td>Once weekly</td><td>Combined with semaglutide for maximum effect (clinical: 15.6% weight loss)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="gold">Cycling</h4>
+        <ul>
+          <li>24+ weeks continuous. Clinical trials ran 32+ weeks.</li>
+          <li>Taper when discontinuing — don't stop abruptly.</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4>Stacking</h4>
+        <ul>
+          <li><strong>CagriSema:</strong> Cagrilintide + Semaglutide = clinically studied combination with exceptional results</li>
+          <li><strong>CagriReta:</strong> Cagrilintide + Retatrutide = three different appetite/metabolic pathways (available as RC10 blend vial)</li>
+          <li><strong>Pairs with:</strong> All GH peptides, healing peptides, Tesofensine</li>
+          <li><strong>Do not combine with:</strong> Pramlintide (Symlin) — redundant amylin agonism</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="blue">Realistic Expectations</h4>
+        <ul>
+          <li><strong>Week 1–2:</strong> Subtle reduction in appetite. Meals feel more satisfying. You stop thinking about food between meals.</li>
+          <li><strong>Week 3–6:</strong> Consistent satiety. Portion sizes naturally decrease. Blood sugar curves smooth out (especially T1D clients).</li>
+          <li><strong>Week 8+:</strong> Steady weight loss, reduced visceral fat, improved metabolic markers.</li>
+          <li><strong>What you'll feel:</strong> Genuine fullness after smaller meals — not nausea-based suppression like GLP-1. More like how you felt when you were naturally lean and just... weren't that hungry.</li>
+          <li><strong>Side effects:</strong> Nausea during titration (milder than GLP-1), possible injection site reactions. Typically resolves within 1–2 weeks.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ 9. SLUPP-332 ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">9</div>
+      <h2>SLUPP-332 <span>REV-ERB Agonist</span></h2>
+    </div>
+
+    <div class="peptide-card">
+      <div class="pc-header">
+        <div>
+          <div class="pc-name">SLUPP-332</div>
+          <div class="pc-aka">REV-ERBα/β Agonist · Circadian Metabolic Modulator</div>
+        </div>
+        <span class="pc-category blue">Research · Metabolic</span>
+      </div>
+      <div class="pc-headline">A synthetic agonist of the REV-ERB nuclear receptors — master regulators of circadian rhythm, metabolism, and inflammation. SLUPP-332 essentially reprograms your metabolic clock, increasing energy expenditure, improving lipid metabolism, and enhancing exercise capacity. This is a cutting-edge research compound with emerging clinical interest.</div>
+
+      <div class="pc-sub">
+        <h4>What It Does</h4>
+        <p>REV-ERBα and REV-ERBβ are nuclear receptors that control circadian gene expression — the molecular clock that governs when your body burns fat, builds muscle, and repairs tissue. SLUPP-332 activates these receptors, effectively telling your body to increase energy expenditure, oxidize fat, reduce inflammatory gene expression, and enhance mitochondrial function. Animal studies showed increased running endurance, reduced fat mass, and improved cholesterol without changes in food intake.</p>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="green">Dosing (Research Protocol)</h4>
+        <ul>
+          <li>Dosing protocols are still being established as this is an emerging compound</li>
+          <li>Your coach will provide individualized guidance based on current research</li>
+          <li>Available as 5mg vials — reconstitute per standard protocol</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="blue">Realistic Expectations</h4>
+        <ul>
+          <li>As a research compound, expectations should be tempered. Discuss thoroughly with your coach and physician.</li>
+          <li>Potential benefits based on preclinical data: improved endurance, enhanced fat oxidation, better circadian rhythm regulation.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ 10. MOTS-c ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">10</div>
+      <h2>MOTS-c <span>Mitochondrial Peptide</span></h2>
+    </div>
+
+    <div class="peptide-card highlight">
+      <div class="pc-header">
+        <div>
+          <div class="pc-name">MOTS-c</div>
+          <div class="pc-aka">Mitochondrial Open Reading Frame of the 12S rRNA Type-c</div>
+        </div>
+        <span class="pc-category">Metabolic · Longevity</span>
+      </div>
+      <div class="pc-headline">A mitochondrial-derived peptide that activates AMPK — the master metabolic switch. Per the FBF knowledge base: "MOTS-C is a mitochondrial-derived peptide that improves insulin sensitivity, glucose metabolism, and exercise performance, while also having anti-aging and metabolic health properties."</div>
+
+      <div class="pc-sub">
+        <h4>Reconstitution (40mg vial)</h4>
+        <ul>
+          <li>Add <strong>2mL BAC water</strong> → 20mg/mL (200mcg per unit)</li>
+          <li>For 5mg dose: draw <strong>25 units</strong></li>
+          <li>One 40mg vial = 8 doses (~2.5 weeks at M/W/F)</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="green">Dosing Strategies</h4>
+        <table class="dose-table">
+          <thead><tr><th>Protocol</th><th>Dose</th><th>Frequency</th><th>Best For</th></tr></thead>
+          <tbody>
+            <tr class="rec"><td>Standard (FBF)</td><td>5mg</td><td>Mon/Wed/Fri</td><td>Metabolic optimization, insulin sensitivity, fat oxidation</td></tr>
+            <tr><td>Conservative</td><td>5mg</td><td>2x/week</td><td>Cost-conscious, maintenance phase</td></tr>
+            <tr><td>Pre-workout</td><td>5mg</td><td>30–60 min before training (3x/week)</td><td>Enhanced exercise capacity and endurance</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="gold">Cycling — IMPORTANT</h4>
+        <ul>
+          <li><strong>4–6 weeks ON, 4–6 weeks OFF.</strong> This is mandatory for MOTS-c.</li>
+          <li>AMPK activation needs cycling to prevent receptor desensitization and maintain effectiveness.</li>
+          <li>During off-cycle, mitochondrial benefits persist — you're not losing progress.</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4>Stacking</h4>
+        <ul>
+          <li><strong>Longevity stack:</strong> MOTS-c + NAD+ + SS-31 = mitochondrial optimization from three different pathways</li>
+          <li><strong>Metabolic stack:</strong> MOTS-c + Reta + Tesofensine = fat loss through AMPK + GLP-1 + central appetite control</li>
+          <li><strong>Cycle with SS-31:</strong> Run MOTS-c and SS-31 on the same 4–6 week on/off schedule</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="blue">Realistic Expectations</h4>
+        <ul>
+          <li><strong>Week 1:</strong> Possible mild increase in workout capacity. Some clients report feeling slightly more energetic during training.</li>
+          <li><strong>Week 2–4:</strong> Improved endurance, better glucose control (measurable on CGM), enhanced fat utilization during exercise.</li>
+          <li><strong>Week 4–6:</strong> Cumulative metabolic improvements. Body becomes more efficient at using fat for fuel.</li>
+          <li><strong>What you WON'T feel:</strong> No stimulant effect, no appetite change, no acute sensation. Benefits are metabolic and measured by performance, bloodwork, and body composition — not by "feeling."</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ 11. NAD+ ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">11</div>
+      <h2>NAD+ <span>Injectable</span></h2>
+    </div>
+
+    <div class="peptide-card highlight">
+      <div class="pc-header">
+        <div>
+          <div class="pc-name">NAD+ (Nicotinamide Adenine Dinucleotide)</div>
+          <div class="pc-aka">Injectable NAD+ · Coenzyme NAD</div>
+        </div>
+        <span class="pc-category gold">Longevity · Cellular Energy</span>
+      </div>
+      <div class="pc-headline">NAD+ is required for every energy-producing reaction in every cell in your body. Levels decline ~50% between ages 40–60, directly causing reduced energy, slower recovery, cognitive decline, and accelerated aging. Injectable NAD+ bypasses the GI tract for dramatically higher bioavailability than oral NMN/NR supplements.</div>
+
+      <div class="pc-sub">
+        <h4>Reconstitution (1000mg vial)</h4>
+        <ul>
+          <li>Add <strong>2mL BAC water</strong> → 500mg/mL</li>
+          <li>For 200mg dose: draw <strong>40 units</strong></li>
+          <li>One 1000mg vial = 5 doses</li>
+          <li><strong>Note:</strong> NAD+ injections can sting/burn at the injection site. Inject slowly over 15–20 seconds. The sensation is normal and temporary.</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="green">Dosing Strategies</h4>
+        <table class="dose-table">
+          <thead><tr><th>Protocol</th><th>Dose</th><th>Frequency</th><th>Best For</th></tr></thead>
+          <tbody>
+            <tr><td>Maintenance</td><td>100mg</td><td>2–3x/week</td><td>General wellness, anti-aging, energy</td></tr>
+            <tr class="rec"><td>Standard</td><td>200mg</td><td>3x/week</td><td>Active recomp, training recovery, cognitive enhancement</td></tr>
+            <tr><td>Loading</td><td>250mg</td><td>Daily for 5–7 days</td><td>Initial loading phase, or during high-stress periods</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="gold">Cycling</h4>
+        <ul>
+          <li>Can be run continuously — NAD+ is an endogenous molecule, not a drug</li>
+          <li>Some protocols cycle 8 weeks on, 2 weeks off for cost management</li>
+          <li>Loading phase (daily for 1 week) at the start of each cycle maximizes rapid benefit</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4>Stacking</h4>
+        <ul>
+          <li><strong>Longevity stack:</strong> NAD+ + MOTS-c + SS-31 = complete mitochondrial restoration</li>
+          <li><strong>Available as blend:</strong> NM120 (NAD+ 100mg + MOTS-C 10mg + 5-Amino-1MQ 10mg) — three metabolic compounds in one vial</li>
+          <li><strong>Pairs with everything.</strong> No known negative interactions.</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="blue">Realistic Expectations</h4>
+        <ul>
+          <li><strong>Day 1–3:</strong> Many clients report improved mental clarity and focus within the first few days. This is one of the faster-acting compounds.</li>
+          <li><strong>Week 1–2:</strong> Improved energy levels, better workout recovery, clearer thinking. Sleep may improve.</li>
+          <li><strong>Week 4+:</strong> Sustained energy improvements, better skin quality, improved exercise tolerance.</li>
+          <li><strong>What you WILL feel:</strong> NAD+ is one of the few compounds where most people notice a subjective difference — more mental clarity, better energy, improved recovery. The injection itself stings temporarily.</li>
+          <li><strong>Side effects:</strong> Injection site stinging/burning (normal, temporary), occasional mild nausea, flushing, chest pressure during injection. All resolve within minutes. Inject slowly to minimize discomfort.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ 12. GHK-Cu ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">12</div>
+      <h2>GHK-Cu <span>Copper Peptide</span></h2>
+    </div>
+
+    <div class="peptide-card">
+      <div class="pc-header">
+        <div>
+          <div class="pc-name">GHK-Cu</div>
+          <div class="pc-aka">Glycyl-L-Histidyl-L-Lysine Copper Complex · Copper Tripeptide-1</div>
+        </div>
+        <span class="pc-category green">Skin · Anti-Aging · Repair</span>
+      </div>
+      <div class="pc-headline">Per the FBF knowledge base: "GHK-Cu is a naturally occurring tripeptide with copper binding. It was first identified in human plasma where levels decline with age." It activates over 4,000 genes involved in tissue remodeling — essentially telling your body to repair itself like it did decades earlier.</div>
+
+      <div class="pc-sub">
+        <h4>Reconstitution (100mg vial)</h4>
+        <ul>
+          <li>Add <strong>2mL BAC water</strong> → 50mg/mL (500mcg per unit)</li>
+          <li>For 1mg dose: draw <strong>2 units</strong>. For 2mg: <strong>4 units</strong>.</li>
+          <li>One 100mg vial at 1.5mg/day = ~67 days of use</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="green">Dosing Strategies</h4>
+        <table class="dose-table">
+          <thead><tr><th>Protocol</th><th>Dose</th><th>Frequency</th><th>Best For</th></tr></thead>
+          <tbody>
+            <tr><td>Conservative</td><td>1mg</td><td>Daily SubQ</td><td>General anti-aging, skin maintenance</td></tr>
+            <tr class="rec"><td>Standard</td><td>1.5–2mg</td><td>Daily SubQ</td><td>Active skin rejuvenation, hair growth, wound healing</td></tr>
+            <tr><td>Topical</td><td>Applied directly</td><td>Daily</td><td>Targeted skin areas (can use reconstituted solution topically)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="gold">Cycling</h4>
+        <ul>
+          <li>8–12 weeks on, 4 weeks off</li>
+          <li>Can be run longer for active skin/hair goals with periodic breaks</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4>Stacking</h4>
+        <ul>
+          <li><strong>Skin/anti-aging stack:</strong> GHK-Cu + BPC-157 + NAD+ = repair + protection + cellular energy</li>
+          <li><strong>Available as blends:</strong> GLOW (GHK-Cu + TB-500 + BPC-157), KLOW (adds KPV for anti-inflammatory)</li>
+          <li><strong>Hair restoration:</strong> GHK-Cu + topical minoxidil + red light therapy</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="blue">Realistic Expectations</h4>
+        <ul>
+          <li><strong>Week 2–3:</strong> Skin feels slightly smoother, more hydrated. Subtle improvement in skin tone.</li>
+          <li><strong>Week 4–6:</strong> Visible skin tightening, reduced fine lines. Nails grow faster and stronger. Some clients notice hair thickness improving.</li>
+          <li><strong>Week 8–12:</strong> Significant skin quality improvement. Wounds heal noticeably faster. Hair growth visible in thinning areas.</li>
+          <li><strong>What you WON'T feel:</strong> No internal sensation, energy change, or acute effect. Benefits are entirely visual/structural — measured by how you look, not how you feel.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ 13. SS-31 ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">13</div>
+      <h2>SS-31 <span>Elamipretide</span></h2>
+    </div>
+
+    <div class="peptide-card">
+      <div class="pc-header">
+        <div>
+          <div class="pc-name">SS-31 (Elamipretide)</div>
+          <div class="pc-aka">Bendavia · MTP-131 · Mitochondrial Targeted Peptide</div>
+        </div>
+        <span class="pc-category gold">Mitochondrial · Longevity</span>
+      </div>
+      <div class="pc-headline">Per the FBF Cycle Design Guide: "SS-31 is a synthetic tetrapeptide that selectively concentrates in the inner mitochondrial membrane, where it binds to cardiolipin, preventing its oxidation and restoring electron transport chain efficiency." It literally repairs the power plants inside every cell.</div>
+
+      <div class="pc-sub">
+        <h4>Reconstitution (10mg vial)</h4>
+        <ul>
+          <li>Add <strong>1mL BAC water</strong> → 10mg/mL (100mcg per unit)</li>
+          <li>For 5mg dose: draw <strong>50 units</strong></li>
+          <li>One 10mg vial = 2 doses</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="green">Dosing</h4>
+        <table class="dose-table">
+          <thead><tr><th>Protocol</th><th>Dose</th><th>Frequency</th><th>Best For</th></tr></thead>
+          <tbody>
+            <tr class="rec"><td>Standard (FBF)</td><td>5mg</td><td>3x/week SubQ</td><td>Mitochondrial restoration, cardiac, exercise capacity</td></tr>
+            <tr><td>Conservative</td><td>5mg</td><td>2x/week</td><td>Cost-conscious, maintenance</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="gold">Cycling — IMPORTANT</h4>
+        <ul>
+          <li><strong>4–6 weeks ON, 4–6 weeks OFF.</strong> Same cycling as MOTS-c.</li>
+          <li>Run on the same schedule as MOTS-c for convenience.</li>
+          <li>Mitochondrial improvements persist during off-cycle.</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4>Stacking</h4>
+        <ul>
+          <li><strong>Mitochondrial triad:</strong> SS-31 + MOTS-c + NAD+ = complete cellular energy restoration</li>
+          <li>Cycle SS-31 and MOTS-c together (same on/off schedule), NAD+ can run continuously</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="blue">Realistic Expectations</h4>
+        <ul>
+          <li><strong>Week 1–2:</strong> Subtle improvement in exercise tolerance. May notice slightly more endurance during cardio.</li>
+          <li><strong>Week 3–6:</strong> Better workout recovery, improved cardiac output, sustained energy throughout the day.</li>
+          <li><strong>What you WON'T feel:</strong> No acute sensation. Benefits are cellular — measured by performance metrics, not subjective feeling. Think of it as maintenance for your cellular power grid.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ 14. SELANK ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">14</div>
+      <h2>Selank <span>Anxiolytic Peptide</span></h2>
+    </div>
+
+    <div class="peptide-card">
+      <div class="pc-header">
+        <div>
+          <div class="pc-name">Selank</div>
+          <div class="pc-aka">TP-7 · Selanc · Synthetic Tuftsin Analog</div>
+        </div>
+        <span class="pc-category blue">Cognitive · Mood</span>
+      </div>
+      <div class="pc-headline">A synthetic analog of tuftsin (an endogenous immune peptide) developed by the Russian Institute of Molecular Genetics. Selank modulates GABA, serotonin, and dopamine simultaneously — creating calm focus without sedation, addiction potential, or cognitive impairment.</div>
+
+      <div class="pc-sub">
+        <h4>Reconstitution (10mg vial)</h4>
+        <ul>
+          <li>Add <strong>2mL BAC water</strong> → 5mg/mL (50mcg per unit)</li>
+          <li>For 300mcg dose: draw <strong>6 units</strong>. For 600mcg: <strong>12 units</strong>.</li>
+          <li>One 10mg vial at 450mcg/day = ~22 days</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="green">Dosing</h4>
+        <table class="dose-table">
+          <thead><tr><th>Protocol</th><th>Dose</th><th>Frequency</th><th>Best For</th></tr></thead>
+          <tbody>
+            <tr><td>Conservative</td><td>300mcg</td><td>Daily SubQ</td><td>Mild anxiety, general mood support</td></tr>
+            <tr class="rec"><td>Standard</td><td>450–600mcg</td><td>Daily SubQ</td><td>Anxiety reduction, cognitive enhancement, focus</td></tr>
+            <tr><td>As-needed</td><td>300–600mcg</td><td>Before stressful events</td><td>Situational anxiety, presentations, high-stress days</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="gold">Cycling</h4>
+        <ul>
+          <li>Can be run continuously — no tolerance, dependence, or withdrawal documented</li>
+          <li>Many protocols run 8–12 weeks on, 2–4 weeks off as a precaution</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4>Stacking</h4>
+        <ul>
+          <li><strong>Cognitive stack:</strong> Selank + Semax = calm focus + enhanced cognition. Selank handles anxiety reduction; Semax handles stimulation and BDNF. Together: alert, stress-free productivity.</li>
+          <li><strong>Avoid:</strong> Benzodiazepines (potential additive sedation), high-dose alcohol</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="blue">Realistic Expectations</h4>
+        <ul>
+          <li><strong>Day 1–3:</strong> Subtle calming effect within 15–30 minutes of injection. Not sedation — more like the background anxiety volume gets turned down.</li>
+          <li><strong>Week 1–2:</strong> Consistent mood stabilization. Stressful situations feel more manageable. Better sleep quality from reduced nighttime anxiety.</li>
+          <li><strong>What you WILL feel:</strong> Selank has a noticeable (but subtle) effect — calm, centered, less reactive. It's not dramatic like a benzo, but it's perceptible.</li>
+          <li><strong>Side effects:</strong> Extremely rare. Occasional mild fatigue (reduce dose), rare: nasal congestion if accidentally aspirated.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ 15. SEMAX ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">15</div>
+      <h2>Semax <span>Nootropic Peptide</span></h2>
+    </div>
+
+    <div class="peptide-card">
+      <div class="pc-header">
+        <div>
+          <div class="pc-name">Semax</div>
+          <div class="pc-aka">ACTH(4-10) Analog · Heptapeptide · Nootropic</div>
+        </div>
+        <span class="pc-category blue">Cognitive · Focus</span>
+      </div>
+      <div class="pc-headline">Derived from ACTH (adrenocorticotropic hormone) fragment 4-10, Semax dramatically increases BDNF (brain-derived neurotrophic factor) — the single most important protein for growing new neural connections, learning, and memory. It enhances dopamine and serotonin in the prefrontal cortex for improved executive function.</div>
+
+      <div class="pc-sub">
+        <h4>Reconstitution (10mg vial)</h4>
+        <ul>
+          <li>Add <strong>2mL BAC water</strong> → 5mg/mL (50mcg per unit)</li>
+          <li>For 300mcg: draw <strong>6 units</strong>. For 600mcg: <strong>12 units</strong>.</li>
+          <li>One 10mg vial at 450mcg/day = ~22 days</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="green">Dosing</h4>
+        <table class="dose-table">
+          <thead><tr><th>Protocol</th><th>Dose</th><th>Frequency</th><th>Best For</th></tr></thead>
+          <tbody>
+            <tr class="rec"><td>Standard</td><td>300–600mcg</td><td>Daily SubQ (morning)</td><td>Focus, learning, memory, BDNF elevation</td></tr>
+            <tr><td>Pre-work</td><td>300–600mcg</td><td>30 min before demanding cognitive tasks</td><td>Presentations, studying, creative work</td></tr>
+          </tbody>
+        </table>
+        <ul>
+          <li><strong>Always take in the morning or early afternoon.</strong> Can be mildly stimulating — may affect sleep if taken late.</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="gold">Cycling</h4>
+        <ul>
+          <li>Similar to Selank — can run continuously, but 8–12 weeks on / 2–4 weeks off is prudent</li>
+          <li>BDNF elevation persists for several weeks after discontinuation</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4>Stacking</h4>
+        <ul>
+          <li><strong>Best combo:</strong> Semax + Selank = the "Russian cognitive stack." Alert focus without anxiety.</li>
+          <li><strong>Available as blend:</strong> XS20 (Selank 10mg + Semax 10mg) — both in one vial</li>
+          <li><strong>Also pairs with:</strong> NAD+ (cellular energy for brain), MOTS-c (mitochondrial support)</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="blue">Realistic Expectations</h4>
+        <ul>
+          <li><strong>Within 30–60 min:</strong> Improved attention, sharper focus, better working memory. Many users describe it as "turning the lights on" or "the fog clearing."</li>
+          <li><strong>Week 1–2:</strong> Consistent cognitive enhancement. Better recall, faster information processing, improved verbal fluency.</li>
+          <li><strong>What you WILL feel:</strong> Semax has a noticeable cognitive effect — sharper thinking, better focus. It's subtle but real. Not a stimulant rush, more like your brain operating at a higher clock speed.</li>
+          <li><strong>Side effects:</strong> Rare. Occasional mild headache (usually dehydration-related), irritability at higher doses. Reduce dose if overstimulated.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ 16. PT-141 ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">16</div>
+      <h2>PT-141 <span>Bremelanotide</span></h2>
+    </div>
+
+    <div class="peptide-card">
+      <div class="pc-header">
+        <div>
+          <div class="pc-name">PT-141 (Bremelanotide)</div>
+          <div class="pc-aka">Vyleesi (FDA-approved) · Melanocortin-4 Receptor Agonist</div>
+        </div>
+        <span class="pc-category">Sexual Health · FDA Approved</span>
+      </div>
+      <div class="pc-headline">The only FDA-approved medication that works on sexual desire at the brain level. PT-141 activates melanocortin-4 receptors (MC4R) in the hypothalamus — the brain region controlling sexual arousal and desire — producing genuine desire rather than just blood flow (which is all Viagra/Cialis do). Works for both men and women.</div>
+
+      <div class="pc-sub">
+        <h4>Reconstitution (10mg vial)</h4>
+        <ul>
+          <li>Add <strong>2mL BAC water</strong> → 5mg/mL (50mcg per unit)</li>
+          <li>For 1mg dose: draw <strong>20 units</strong>. For 1.5mg: <strong>30 units</strong>. For 2mg: <strong>40 units</strong>.</li>
+          <li>One 10mg vial = 5–10 uses</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="green">Dosing — As Needed Only</h4>
+        <table class="dose-table">
+          <thead><tr><th>Protocol</th><th>Dose</th><th>Timing</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>First use (test dose)</td><td>1mg</td><td>1–2 hours before</td><td>Assess tolerance and response</td></tr>
+            <tr class="rec"><td>Standard</td><td>1.5mg</td><td>1–2 hours before</td><td>Most effective dose for most users</td></tr>
+            <tr><td>Maximum</td><td>2mg</td><td>1–2 hours before</td><td>Higher dose — more side effects, not necessarily more effect</td></tr>
+          </tbody>
+        </table>
+        <ul>
+          <li><strong>As-needed use ONLY.</strong> This is NOT a daily peptide.</li>
+          <li><strong>Maximum 8 doses per month.</strong> More frequent use reduces effectiveness.</li>
+          <li><strong>Do not use more than once in 24 hours.</strong></li>
+          <li><strong>Effects last 24–72 hours</strong> — a natural window of enhanced desire, not a timed performance window.</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="gold">Cycling</h4>
+        <ul>
+          <li>No formal cycle — use as needed, max 8x/month</li>
+          <li>If effectiveness decreases, take 2–4 weeks off to resensitize MC4R receptors</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4>Stacking</h4>
+        <ul>
+          <li><strong>Pairs naturally with:</strong> Testosterone optimization, GH peptides (improved energy and vitality)</li>
+          <li><strong>Does NOT interact with:</strong> PDE5 inhibitors (Viagra, Cialis) — different mechanisms, can be used together safely</li>
+          <li><strong>Note:</strong> PT-141 addresses DESIRE. PDE5 inhibitors address MECHANICS. They complement each other.</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="red">Contraindications</h4>
+        <ul>
+          <li>Uncontrolled hypertension (PT-141 can transiently raise BP)</li>
+          <li>Active cardiovascular disease</li>
+          <li>Do not use with other melanocortin receptor agonists (MT-2, etc.) simultaneously</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4 class="blue">Realistic Expectations</h4>
+        <ul>
+          <li><strong>45–90 min after injection:</strong> Gradual onset of warmth, heightened skin sensitivity, and increased awareness of sexual cues. This is the MC4R activation — your brain is genuinely perceiving more sexual stimuli.</li>
+          <li><strong>1–3 hours:</strong> Peak effect. Enhanced desire, arousal, and responsiveness. For men: improved erection quality alongside desire. For women: increased desire, lubrication, and sensitivity.</li>
+          <li><strong>What you WILL feel:</strong> PT-141 has very noticeable effects. Flushing (warm face), nausea (common but mild, usually passes in 30 min), and genuine sexual desire. The desire feels natural — not forced or artificial.</li>
+          <li><strong>Common side effects:</strong> Nausea (most common, especially at higher doses — takes 30–60 min to pass), facial flushing, headache, mild injection site reaction. Start at 1mg to assess tolerance.</li>
+          <li><strong>What it WON'T do:</strong> It will not cause an erection on its own (it's not Viagra). It creates desire and arousal — you still need stimulation for physical response.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ CONSULTING SERVICE ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">📋</div>
+      <h2>FBF Peptide <span>Consulting Service</span></h2>
+    </div>
+
+    <div class="peptide-card highlight">
+      <div class="pc-header">
+        <div>
+          <div class="pc-name">30-Minute Peptide Consultation</div>
+        </div>
+        <span class="pc-category gold">AVAILABLE NOW</span>
+      </div>
+      <div class="pc-headline">Choose any combination of peptides from this guide for a personalized 30-minute consultation with your coach. We'll review your goals, medical history, current medications, and bloodwork to design a custom peptide protocol tailored specifically to you.</div>
+
+      <div class="pc-sub">
+        <h4 class="green">What's Included</h4>
+        <ul>
+          <li><strong>Protocol design:</strong> Custom dosing, cycling, and stacking strategy based on your specific goals and health profile</li>
+          <li><strong>Reconstitution training:</strong> Step-by-step guidance on proper mixing, dosing, injection technique, and storage for your selected compounds</li>
+          <li><strong>Research samples:</strong> Samples of your selected peptides may be provided for you to bring to your physician for consultation and research purposes</li>
+          <li><strong>Physician coordination:</strong> A printed protocol sheet you can share with your doctor, including mechanism of action, clinical references, and monitoring recommendations</li>
+          <li><strong>Ongoing support:</strong> Follow-up questions via the FBF app chat after your consultation</li>
+        </ul>
+      </div>
+
+      <div class="pc-sub">
+        <h4>How It Works</h4>
+        <ul>
+          <li><strong>Step 1:</strong> Review this guide and identify which peptides interest you</li>
+          <li><strong>Step 2:</strong> Opt in through the FBF app (Recommendations step in your daily check-in) or message your coach directly</li>
+          <li><strong>Step 3:</strong> Provide recent bloodwork (if available) — helps us design a more precise protocol</li>
+          <li><strong>Step 4:</strong> Schedule your 30-minute consultation</li>
+          <li><strong>Step 5:</strong> Receive your custom protocol document, samples (if applicable), and physician handout</li>
+        </ul>
+      </div>
+
+      <div class="info-box">
+        <h5>Important Note</h5>
+        <p>Peptide consulting is educational in nature. All compounds discussed are for research purposes and physician-guided use. FBF does not prescribe, diagnose, or treat medical conditions. Always consult with your licensed healthcare provider before beginning any peptide protocol.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ FOOTER ═══════════════ -->
+  <div class="footer">
+    <div class="brand">FORGED BY FREEDOM</div>
+    <div class="tagline">Build the body. Free the mind.</div>
+    <div class="disclaimer">
+      This guide is for educational and research consultation purposes only. It does not constitute medical advice,
+      a prescription, or a recommendation for human use. All peptide protocols should be reviewed with a licensed
+      healthcare provider before implementation. Individual results vary based on genetics, lifestyle, compliance,
+      and medical history. Bring this document to your physician for coordination.
+      <br><br>
+      © 2026 Forged by Freedom Coaching. All rights reserved. | forgedbyfreedom@proton.me
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

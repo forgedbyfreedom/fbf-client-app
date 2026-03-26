@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forged by Freedom — Get the App</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0a0a0a;
+    color: #e0e8f0;
+    min-height: 100vh;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  .flyer {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 50px 36px 60px;
+    background: #0a0a0a;
+  }
+
+  /* HEADER */
+  .hdr { text-align: center; margin-bottom: 32px; }
+  .app-icon {
+    width: 80px; height: 80px; border-radius: 20px;
+    margin: 0 auto 16px;
+    box-shadow: 0 8px 30px rgba(255,106,0,0.3);
+  }
+  .app-icon img { width: 100%; height: 100%; border-radius: 20px; display: block; }
+  .beta-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,106,0,0.1); border: 1px solid rgba(255,106,0,0.3);
+    border-radius: 40px; padding: 6px 18px; margin-bottom: 20px;
+  }
+  .beta-pill span { color: #FF6A00; font-size: 13px; font-weight: 700; letter-spacing: 0.5px; }
+  .hdr h1 { font-size: 42px; font-weight: 900; color: #fff; line-height: 1.05; margin-bottom: 10px; }
+  .hdr h1 em { font-style: normal; color: #FF6A00; }
+  .hdr p { font-size: 16px; color: #888; max-width: 520px; margin: 0 auto; }
+
+  /* CHIPS */
+  .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 28px; }
+  .chip {
+    display: flex; align-items: center; gap: 5px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px; padding: 6px 14px; font-size: 12px; font-weight: 600; color: #a0a0a0;
+  }
+  .chip i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+
+  /* PHONES */
+  .phones { display: flex; justify-content: center; gap: 14px; margin-bottom: 36px; padding: 8px 0; overflow-x: auto; }
+  .ph-wrap { flex-shrink: 0; text-align: center; }
+  .ph {
+    width: 150px; background: #000; border: 3px solid #333;
+    border-radius: 24px; overflow: hidden; position: relative;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+    transition: transform 0.25s, border-color 0.25s;
+  }
+  .ph:hover { transform: translateY(-6px); border-color: #FF6A00; }
+  .ph-notch {
+    width: 60px; height: 18px; background: #000;
+    border-radius: 0 0 12px 12px; margin: 0 auto; position: relative; z-index: 2;
+  }
+  .ph-screen {
+    background: #0a0a0a; min-height: 290px;
+    padding: 4px 8px 8px; margin-top: -4px;
+  }
+  .ph-label { font-size: 11px; font-weight: 700; color: #FF6A00; margin-top: 10px; letter-spacing: 0.5px; }
+  .ph-sublabel { font-size: 9px; color: #666; margin-top: 2px; }
+
+  /* Simulated Screen Elements */
+  .s-header { display: flex; align-items: center; gap: 5px; margin-bottom: 8px; padding: 4px 0; }
+  .s-logo { width: 18px; height: 18px; background: linear-gradient(135deg, #FF6A00, #FF8533); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 900; color: #0a0a0a; }
+  .s-title { font-size: 10px; font-weight: 700; color: #fff; }
+  .s-card { background: #141414; border: 1px solid #2a2a2a; border-radius: 6px; padding: 6px 8px; margin-bottom: 5px; }
+  .s-card-title { font-size: 7px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px; }
+  .s-label { font-size: 7px; color: #666; }
+  .s-value { font-size: 9px; font-weight: 700; color: #fff; }
+  .s-bar-bg { height: 3px; background: #2a2a2a; border-radius: 2px; margin-top: 2px; margin-bottom: 4px; overflow: hidden; }
+  .s-bar-fill { height: 100%; border-radius: 2px; }
+  .s-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+  .s-bubble { border-radius: 8px; padding: 5px 7px; margin-bottom: 4px; max-width: 85%; font-size: 7px; line-height: 1.3; }
+  .s-bubble-coach { background: #1a1a1a; color: #ccc; border: 1px solid #2a2a2a; }
+  .s-bubble-client { background: rgba(255,106,0,0.15); color: #fff; margin-left: auto; }
+  .s-bubble-sender { font-size: 6px; font-weight: 700; color: #FF6A00; margin-bottom: 1px; }
+  .s-meal-row { display: flex; align-items: center; gap: 5px; margin-bottom: 4px; }
+  .s-meal-icon { width: 20px; height: 20px; background: rgba(255,106,0,0.12); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0; }
+  .s-meal-type { font-size: 5px; font-weight: 700; color: #FF6A00; letter-spacing: 0.3px; text-transform: uppercase; }
+  .s-meal-name { font-size: 7px; font-weight: 600; color: #fff; }
+  .s-meal-cal { font-size: 7px; color: #888; }
+  .s-tabbar { display: flex; justify-content: space-around; align-items: center; background: #141414; border-top: 1px solid #2a2a2a; padding: 4px 0 3px; margin: 0 -8px -8px; border-radius: 0 0 20px 20px; }
+  .s-tab { text-align: center; font-size: 5px; color: #555; font-weight: 500; }
+  .s-tab.active { color: #FF6A00; }
+  .s-tab-icon { font-size: 10px; display: block; margin-bottom: 1px; }
+
+  /* STEPS */
+  .steps-section { margin-bottom: 36px; }
+  .steps-title { font-size: 24px; font-weight: 800; color: #fff; text-align: center; margin-bottom: 4px; }
+  .steps-sub { color: #888; font-size: 13px; text-align: center; margin-bottom: 24px; }
+  .steps { display: flex; flex-direction: column; gap: 12px; }
+  .stp {
+    display: flex; gap: 16px; align-items: flex-start;
+    background: #141414; border: 1px solid #2a2a2a;
+    border-radius: 12px; padding: 20px;
+  }
+  .stp-num {
+    width: 40px; height: 40px; flex-shrink: 0;
+    background: linear-gradient(135deg, #FF6A00, #FF8533);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 900; color: #0a0a0a;
+  }
+  .stp-body { flex: 1; }
+  .stp h3 { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .stp p { font-size: 13px; color: #888; line-height: 1.5; }
+  .stp .stp-link { color: #FF6A00; text-decoration: none; font-weight: 600; font-size: 12px; display: inline-block; margin-top: 6px; }
+
+  /* QR Section */
+  .qr-section { margin-bottom: 36px; }
+  .qr-title { font-size: 20px; font-weight: 800; color: #fff; text-align: center; margin-bottom: 4px; }
+  .qr-sub { color: #888; font-size: 13px; text-align: center; margin-bottom: 20px; }
+  .qr-row { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+  .qr {
+    background: #141414; border: 1px solid #2a2a2a; border-radius: 14px;
+    padding: 20px; width: 230px; text-align: center;
+  }
+  .qr .badge {
+    display: inline-block; background: #FF6A00; color: #0a0a0a;
+    font-size: 10px; font-weight: 800; letter-spacing: 0.6px;
+    padding: 3px 10px; border-radius: 10px; margin-bottom: 10px;
+  }
+  .qr h3 { color: #fff; font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+  .qr .note { color: #666; font-size: 10px; margin-bottom: 12px; line-height: 1.4; }
+  .qr .code {
+    width: 140px; height: 140px; margin: 0 auto 10px;
+    background: #fff; border-radius: 10px; padding: 8px;
+  }
+  .qr .code img { width: 100%; height: 100%; display: block; }
+  .qr .url { font-size: 9px; font-weight: 600; }
+  .qr .url a { color: #FF6A00; text-decoration: none; }
+
+  /* UPDATE NOTICE */
+  .update-box {
+    background: rgba(255,106,0,0.08); border: 1px solid rgba(255,106,0,0.25);
+    border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 36px;
+  }
+  .update-box h3 { color: #FF6A00; font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .update-box p { color: #888; font-size: 13px; line-height: 1.5; }
+
+  /* FOOTER */
+  .ftr {
+    text-align: center; border-top: 1px solid #2a2a2a;
+    padding-top: 24px; color: #555; font-size: 12px;
+  }
+  .ftr a { color: #FF6A00; text-decoration: none; }
+
+  @media (max-width: 700px) {
+    .flyer { padding: 32px 16px; }
+    .hdr h1 { font-size: 32px; }
+    .phones { gap: 10px; }
+    .ph { width: 120px; }
+    .ph-screen { min-height: 240px; }
+    .qr-row { flex-direction: column; align-items: center; }
+    .stp { flex-direction: column; align-items: center; text-align: center; }
+  }
+</style>
+</head>
+<body>
+<div class="flyer">
+
+  <!-- ═══════════════ HEADER ═══════════════ -->
+  <div class="hdr">
+    <div class="app-icon"><img src="data:image/png;base64,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QBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAABBEAAAAQBABAAAAQQQAAAAEEQAAAPBDjv8H/W62EeZ8mPUAAAAASUVORK5CYII=" alt="FBF"></div>
+    <div class="beta-pill"><span>BETA &bull; iOS TESTFLIGHT</span></div>
+    <h1>Your Coaching.<br><em>One App.</em></h1>
+    <p>Check-ins, meals, shopping lists, coach chat, AI insights — everything you need to hit your goals, all in your pocket.</p>
+  </div>
+
+  <!-- ═══════════════ FEATURE CHIPS ═══════════════ -->
+  <div class="chips">
+    <div class="chip"><i style="background:#FF6A00"></i>Daily Check-ins</div>
+    <div class="chip"><i style="background:#22c55e"></i>Meal Plans</div>
+    <div class="chip"><i style="background:#eab308"></i>Shopping Lists</div>
+    <div class="chip"><i style="background:#3b82f6"></i>Coach Chat</div>
+    <div class="chip"><i style="background:#a855f7"></i>AI Insights</div>
+    <div class="chip"><i style="background:#ec4899"></i>Progress Tracking</div>
+    <div class="chip"><i style="background:#ef4444"></i>Barcode Scanner</div>
+  </div>
+
+  <!-- ═══════════════ PHONE MOCKUPS ═══════════════ -->
+  <div class="phones">
+
+    <!-- Dashboard -->
+    <div class="ph-wrap">
+      <div class="ph">
+        <div class="ph-notch"></div>
+        <div class="ph-screen">
+          <div class="s-header"><div class="s-logo">F</div><span class="s-title">Dashboard</span></div>
+          <div class="s-card">
+            <div style="font-size:7px;color:#888;">Good morning</div>
+            <div style="font-size:10px;font-weight:700;color:#fff;">Welcome back</div>
+            <div style="font-size:6px;color:#22c55e;margin-top:2px;">12-day streak</div>
+          </div>
+          <div class="s-card">
+            <div class="s-card-title">Daily Targets</div>
+            <div class="s-row"><span class="s-label">Calories</span><span class="s-value">1,820 / 2,200</span></div>
+            <div class="s-bar-bg"><div class="s-bar-fill" style="width:83%;background:#22c55e;"></div></div>
+            <div class="s-row"><span class="s-label">Protein</span><span class="s-value">165g / 200g</span></div>
+            <div class="s-bar-bg"><div class="s-bar-fill" style="width:82%;background:#22c55e;"></div></div>
+            <div class="s-row"><span class="s-label">Steps</span><span class="s-value">8,420 / 10,000</span></div>
+            <div class="s-bar-bg"><div class="s-bar-fill" style="width:84%;background:#eab308;"></div></div>
+          </div>
+          <div class="s-card" style="text-align:center;">
+            <div class="s-card-title">FBF Daily Score</div>
+            <div style="font-size:18px;font-weight:900;color:#FF6A00;">87</div>
+            <div style="font-size:6px;color:#22c55e;">+3 from yesterday</div>
+          </div>
+          <div class="s-tabbar">
+            <div class="s-tab active"><span class="s-tab-icon">&#9638;</span>Home</div>
+            <div class="s-tab"><span class="s-tab-icon">&#10010;</span></div>
+            <div class="s-tab"><span class="s-tab-icon">&#9993;</span>Chat</div>
+            <div class="s-tab"><span class="s-tab-icon">&#9881;</span>AI</div>
+            <div class="s-tab"><span class="s-tab-icon">&#127860;</span>Meals</div>
+          </div>
+        </div>
+      </div>
+      <div class="ph-label">Dashboard</div>
+      <div class="ph-sublabel">Targets & daily score</div>
+    </div>
+
+    <!-- Meals -->
+    <div class="ph-wrap">
+      <div class="ph">
+        <div class="ph-notch"></div>
+        <div class="ph-screen">
+          <div class="s-header"><div class="s-logo">F</div><span class="s-title">Meals</span></div>
+          <div class="s-card" style="text-align:center;">
+            <div class="s-card-title">Monday Totals</div>
+            <div style="display:flex;justify-content:space-around;">
+              <div><div class="s-value">2,070</div><div class="s-label">Cal</div></div>
+              <div><div class="s-value">156g</div><div class="s-label">Prot</div></div>
+              <div><div class="s-value">196g</div><div class="s-label">Carbs</div></div>
+              <div><div class="s-value">70g</div><div class="s-label">Fat</div></div>
+            </div>
+          </div>
+          <div class="s-card"><div class="s-meal-row"><div class="s-meal-icon">&#9728;</div><div><div class="s-meal-type">Breakfast</div><div class="s-meal-name">Protein Oatmeal</div></div><div class="s-meal-cal">520</div></div></div>
+          <div class="s-card"><div class="s-meal-row"><div class="s-meal-icon">&#127869;</div><div><div class="s-meal-type">Lunch</div><div class="s-meal-name">Chicken &amp; Rice</div></div><div class="s-meal-cal">650</div></div></div>
+          <div class="s-card"><div class="s-meal-row"><div class="s-meal-icon">&#127835;</div><div><div class="s-meal-type">Snack</div><div class="s-meal-name">Greek Yogurt</div></div><div class="s-meal-cal">320</div></div></div>
+          <div class="s-card"><div class="s-meal-row"><div class="s-meal-icon">&#127769;</div><div><div class="s-meal-type">Dinner</div><div class="s-meal-name">Salmon &amp; Sweet Potato</div></div><div class="s-meal-cal">580</div></div></div>
+          <div class="s-tabbar">
+            <div class="s-tab"><span class="s-tab-icon">&#9638;</span>Home</div>
+            <div class="s-tab"><span class="s-tab-icon">&#10010;</span></div>
+            <div class="s-tab"><span class="s-tab-icon">&#9993;</span>Chat</div>
+            <div class="s-tab"><span class="s-tab-icon">&#9881;</span>AI</div>
+            <div class="s-tab active"><span class="s-tab-icon">&#127860;</span>Meals</div>
+          </div>
+        </div>
+      </div>
+      <div class="ph-label">Meal Plan</div>
+      <div class="ph-sublabel">Coach-assigned meals</div>
+    </div>
+
+    <!-- Check-in -->
+    <div class="ph-wrap">
+      <div class="ph">
+        <div class="ph-notch"></div>
+        <div class="ph-screen">
+          <div class="s-header"><div class="s-logo">F</div><span class="s-title">Daily Check-in</span></div>
+          <div class="s-card">
+            <div class="s-card-title">Body &amp; Wellness</div>
+            <div class="s-row"><span class="s-label">Weight</span><span class="s-value">185.2 lbs</span></div>
+            <div style="height:1px;background:#2a2a2a;margin:4px 0;"></div>
+            <div class="s-row"><span class="s-label">Energy</span><span style="font-size:9px;">&#9733;&#9733;&#9733;&#9733;&#9734;</span></div>
+            <div style="height:1px;background:#2a2a2a;margin:4px 0;"></div>
+            <div class="s-row"><span class="s-label">Mood</span><span style="font-size:9px;">&#128170;</span></div>
+          </div>
+          <div class="s-card">
+            <div class="s-card-title">Nutrition</div>
+            <div class="s-row"><span class="s-label">Calories</span><span class="s-value">2,180</span></div>
+            <div class="s-bar-bg"><div class="s-bar-fill" style="width:99%;background:#22c55e;"></div></div>
+            <div class="s-row"><span class="s-label">Protein</span><span class="s-value">198g</span></div>
+            <div class="s-bar-bg"><div class="s-bar-fill" style="width:99%;background:#22c55e;"></div></div>
+          </div>
+          <div class="s-card">
+            <div class="s-card-title">Activity</div>
+            <div class="s-row"><span class="s-label">Steps</span><span class="s-value">11,240</span></div>
+            <div class="s-bar-bg"><div class="s-bar-fill" style="width:100%;background:#FF6A00;"></div></div>
+            <div class="s-row"><span class="s-label">Training</span><span style="font-size:7px;color:#22c55e;font-weight:600;">Upper Body</span></div>
+          </div>
+          <div style="text-align:center;margin-top:6px;">
+            <div style="display:inline-block;background:linear-gradient(135deg,#FF6A00,#FF8533);color:#0a0a0a;font-size:8px;font-weight:800;padding:5px 20px;border-radius:14px;">Submit Check-in</div>
+          </div>
+          <div class="s-tabbar">
+            <div class="s-tab"><span class="s-tab-icon">&#9638;</span>Home</div>
+            <div class="s-tab active"><span class="s-tab-icon">&#10010;</span></div>
+            <div class="s-tab"><span class="s-tab-icon">&#9993;</span>Chat</div>
+            <div class="s-tab"><span class="s-tab-icon">&#9881;</span>AI</div>
+            <div class="s-tab"><span class="s-tab-icon">&#127860;</span>Meals</div>
+          </div>
+        </div>
+      </div>
+      <div class="ph-label">Check-in</div>
+      <div class="ph-sublabel">Log everything in 2 min</div>
+    </div>
+
+    <!-- Coach Chat -->
+    <div class="ph-wrap">
+      <div class="ph">
+        <div class="ph-notch"></div>
+        <div class="ph-screen">
+          <div class="s-header"><div class="s-logo">F</div><span class="s-title">Coach Chat</span></div>
+          <div class="s-bubble s-bubble-coach">
+            <div class="s-bubble-sender">Coach</div>
+            Great check-in! Protein has been on point all week. Let's push steps to 12k.
+          </div>
+          <div class="s-bubble s-bubble-client">
+            Sounds good! Should I add morning walks?
+          </div>
+          <div class="s-bubble s-bubble-coach">
+            <div class="s-bubble-sender">Coach</div>
+            Yes — even 15 min helps. Also updated your meal plan, check the Meals tab.
+          </div>
+          <div class="s-bubble s-bubble-client">
+            Just saw it — salmon looks great. Already on my shopping list.
+          </div>
+          <div class="s-bubble s-bubble-coach">
+            <div class="s-bubble-sender">Coach</div>
+            Perfect. Body scan Tuesday — we'll compare. Keep crushing it.
+          </div>
+          <div style="display:flex;gap:3px;margin-top:6px;align-items:center;">
+            <div style="flex:1;background:#141414;border:1px solid #2a2a2a;border-radius:10px;padding:5px 8px;font-size:7px;color:#555;">Type a message...</div>
+            <div style="width:18px;height:18px;background:#FF6A00;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;">&#9650;</div>
+          </div>
+          <div class="s-tabbar">
+            <div class="s-tab"><span class="s-tab-icon">&#9638;</span>Home</div>
+            <div class="s-tab"><span class="s-tab-icon">&#10010;</span></div>
+            <div class="s-tab active"><span class="s-tab-icon">&#9993;</span>Chat</div>
+            <div class="s-tab"><span class="s-tab-icon">&#9881;</span>AI</div>
+            <div class="s-tab"><span class="s-tab-icon">&#127860;</span>Meals</div>
+          </div>
+        </div>
+      </div>
+      <div class="ph-label">Coach Chat</div>
+      <div class="ph-sublabel">Real-time messaging</div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════ HOW TO GET THE APP ═══════════════ -->
+  <div class="steps-section">
+    <div class="steps-title">How to Get the FBF App</div>
+    <div class="steps-sub">4 quick steps — you'll be set up in under 2 minutes</div>
+    <div class="steps">
+
+      <div class="stp">
+        <div class="stp-num">1</div>
+        <div class="stp-body">
+          <h3>Create Your Account</h3>
+          <p>Sign up with your email and create a password. Do this first — you'll need it to log in to the app.</p>
+          <a class="stp-link" href="https://fbf-dashboard.vercel.app/signup">fbf-dashboard.vercel.app/signup &rarr;</a>
+        </div>
+      </div>
+
+      <div class="stp">
+        <div class="stp-num">2</div>
+        <div class="stp-body">
+          <h3>Install TestFlight</h3>
+          <p>TestFlight is Apple's official app for testing beta apps. Install it from the App Store (it's free).</p>
+          <a class="stp-link" href="https://apps.apple.com/us/app/testflight/id899247664">Download TestFlight &rarr;</a>
+        </div>
+      </div>
+
+      <div class="stp">
+        <div class="stp-num">3</div>
+        <div class="stp-body">
+          <h3>Install the FBF App</h3>
+          <p>Tap this link <strong>on your iPhone</strong> to join the beta and install Forged by Freedom through TestFlight.</p>
+          <a class="stp-link" href="https://testflight.apple.com/join/Xgq6sV1t">testflight.apple.com/join/Xgq6sV1t &rarr;</a>
+        </div>
+      </div>
+
+      <div class="stp">
+        <div class="stp-num">4</div>
+        <div class="stp-body">
+          <h3>Sign In &amp; Go</h3>
+          <p>Open the app and sign in with the email and password you created in Step 1. Your coach's program will already be loaded.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════ QR CODES ═══════════════ -->
+  <div class="qr-section">
+    <div class="qr-title">Scan to Get Started</div>
+    <div class="qr-sub">Use your phone camera to scan any QR code below</div>
+    <div class="qr-row">
+
+      <div class="qr">
+        <div class="badge">STEP 1</div>
+        <h3>Create Account</h3>
+        <div class="note">Sign up on the web first</div>
+        <div class="code"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAEsAQMAAABDsxw2AAAABlBMVEX///8aGhoJPPZ5AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAB7klEQVRoge2aO7aDQAiGybFImSW4FJemS3Mps4QpLXLkDj8wel8lxgIaJ/Kl+g8MD4ndiJ47EQ12eDEvo/sqJRaLrUTqnXin2R14O27w0ZxYONZk4QKNIAtBrIlFrE203BO7HwZN69B+bY/29g1NE7sYI3rw0rxcIFZil2I9vzWNlnaEh/5Pg4l9DnNTrGvaQuzvyiGxAOyHCcabyrf8dCYWhakaZdDngmTXEt3aXHN5NgkrAimxO2CoBGh820HkK9bLwMDXxIIx9I5HLyOVgLi1TramhhILxjwm0Jf0+0QKs+8hk9jnMXhmtiEMYmhEQA3+Z8RbYhdgxa4buWV6Xy+1gee3xEIxxARDLJhd+iwNfjnESuwOWGv/d9V0tUrAxshiuIw0vyUWirGnNI0s6SitPFYtT/ktsTjM6jFrJLvXNinQsiZ2D2y1BReGMGzjSkKiK/J8eX5LLBSz/CajewkzVe1lm5RfaTCxGKwve8/lce/r5VATuwV2Tmk2eynYQg4+0E8sHmO3lt8ExvLxFFncS4LEArGV1KuKSXkst8zErGKJe66J3QRDMA2mKRYurJEFW0+VQ2IXYbBTfvMxZWJXYRDn7QNJOr79Wiixm2CQ0TGvoqdqt5LP8BMLxdyOTcpon3vJJqXnt8Q+j30BjuyuxCXsuOkAAAAASUVORK5CYII=" alt="QR - Create Account"></div>
+        <div class="url"><a href="https://fbf-dashboard.vercel.app/signup">fbf-dashboard.vercel.app/signup</a></div>
+      </div>
+
+      <div class="qr">
+        <div class="badge">STEP 2</div>
+        <h3>Get TestFlight</h3>
+        <div class="note">Apple's beta app installer</div>
+        <div class="code"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAEsAQMAAABDsxw2AAAABlBMVEX///8aGhoJPPZ5AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAB9ElEQVRoge2avZGDQAyF5XFA6BK2FEqD0iiFEggJGHT6WS0ejy+U2eApOlYfl7x5QtKaOIJoOInoqX/o80FUIrcRsFxsIfLsyCdNlt0fcvrkueyWowlYOvYSNdbQaCOVz1VTzB6AdYe5pvpAounLxAX2a4wkO2vWCp2c/qMpsAys1bddMVVrp2aZL2UQ2H1YRMUO4lU0HTfFIgcsGfuIwMxZn0lgWZirIfXNolrGvzLTOoiE20N5YD1g0glU9bQlUCnbx0gLnZU/qW/AcjHtBEysZTj9QGcZrvXtzVzAUjEPwdgbs2KqiWVULK6WAdYB5o1ZqYaaOMLMNPiEQ8DyMfERSyfAZijSloCv0P/iXTSwPKx+Tyy8vl3Zta1agPWBjXq6mo/qe/HyHI6agWVjtnspyu7qIRnw9WHxbUyrb8BSMfdEkUOd6zVMtTFuUpbXWbcrwO7HlndNdQNmL+oSRv1mWHMYsFysiXVcNymOUbTHwFIx18jus67tCtV9i634N2BdYFeM6qy2hNEdPsWmDFgyxhF++ehLmLogi2uvhgPLwhZT6lnn+riINyzS0wasE6zd17fLR+YvZRDYbzCuPzS6RkubZYD9FLOvzPFmmVKVmwlYJ1jUt8B8orRZxn4A9gCWj0V4fXNH+VBjC8mYKIHdj/0BDZLkR4AgluAAAAAASUVORK5CYII=" alt="QR - TestFlight"></div>
+        <div class="url"><a href="https://apps.apple.com/us/app/testflight/id899247664">apps.apple.com/testflight</a></div>
+      </div>
+
+      <div class="qr">
+        <div class="badge">STEP 3</div>
+        <h3>Install FBF App</h3>
+        <div class="note">Open on your iPhone</div>
+        <div class="code"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAEsAQMAAABDsxw2AAAABlBMVEX///8aGhoJPPZ5AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAB5UlEQVRoge2aPZKDMAyFxVBQcgSOwtHC0ThKjkCZgolW1o/tnR26VULx1ODIH2k0fn6WIY4gooG3+SR+TpbZlpg7CFgutlOJkWl9CVbGC781R8vLng9g6dgs1XiObBkr1pvWwzCZewO7H7aWxSQ/ZHaQSo+ysoB9HKPJFpQVS/UN2Mewqm8loZuKy9qFDAL7HhZhm1HTt/HCOQBLwLqYPBE1ughg/49ZNUTf2JRMBmqPfSBVU7sG7CaYzD6lbHVl/YqdQt+AZWJSDTNmepaRwaKzox5sfBMClowVY7Ytp+tYf0h5aLV8yQC7AaZ+uYZZAhq8lJPZNQKWj8lTihVrqGDdyyUr+gYsFZPn4JlXrBIROnNoXIsF7CaYl9IP+mR9AG0K+L9swJIx879WFlZXTKWZv89l3+n1DVgiZq0wPl3o2k3Kaetnn7uOGbBvYzT4ibJduPgeFBgRsHSMzBJoH3KOgZ5lJv4tg8DSsNbDt5sUt8fab2GbPoDdAmuxeruy3ddTdMqAJWMcodiDT3NoNHfXXhUHloXtWiH3Y9zb441iEzqA3QRr9/VxltGZKxkEloz5VxP1/qtEyQL7MEbuk+tez5oFdhMs9E0xralnVN9qqx9YJhbRfTURTZhFJ/44B2Bfwn4A2c2EuorE6JUAAAAASUVORK5CYII=" alt="QR - Join Beta"></div>
+        <div class="url"><a href="https://testflight.apple.com/join/Xgq6sV1t">testflight.apple.com/join/Xgq6sV1t</a></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════ ALREADY HAVE IT? ═══════════════ -->
+  <div class="update-box">
+    <h3>Already have the app?</h3>
+    <p>Open TestFlight, tap <strong>Update</strong> to get the latest build.<br>Then force close the FBF app and reopen after updating.</p>
+  </div>
+
+  <!-- ═══════════════ FOOTER ═══════════════ -->
+  <div class="ftr">
+    <p><a href="https://forgedbyfreedom.org">forgedbyfreedom.org</a> &bull; Forged by Freedom Strength &amp; Nutrition</p>
+    <p style="margin-top:6px;">&copy; 2026 Forged by Freedom. All rights reserved.</p>
+  </div>
+
+</div>
+</body>
+</html>

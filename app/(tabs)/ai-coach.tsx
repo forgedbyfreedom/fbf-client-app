@@ -21,9 +21,11 @@ import { colors, fontSize, spacing, borderRadius } from '../../lib/theme';
 import { generateSpeech, playAudio } from '../../lib/elevenlabs';
 import { apiUpload } from '../../lib/api';
 import { BrandHeader } from '../../components/ui/BrandHeader';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../../hooks/useAuth';
+import { VOICE_IDS, type VoicePreference } from './profile';
 
-const AI_API_BASE = 'https://forged-by-freedom-api-nm4f.onrender.com';
+const AI_API_BASE = process.env.EXPO_PUBLIC_AI_API_URL || 'https://forged-by-freedom-api-nm4f.onrender.com';
 
 const SAMPLE_QUESTIONS = [
   'How is my progress this week?',
@@ -85,8 +87,12 @@ export default function AICoachScreen() {
   const [audioUri, setAudioUri] = useState<string | null>(null);
   const [bloodworkFiles, setBloodworkFiles] = useState<{ name: string; uri: string }[]>([]);
   const [uploadingFiles, setUploadingFiles] = useState(false);
+  const [voicePref, setVoicePref] = useState<VoicePreference>('male');
 
   useEffect(() => {
+    AsyncStorage.getItem('fbf_voice_preference').then((val) => {
+      if (val === 'male' || val === 'female') setVoicePref(val);
+    });
     return () => {
       playerRef.current?.remove();
     };
@@ -201,7 +207,7 @@ export default function AICoachScreen() {
     try {
       // Truncate to ~5000 chars for ElevenLabs free tier limits
       const textToSpeak = answer.length > 5000 ? answer.slice(0, 5000) + '...' : answer;
-      const uri = await generateSpeech(textToSpeak);
+      const uri = await generateSpeech(textToSpeak, VOICE_IDS[voicePref]);
       setAudioUri(uri);
       const player = await playAudio(uri);
       playerRef.current = player;
@@ -266,8 +272,14 @@ export default function AICoachScreen() {
         {/* Header */}
         <BrandHeader title="AI Coach" />
         <Text style={styles.subtitle}>
-          50M+ words analyzed across 14K+ expert transcripts, 100+ sources
+          127M+ words analyzed across 14K+ expert transcripts, 100+ sources — and growing
         </Text>
+
+        <View style={{ backgroundColor: 'rgba(255,106,0,0.08)', borderWidth: 1, borderColor: 'rgba(255,106,0,0.2)', borderRadius: 8, padding: 10, marginTop: -4 }}>
+          <Text style={{ fontSize: 11, color: '#888', lineHeight: 16, textAlign: 'center' }}>
+            Educational & research purposes only. Not medical advice. No recommendations for human consumption are made or implied. Consult a physician before making health changes.
+          </Text>
+        </View>
 
         {/* Tabs */}
         <View style={styles.tabs}>
@@ -461,6 +473,7 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.lg,
     gap: spacing.lg,
+    paddingBottom: spacing.xxxl * 3,
   },
   title: {
     fontSize: fontSize.xxl,

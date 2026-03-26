@@ -31,6 +31,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="workouts"
+        options={{
+          title: 'Workouts',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="barbell-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="checkin"
         options={{
           title: 'Check-in',
@@ -66,6 +75,15 @@ export default function TabLayout() {
       <Tabs.Screen
         name="podcast"
         options={{ href: null }}
+      />
+      <Tabs.Screen
+        name="meals"
+        options={{
+          title: 'Meals',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="nutrition-outline" size={size} color={color} />
+          ),
+        }}
       />
       <Tabs.Screen
         name="compete"
@@ -108,7 +126,7 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   tabLabel: {
-    fontSize: fontSize.xs,
+    fontSize: 10,
     fontWeight: '500',
   },
   checkinIcon: {

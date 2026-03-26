@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forged by Freedom - Your Complete Coaching Platform</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #0a0a0a;
+      color: #ffffff;
+    }
+
+    .flyer {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 60px 40px;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .logo-circle {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #FF6A00, #FF8533);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 900;
+      color: #0a0a0a;
+    }
+
+    .brand-name {
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: #FF6A00;
+    }
+
+    .brand-sub {
+      font-size: 12px;
+      letter-spacing: 4px;
+      color: #555;
+      text-transform: uppercase;
+    }
+
+    .hero-headline {
+      font-size: 48px;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+
+    .hero-headline span { color: #FF6A00; }
+
+    .hero-sub {
+      font-size: 18px;
+      color: #888;
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    /* ── Phone Mockup ── */
+    .phone-showcase {
+      display: flex;
+      justify-content: center;
+      gap: 28px;
+      margin: 50px 0 60px;
+      flex-wrap: wrap;
+    }
+
+    .phone {
+      width: 220px;
+      background: #000;
+      border-radius: 28px;
+      border: 3px solid #333;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+      flex-shrink: 0;
+    }
+
+    .phone-notch {
+      width: 80px;
+      height: 22px;
+      background: #000;
+      border-radius: 0 0 14px 14px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    .phone-screen {
+      background: #0a0a0a;
+      min-height: 420px;
+      padding: 4px 10px 10px;
+      margin-top: -6px;
+    }
+
+    .phone-label {
+      text-align: center;
+      margin-top: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #FF6A00;
+      letter-spacing: 1px;
+    }
+
+    .phone-label-sub {
+      text-align: center;
+      font-size: 11px;
+      color: #666;
+      margin-top: 2px;
+    }
+
+    /* ── Simulated Screen Elements ── */
+    .s-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
+      padding: 6px 0;
+    }
+
+    .s-logo {
+      width: 22px;
+      height: 22px;
+      background: linear-gradient(135deg, #FF6A00, #FF8533);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 900;
+      color: #0a0a0a;
+    }
+
+    .s-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .s-card {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+    }
+
+    .s-card-title {
+      font-size: 9px;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .s-label {
+      font-size: 8px;
+      color: #666;
+    }
+
+    .s-value {
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .s-value-sm {
+      font-size: 9px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .s-accent {
+      color: #FF6A00;
+    }
+
+    .s-green {
+      color: #22c55e;
+    }
+
+    .s-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .s-bar-bg {
+      height: 4px;
+      background: #2a2a2a;
+      border-radius: 2px;
+      margin-top: 3px;
+      margin-bottom: 6px;
+      overflow: hidden;
+    }
+
+    .s-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+    }
+
+    .s-pill {
+      display: inline-block;
+      font-size: 7px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 10px;
+      margin-right: 3px;
+    }
+
+    .s-pill-active {
+      background: rgba(255,106,0,0.2);
+      color: #FF6A00;
+    }
+
+    .s-pill-inactive {
+      background: #1a1a1a;
+      color: #555;
+    }
+
+    .s-divider {
+      height: 1px;
+      background: #2a2a2a;
+      margin: 6px 0;
+    }
+
+    /* Simulated tab bar */
+    .s-tabbar {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background: #141414;
+      border-top: 1px solid #2a2a2a;
+      padding: 6px 0 4px;
+      margin: 0 -10px -10px;
+      border-radius: 0 0 24px 24px;
+    }
+
+    .s-tab {
+      text-align: center;
+      font-size: 6px;
+      color: #555;
+      font-weight: 500;
+    }
+
+    .s-tab.active {
+      color: #FF6A00;
+    }
+
+    .s-tab-icon {
+      font-size: 13px;
+      display: block;
+      margin-bottom: 1px;
+    }
+
+    /* Simulated chat bubble */
+    .s-bubble {
+      border-radius: 10px;
+      padding: 6px 8px;
+      margin-bottom: 5px;
+      max-width: 85%;
+      font-size: 8px;
+      line-height: 1.4;
+    }
+
+    .s-bubble-coach {
+      background: #1a1a1a;
+      color: #ccc;
+      border: 1px solid #2a2a2a;
+    }
+
+    .s-bubble-client {
+      background: rgba(255,106,0,0.15);
+      color: #fff;
+      margin-left: auto;
+    }
+
+    .s-bubble-sender {
+      font-size: 7px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    /* Simulated meal item */
+    .s-meal-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 5px;
+    }
+
+    .s-meal-icon {
+      width: 24px;
+      height: 24px;
+      background: rgba(255,106,0,0.12);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .s-meal-info {
+      flex: 1;
+    }
+
+    .s-meal-type {
+      font-size: 6px;
+      font-weight: 700;
+      color: #FF6A00;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .s-meal-name {
+      font-size: 9px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .s-meal-cal {
+      font-size: 8px;
+      color: #888;
+    }
+
+    /* Shopping list checkbox */
+    .s-check-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 0;
+    }
+
+    .s-checkbox {
+      width: 12px;
+      height: 12px;
+      border: 1.5px solid #555;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .s-checkbox.checked {
+      background: #22c55e;
+      border-color: #22c55e;
+      position: relative;
+    }
+
+    .s-checkbox.checked::after {
+      content: '';
+      position: absolute;
+      left: 3px;
+      top: 1px;
+      width: 4px;
+      height: 7px;
+      border: solid #fff;
+      border-width: 0 1.5px 1.5px 0;
+      transform: rotate(45deg);
+    }
+
+    .s-check-name {
+      font-size: 8px;
+      color: #ccc;
+      flex: 1;
+    }
+
+    .s-check-name.done {
+      text-decoration: line-through;
+      color: #555;
+    }
+
+    .s-check-qty {
+      font-size: 7px;
+      color: #666;
+    }
+
+    .s-cat-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 3px;
+    }
+
+    .s-cat-label {
+      font-size: 7px;
+      font-weight: 700;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-bottom: 3px;
+      margin-top: 6px;
+    }
+
+    /* Delivery buttons in screen */
+    .s-delivery-row {
+      display: flex;
+      gap: 4px;
+      margin-top: 8px;
+    }
+
+    .s-delivery-btn {
+      flex: 1;
+      text-align: center;
+      padding: 5px 2px;
+      border-radius: 6px;
+      border: 1px solid #2a2a2a;
+      background: #1a1a1a;
+    }
+
+    .s-delivery-btn-icon {
+      font-size: 14px;
+      display: block;
+    }
+
+    .s-delivery-btn-name {
+      font-size: 6px;
+      font-weight: 600;
+      color: #ccc;
+      margin-top: 1px;
+    }
+
+    /* Streak / Badge elements */
+    .s-streak-num {
+      font-size: 28px;
+      font-weight: 900;
+      color: #FF6A00;
+      text-align: center;
+      line-height: 1;
+    }
+
+    .s-streak-label {
+      font-size: 8px;
+      color: #888;
+      text-align: center;
+    }
+
+    .s-badge-row {
+      display: flex;
+      gap: 4px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+
+    .s-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+    }
+
+    .s-badge-earned {
+      background: rgba(255,106,0,0.15);
+      border: 1px solid #FF6A00;
+    }
+
+    .s-badge-locked {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      opacity: 0.4;
+    }
+
+    /* ── Feature Grid ── */
+    .features-title {
+      font-size: 14px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #FF6A00;
+      text-align: center;
+      margin-bottom: 32px;
+      font-weight: 700;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 60px;
+    }
+
+    .feature-card {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .feature-card:hover {
+      border-color: #FF6A00;
+    }
+
+    .feature-card.highlight {
+      border-color: #FF6A00;
+      background: linear-gradient(135deg, rgba(255,106,0,0.08), transparent);
+      grid-column: span 2;
+    }
+
+    .feature-icon {
+      font-size: 28px;
+      margin-bottom: 12px;
+    }
+
+    .feature-name {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .feature-desc {
+      font-size: 14px;
+      color: #888;
+      line-height: 1.5;
+    }
+
+    .feature-tag {
+      display: inline-block;
+      background: rgba(255,106,0,0.15);
+      color: #FF6A00;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 100px;
+      margin-top: 12px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Meals Spotlight ── */
+    .spotlight {
+      background: #141414;
+      border: 2px solid #FF6A00;
+      border-radius: 16px;
+      padding: 40px;
+      margin-bottom: 60px;
+      text-align: center;
+    }
+
+    .spotlight-badge {
+      display: inline-block;
+      background: #FF6A00;
+      color: #0a0a0a;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 6px 16px;
+      border-radius: 100px;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+    }
+
+    .spotlight h2 {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .spotlight-sub {
+      font-size: 16px;
+      color: #888;
+      margin-bottom: 28px;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.5;
+    }
+
+    .spotlight-phones {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+
+    .spotlight-features {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      text-align: center;
+    }
+
+    .spotlight-feat {
+      background: #1a1a1a;
+      border-radius: 10px;
+      padding: 20px 12px;
+    }
+
+    .spotlight-feat-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .spotlight-feat-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .spotlight-feat-desc {
+      font-size: 12px;
+      color: #888;
+      line-height: 1.4;
+    }
+
+    .delivery-row {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .delivery-badge {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #ccc;
+    }
+
+    /* ── CTA ── */
+    .cta-section {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .cta-title {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .cta-sub {
+      color: #888;
+      font-size: 16px;
+      margin-bottom: 24px;
+    }
+
+    .cta-button {
+      display: inline-block;
+      background: linear-gradient(135deg, #FF6A00, #FF8533);
+      color: #0a0a0a;
+      font-size: 18px;
+      font-weight: 800;
+      padding: 16px 48px;
+      border-radius: 12px;
+      text-decoration: none;
+      letter-spacing: 0.5px;
+    }
+
+    .footer {
+      text-align: center;
+      border-top: 1px solid #2a2a2a;
+      padding-top: 24px;
+      color: #555;
+      font-size: 12px;
+    }
+
+    .footer a { color: #FF6A00; text-decoration: none; }
+
+    @media (max-width: 700px) {
+      .flyer { padding: 32px 16px; }
+      .hero-headline { font-size: 32px; }
+      .feature-grid { grid-template-columns: 1fr; }
+      .feature-card.highlight { grid-column: span 1; }
+      .spotlight-features { grid-template-columns: 1fr; }
+      .phone-showcase { gap: 16px; }
+      .phone { width: 180px; }
+      .phone-screen { min-height: 340px; }
+      .spotlight-phones { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="flyer">
+
+    <!-- ═══════════════ HERO ═══════════════ -->
+    <div class="hero">
+      <div class="logo-row">
+        <div class="logo-circle">F</div>
+        <div>
+          <div class="brand-name">FORGED BY FREEDOM</div>
+          <div class="brand-sub">Strength &amp; Nutrition</div>
+        </div>
+      </div>
+      <h1 class="hero-headline">
+        Your Coaching.<br><span>One App.</span>
+      </h1>
+      <p class="hero-sub">
+        Everything you need to hit your goals — check-ins, meals, shopping, chat with your coach, AI insights with voice, and more. All in your pocket.
+      </p>
+      <a href="https://data.forgedbyfreedom.org" class="cta-button" style="margin-top:24px;font-size:15px;padding:12px 36px;">Visit data.forgedbyfreedom.org</a>
+    </div>
+
+    <!-- ═══════════════ PHONE SCREENSHOTS ═══════════════ -->
+    <div class="phone-showcase">
+
+      <!-- ── PHONE 1: Dashboard ── -->
+      <div>
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="s-header">
+              <div class="s-logo">F</div>
+              <span class="s-title">Dashboard</span>
+            </div>
+
+            <!-- Greeting -->
+            <div class="s-card">
+              <div style="font-size:8px;color:#888;">Good morning</div>
+              <div style="font-size:12px;font-weight:700;color:#fff;">Bryan</div>
+              <div style="font-size:7px;color:#22c55e;margin-top:2px;">12-day streak</div>
+            </div>
+
+            <!-- Daily Targets -->
+            <div class="s-card">
+              <div class="s-card-title">Daily Targets</div>
+              <div class="s-row">
+                <span class="s-label">Calories</span>
+                <span class="s-value-sm">1,820 / 2,200</span>
+              </div>
+              <div class="s-bar-bg"><div class="s-bar-fill" style="width:83%;background:#22c55e;"></div></div>
+              <div class="s-row">
+                <span class="s-label">Protein</span>
+                <span class="s-value-sm">165g / 200g</span>
+              </div>
+              <div class="s-bar-bg"><div class="s-bar-fill" style="width:82%;background:#22c55e;"></div></div>
+              <div class="s-row">
+                <span class="s-label">Steps</span>
+                <span class="s-value-sm">8,420 / 10,000</span>
+              </div>
+              <div class="s-bar-bg"><div class="s-bar-fill" style="width:84%;background:#eab308;"></div></div>
+            </div>
+
+            <!-- FBF Score -->
+            <div class="s-card" style="text-align:center;">
+              <div class="s-card-title">FBF Daily Score</div>
+              <div style="font-size:24px;font-weight:900;color:#FF6A00;">87</div>
+              <div style="font-size:7px;color:#22c55e;">+3 from yesterday</div>
+            </div>
+
+            <!-- AI Insights mini -->
+            <div class="s-card">
+              <div class="s-card-title">AI Insights</div>
+              <div style="font-size:8px;color:#ccc;line-height:1.4;">Your protein intake has been consistently above target for 5 days. Consider increasing your target to 210g.</div>
+            </div>
+
+            <div class="s-tabbar">
+              <div class="s-tab active"><span class="s-tab-icon">&#9638;</span>Home</div>
+              <div class="s-tab"><span class="s-tab-icon">&#10010;</span></div>
+              <div class="s-tab"><span class="s-tab-icon">&#9993;</span>Chat</div>
+              <div class="s-tab"><span class="s-tab-icon">&#9881;</span>AI</div>
+              <div class="s-tab"><span class="s-tab-icon">&#127860;</span>Meals</div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">Dashboard</div>
+        <div class="phone-label-sub">Targets, scores &amp; AI insights</div>
+      </div>
+
+      <!-- ── PHONE 2: Meals ── -->
+      <div>
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="s-header">
+              <div class="s-logo">F</div>
+              <span class="s-title">Meals & Shopping</span>
+            </div>
+
+            <!-- Tab toggle -->
+            <div style="display:flex;background:#141414;border:1px solid #2a2a2a;border-radius:6px;padding:2px;margin-bottom:8px;">
+              <div style="flex:1;text-align:center;padding:4px;background:rgba(255,106,0,0.15);border-radius:4px;font-size:8px;font-weight:700;color:#FF6A00;">Meal Plan</div>
+              <div style="flex:1;text-align:center;padding:4px;font-size:8px;font-weight:600;color:#555;">Shopping List</div>
+            </div>
+
+            <!-- Day pills -->
+            <div style="display:flex;gap:3px;margin-bottom:8px;overflow:hidden;">
+              <span class="s-pill s-pill-active">Mon</span>
+              <span class="s-pill s-pill-inactive">Tue</span>
+              <span class="s-pill s-pill-inactive">Wed</span>
+              <span class="s-pill s-pill-inactive">Thu</span>
+              <span class="s-pill s-pill-inactive">Fri</span>
+              <span class="s-pill s-pill-inactive">Sat</span>
+              <span class="s-pill s-pill-inactive">Sun</span>
+            </div>
+
+            <!-- Macro summary -->
+            <div class="s-card" style="text-align:center;">
+              <div class="s-card-title">Monday Totals</div>
+              <div style="display:flex;justify-content:space-around;">
+                <div><div class="s-value">2,070</div><div class="s-label">Calories</div><div style="font-size:7px;color:#FF6A00;">/ 2,200</div></div>
+                <div><div class="s-value">156g</div><div class="s-label">Protein</div><div style="font-size:7px;color:#FF6A00;">/ 200g</div></div>
+                <div><div class="s-value">196g</div><div class="s-label">Carbs</div></div>
+                <div><div class="s-value">70g</div><div class="s-label">Fat</div></div>
+              </div>
+            </div>
+
+            <!-- Meal cards -->
+            <div class="s-card">
+              <div class="s-meal-row">
+                <div class="s-meal-icon">&#9728;</div>
+                <div class="s-meal-info">
+                  <div class="s-meal-type">Breakfast</div>
+                  <div class="s-meal-name">Protein Oatmeal Bowl</div>
+                </div>
+                <div class="s-meal-cal">520 cal</div>
+              </div>
+            </div>
+
+            <div class="s-card">
+              <div class="s-meal-row">
+                <div class="s-meal-icon">&#127869;</div>
+                <div class="s-meal-info">
+                  <div class="s-meal-type">Lunch</div>
+                  <div class="s-meal-name">Grilled Chicken &amp; Rice</div>
+                </div>
+                <div class="s-meal-cal">650 cal</div>
+              </div>
+            </div>
+
+            <div class="s-card">
+              <div class="s-meal-row">
+                <div class="s-meal-icon">&#127835;</div>
+                <div class="s-meal-info">
+                  <div class="s-meal-type">Snack</div>
+                  <div class="s-meal-name">Greek Yogurt &amp; Nuts</div>
+                </div>
+                <div class="s-meal-cal">320 cal</div>
+              </div>
+            </div>
+
+            <div class="s-card">
+              <div class="s-meal-row">
+                <div class="s-meal-icon">&#127769;</div>
+                <div class="s-meal-info">
+                  <div class="s-meal-type">Dinner</div>
+                  <div class="s-meal-name">Salmon &amp; Sweet Potato</div>
+                </div>
+                <div class="s-meal-cal">580 cal</div>
+              </div>
+            </div>
+
+            <div class="s-tabbar">
+              <div class="s-tab"><span class="s-tab-icon">&#9638;</span>Home</div>
+              <div class="s-tab"><span class="s-tab-icon">&#10010;</span></div>
+              <div class="s-tab"><span class="s-tab-icon">&#9993;</span>Chat</div>
+              <div class="s-tab"><span class="s-tab-icon">&#9881;</span>AI</div>
+              <div class="s-tab active"><span class="s-tab-icon">&#127860;</span>Meals</div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">Meal Plan</div>
+        <div class="phone-label-sub">Coach-assigned meals &amp; macros</div>
+      </div>
+
+      <!-- ── PHONE 3: Shopping List ── -->
+      <div>
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="s-header">
+              <div class="s-logo">F</div>
+              <span class="s-title">Meals & Shopping</span>
+            </div>
+
+            <!-- Tab toggle -->
+            <div style="display:flex;background:#141414;border:1px solid #2a2a2a;border-radius:6px;padding:2px;margin-bottom:8px;">
+              <div style="flex:1;text-align:center;padding:4px;font-size:8px;font-weight:600;color:#555;">Meal Plan</div>
+              <div style="flex:1;text-align:center;padding:4px;background:rgba(255,106,0,0.15);border-radius:4px;font-size:8px;font-weight:700;color:#FF6A00;">Shopping List</div>
+            </div>
+
+            <div class="s-card">
+              <div style="display:flex;align-items:center;gap:4px;margin-bottom:8px;">
+                <span style="font-size:13px;">&#128722;</span>
+                <span style="font-size:10px;font-weight:600;color:#fff;flex:1;">Shopping List</span>
+                <span style="font-size:8px;color:#888;">3/18</span>
+              </div>
+
+              <!-- Produce -->
+              <div class="s-cat-label"><span class="s-cat-dot" style="background:#22c55e;"></span> Produce</div>
+              <div class="s-check-row">
+                <div class="s-checkbox checked"></div>
+                <span class="s-check-name done">Banana</span>
+                <span class="s-check-qty">1 medium</span>
+              </div>
+              <div class="s-check-row">
+                <div class="s-checkbox"></div>
+                <span class="s-check-name">Blueberries</span>
+                <span class="s-check-qty">0.5 cup</span>
+              </div>
+              <div class="s-check-row">
+                <div class="s-checkbox"></div>
+                <span class="s-check-name">Broccoli</span>
+                <span class="s-check-qty">2 cups</span>
+              </div>
+              <div class="s-check-row">
+                <div class="s-checkbox"></div>
+                <span class="s-check-name">Sweet Potato</span>
+                <span class="s-check-qty">1 large</span>
+              </div>
+              <div class="s-check-row">
+                <div class="s-checkbox"></div>
+                <span class="s-check-name">Asparagus</span>
+                <span class="s-check-qty">1 bunch</span>
+              </div>
+
+              <!-- Protein -->
+              <div class="s-cat-label"><span class="s-cat-dot" style="background:#ef4444;"></span> Protein</div>
+              <div class="s-check-row">
+                <div class="s-checkbox checked"></div>
+                <span class="s-check-name done">Chicken Breast</span>
+                <span class="s-check-qty">8 oz</span>
+              </div>
+              <div class="s-check-row">
+                <div class="s-checkbox"></div>
+                <span class="s-check-name">Salmon Fillet</span>
+                <span class="s-check-qty">6 oz</span>
+              </div>
+
+              <!-- Dairy -->
+              <div class="s-cat-label"><span class="s-cat-dot" style="background:#3b82f6;"></span> Dairy</div>
+              <div class="s-check-row">
+                <div class="s-checkbox checked"></div>
+                <span class="s-check-name done">Greek Yogurt</span>
+                <span class="s-check-qty">1 cup</span>
+              </div>
+
+              <!-- Grains -->
+              <div class="s-cat-label"><span class="s-cat-dot" style="background:#eab308;"></span> Grains</div>
+              <div class="s-check-row">
+                <div class="s-checkbox"></div>
+                <span class="s-check-name">Rolled Oats</span>
+                <span class="s-check-qty">1 cup</span>
+              </div>
+              <div class="s-check-row">
+                <div class="s-checkbox"></div>
+                <span class="s-check-name">Jasmine Rice</span>
+                <span class="s-check-qty">1 cup</span>
+              </div>
+            </div>
+
+            <!-- Delivery buttons -->
+            <div class="s-card">
+              <div style="font-size:8px;font-weight:600;color:#fff;margin-bottom:4px;">Order Delivery</div>
+              <div style="font-size:7px;color:#888;margin-bottom:6px;">15 items remaining</div>
+              <div class="s-delivery-row">
+                <div class="s-delivery-btn">
+                  <span class="s-delivery-btn-icon">&#127979;</span>
+                  <div class="s-delivery-btn-name" style="color:#43B02A;">Instacart</div>
+                </div>
+                <div class="s-delivery-btn">
+                  <span class="s-delivery-btn-icon">&#128722;</span>
+                  <div class="s-delivery-btn-name" style="color:#0071DC;">Walmart</div>
+                </div>
+                <div class="s-delivery-btn">
+                  <span class="s-delivery-btn-icon">&#128230;</span>
+                  <div class="s-delivery-btn-name" style="color:#FF9900;">Amazon</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="s-tabbar">
+              <div class="s-tab"><span class="s-tab-icon">&#9638;</span>Home</div>
+              <div class="s-tab"><span class="s-tab-icon">&#10010;</span></div>
+              <div class="s-tab"><span class="s-tab-icon">&#9993;</span>Chat</div>
+              <div class="s-tab"><span class="s-tab-icon">&#9881;</span>AI</div>
+              <div class="s-tab active"><span class="s-tab-icon">&#127860;</span>Meals</div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">Shopping List</div>
+        <div class="phone-label-sub">Auto-generated, one-tap delivery</div>
+      </div>
+
+      <!-- ── PHONE 4: Chat ── -->
+      <div>
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="s-header">
+              <div class="s-logo">F</div>
+              <span class="s-title">Coach Chat</span>
+            </div>
+
+            <div style="flex:1;">
+              <div class="s-bubble s-bubble-coach">
+                <div class="s-bubble-sender s-accent">Coach Mike</div>
+                Great check-in today. Your protein has been on point all week. Let's push steps up to 12k this week.
+              </div>
+
+              <div class="s-bubble s-bubble-client">
+                Sounds good! I've been doing the post-dinner walks. Should I add morning walks too?
+              </div>
+
+              <div class="s-bubble s-bubble-coach">
+                <div class="s-bubble-sender s-accent">Coach Mike</div>
+                Yes, even a 15-min morning walk will help. Also updated your meal plan for next week — check the Meals tab.
+              </div>
+
+              <div class="s-bubble s-bubble-client">
+                Just saw it. The salmon sweet potato looks great. Already added to my shopping list.
+              </div>
+
+              <div class="s-bubble s-bubble-coach">
+                <div class="s-bubble-sender s-accent">Coach Mike</div>
+                Perfect. Your body scan is Tuesday — we'll compare against last month's. Keep it up, you're crushing it.
+              </div>
+
+              <div class="s-bubble s-bubble-client">
+                Let's go! Thanks coach.
+              </div>
+            </div>
+
+            <!-- Chat input -->
+            <div style="display:flex;gap:4px;margin-top:8px;align-items:center;">
+              <div style="flex:1;background:#141414;border:1px solid #2a2a2a;border-radius:14px;padding:6px 10px;font-size:8px;color:#555;">Type a message...</div>
+              <div style="width:24px;height:24px;background:#FF6A00;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;">&#9650;</div>
+            </div>
+
+            <div class="s-tabbar">
+              <div class="s-tab"><span class="s-tab-icon">&#9638;</span>Home</div>
+              <div class="s-tab"><span class="s-tab-icon">&#10010;</span></div>
+              <div class="s-tab active"><span class="s-tab-icon">&#9993;</span>Chat</div>
+              <div class="s-tab"><span class="s-tab-icon">&#9881;</span>AI</div>
+              <div class="s-tab"><span class="s-tab-icon">&#127860;</span>Meals</div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">Coach Chat</div>
+        <div class="phone-label-sub">Real-time messaging</div>
+      </div>
+
+    </div>
+
+    <!-- ═══════════════ FEATURES ═══════════════ -->
+    <div class="features-title">Everything You Get</div>
+    <div class="feature-grid">
+
+      <div class="feature-card">
+        <div class="feature-icon">&#x1F4CA;</div>
+        <div class="feature-name">Daily Check-ins</div>
+        <div class="feature-desc">
+          Log weight, nutrition, training, sleep, mood, and supplements in under 2 minutes. Your coach sees it instantly.
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">&#x1F4AC;</div>
+        <div class="feature-name">Direct Coach Chat</div>
+        <div class="feature-desc">
+          Real-time messaging with your coach. Share progress photos, ask questions, get feedback — all in one thread.
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">&#x1F3AF;</div>
+        <div class="feature-name">Smart Dashboard</div>
+        <div class="feature-desc">
+          See your targets, trends, streaks, body scans, and vitals at a glance. Track progress over days, weeks, and months.
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">&#x1F916;</div>
+        <div class="feature-name">AI Coach with Voice</div>
+        <div class="feature-desc">
+          AI analyzes your check-in data to surface patterns, flag risks, and project your progress. Listen to coaching responses with male or female voice — powered by ElevenLabs.
+        </div>
+        <div class="feature-tag">VOICE ENABLED</div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">&#x1F3C6;</div>
+        <div class="feature-name">Compete & Earn Badges</div>
+        <div class="feature-desc">
+          Streaks, badges, and opt-in leaderboards. Compete with other clients or just track your own consistency.
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">&#x1F372;</div>
+        <div class="feature-name">Meal Plans & Shopping</div>
+        <div class="feature-desc">
+          Coach-assigned weekly meal plans with auto-generated shopping lists. One tap to order groceries from Instacart, Walmart, or Amazon Fresh.
+        </div>
+        <div class="feature-tag">NEW</div>
+      </div>
+
+    </div>
+
+    <!-- ═══════════════ MEALS SPOTLIGHT ═══════════════ -->
+    <div class="spotlight">
+      <div class="spotlight-badge">NEW FEATURE</div>
+      <h2>Meals & Smart Shopping List</h2>
+      <p class="spotlight-sub">
+        Your coach assigns a weekly meal plan tailored to your macros. The app auto-generates a shopping list grouped by grocery aisle — then lets you order delivery with one tap.
+      </p>
+
+      <div class="spotlight-features">
+        <div class="spotlight-feat">
+          <div class="spotlight-feat-icon">&#x1F372;</div>
+          <div class="spotlight-feat-title">Weekly Meal Plans</div>
+          <div class="spotlight-feat-desc">
+            Coach-assigned meals calibrated to your calorie and macro targets. Breakfast, lunch, dinner, snacks.
+          </div>
+        </div>
+        <div class="spotlight-feat">
+          <div class="spotlight-feat-icon">&#x1F6D2;</div>
+          <div class="spotlight-feat-title">Auto Shopping List</div>
+          <div class="spotlight-feat-desc">
+            Ingredients auto-aggregated and deduped from all meals. Grouped by aisle. Check off what you already have.
+          </div>
+        </div>
+        <div class="spotlight-feat">
+          <div class="spotlight-feat-icon">&#x1F6F5;</div>
+          <div class="spotlight-feat-title">One-Tap Delivery</div>
+          <div class="spotlight-feat-desc">
+            Order groceries straight from the app. Connects to Instacart, Walmart, and Amazon Fresh.
+          </div>
+        </div>
+      </div>
+
+      <div class="delivery-row">
+        <div class="delivery-badge">Instacart</div>
+        <div class="delivery-badge">Walmart Grocery</div>
+        <div class="delivery-badge">Amazon Fresh</div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ RECOMP PROTOCOL ═══════════════ -->
+    <div class="spotlight" style="border-color:#D4A017;">
+      <div class="spotlight-badge" style="background:#D4A017;">SIGNATURE PROGRAM</div>
+      <h2>The FBF Recomp Protocol</h2>
+      <p class="spotlight-sub">
+        Our proven body recomposition system that simultaneously burns fat and builds lean muscle. No crash diets. No cookie-cutter plans. Just data-driven coaching tailored to your body.
+      </p>
+
+      <div class="spotlight-features">
+        <div class="spotlight-feat">
+          <div class="spotlight-feat-icon">&#x1F4C9;</div>
+          <div class="spotlight-feat-title">Avg 12 lbs Fat Loss</div>
+          <div class="spotlight-feat-desc">
+            Clients average 12 lbs of fat loss in the first 90 days while maintaining or increasing strength.
+          </div>
+        </div>
+        <div class="spotlight-feat">
+          <div class="spotlight-feat-icon">&#x1F4AA;</div>
+          <div class="spotlight-feat-title">Avg 6 lbs Muscle Gain</div>
+          <div class="spotlight-feat-desc">
+            Simultaneous muscle growth through precise nutrition timing, progressive overload, and metabolic optimization.
+          </div>
+        </div>
+        <div class="spotlight-feat">
+          <div class="spotlight-feat-icon">&#x1F9EC;</div>
+          <div class="spotlight-feat-title">Data-Driven</div>
+          <div class="spotlight-feat-desc">
+            Every adjustment is backed by your check-in data, body scans, bloodwork, and AI-powered trend analysis.
+          </div>
+        </div>
+      </div>
+
+      <a href="https://data.forgedbyfreedom.org/recomp-protocol" class="cta-button" style="margin-top:28px;font-size:15px;padding:12px 36px;">Learn About the Recomp Protocol</a>
+    </div>
+
+    <!-- ═══════════════ WHY FBF ═══════════════ -->
+    <div class="spotlight">
+      <div class="spotlight-badge">WHY FORGED BY FREEDOM</div>
+      <h2>World-Class Coaching, One Platform</h2>
+      <p class="spotlight-sub">
+        We don't just give you a plan — we give you a system. AI-powered insights, real-time coach communication, custom meal plans with grocery delivery, voice-enabled coaching, and a community that holds you accountable. This is coaching, evolved.
+      </p>
+
+      <div class="spotlight-features">
+        <div class="spotlight-feat">
+          <div class="spotlight-feat-icon">&#x1F3AF;</div>
+          <div class="spotlight-feat-title">127M+ Words Analyzed</div>
+          <div class="spotlight-feat-desc">
+            Our AI Coach is trained on 127 million+ words across 14,000+ expert transcripts and 100+ sources — and growing every day.
+          </div>
+        </div>
+        <div class="spotlight-feat">
+          <div class="spotlight-feat-icon">&#x1F50A;</div>
+          <div class="spotlight-feat-title">Voice-Enabled AI</div>
+          <div class="spotlight-feat-desc">
+            Listen to coaching responses with your choice of male or female voice. Powered by ElevenLabs.
+          </div>
+        </div>
+        <div class="spotlight-feat">
+          <div class="spotlight-feat-icon">&#x1F4F1;</div>
+          <div class="spotlight-feat-title">Everything In One App</div>
+          <div class="spotlight-feat-desc">
+            Check-ins, meals, shopping lists, chat, AI coach, bloodwork analysis, body scans — all in your pocket.
+          </div>
+        </div>
+      </div>
+
+      <a href="https://data.forgedbyfreedom.org" class="cta-button" style="margin-top:28px;font-size:15px;padding:12px 36px;">Explore data.forgedbyfreedom.org</a>
+    </div>
+
+    <!-- ═══════════════ CTA ═══════════════ -->
+    <div class="cta-section">
+      <div class="cta-title">Ready to Transform Your Physique?</div>
+      <p class="cta-sub">Join the FBF coaching platform. World-class coaching, AI-powered insights, and the Recomp Protocol — all working for you.</p>
+      <a href="https://data.forgedbyfreedom.org" class="cta-button">Start Your Journey</a>
+    </div>
+
+    <!-- ═══════════════ FOOTER ═══════════════ -->
+    <div class="footer">
+      <p>&copy; 2026 Forged by Freedom. All rights reserved.</p>
+      <p><a href="https://data.forgedbyfreedom.org">data.forgedbyfreedom.org</a></p>
+    </div>
+
+  </div>
+</body>
+</html>

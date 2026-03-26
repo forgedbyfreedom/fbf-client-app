@@ -37,6 +37,7 @@ const INITIAL_FORM: CheckinFormData = {
   side_effects_notes: '',
   progress_photo_urls: [],
   general_notes: '',
+  recommendation_opt_ins: {},
   bjj_done: false,
   bjj_type: 'gi',
   bjj_rounds: '',
@@ -46,7 +47,7 @@ const INITIAL_FORM: CheckinFormData = {
   bjj_intensity: 'moderate',
 };
 
-export const TOTAL_STEPS = 6;
+export const TOTAL_STEPS = 7;
 
 interface CheckinContextType {
   form: CheckinFormData;

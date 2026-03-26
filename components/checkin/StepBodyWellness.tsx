@@ -4,18 +4,40 @@ import { CheckinContext } from '../../providers/CheckinProvider';
 import { useAuth } from '../../hooks/useAuth';
 import { Input } from '../ui/Input';
 import { MoodSelector } from './MoodSelector';
+import { HealthKitImportButton } from './HealthKitImportButton';
+import { useHealthKit } from '../../hooks/useHealthKit';
 import { colors, fontSize, spacing } from '../../lib/theme';
 import { DAYS_OF_WEEK } from '../../lib/constants';
 
 export function StepBodyWellness() {
   const { form, updateForm } = useContext(CheckinContext);
   const { client } = useAuth();
+  const { available, requestPermission, getTodayBodyTemp, getTodayHeartRate } = useHealthKit();
 
   const today = DAYS_OF_WEEK[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1];
   const isWeighInDay = client?.weigh_in_day?.toLowerCase() === today;
 
+  const handleHealthImport = async () => {
+    await requestPermission();
+    const [bodyTemp, heartRate] = await Promise.all([
+      getTodayBodyTemp(),
+      getTodayHeartRate(),
+    ]);
+    const updates: Record<string, any> = {};
+    if (bodyTemp > 0) updates.body_temp = String(bodyTemp);
+    if (heartRate.resting > 0) updates.resting_heart_rate = String(heartRate.resting);
+    if (Object.keys(updates).length > 0) updateForm(updates);
+  };
+
   return (
     <View>
+      {available && (
+        <HealthKitImportButton
+          onImport={handleHealthImport}
+          label="Auto-fill from Apple Health"
+          dataTypes="body temperature, resting heart rate"
+        />
+      )}
       {isWeighInDay ? (
         <Input
           label="Weight (lbs)"
@@ -113,6 +135,7 @@ export function StepBodyWellness() {
         onChange={(v) => updateForm({ stress_level: v })}
         label="Stress Level"
         max={10}
+        inverted
       />
     </View>
   );

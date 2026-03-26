@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { api } from '../../lib/api';
 import { Card } from '../ui/Card';
 import { BodyScan, Client, ClientMetrics } from '../../types';
@@ -50,7 +51,15 @@ export function VitalStatsCard({ client, metrics, latestCheckin }: VitalStatsCar
 
   return (
     <View>
-      <Text style={styles.sectionTitle}>Current Stats</Text>
+      <View style={styles.titleRow}>
+        <Text style={styles.sectionTitle}>Current Stats</Text>
+        {Platform.OS === 'ios' && (
+          <View style={styles.healthBadge}>
+            <Ionicons name="heart" size={10} color="#FF2D55" />
+            <Text style={styles.healthBadgeText}>Apple Health</Text>
+          </View>
+        )}
+      </View>
       <Card>
         <View style={styles.statsGrid}>
           <StatBox
@@ -153,6 +162,7 @@ function MiniChart({
   invertGood?: boolean;
 }) {
   const values = data.map(d => d.value);
+  if (values.length === 0) return null;
   const min = Math.min(...values);
   const max = Math.max(...values);
   const range = max - min || 1;
@@ -189,11 +199,30 @@ function MiniChart({
 }
 
 const styles = StyleSheet.create({
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
   sectionTitle: {
     fontSize: fontSize.lg,
     fontWeight: '700',
     color: colors.textPrimary,
-    marginBottom: spacing.md,
+  },
+  healthBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(255, 45, 85, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  healthBadgeText: {
+    fontSize: 10,
+    color: '#FF2D55',
+    fontWeight: '600',
   },
   statsGrid: {
     flexDirection: 'row',

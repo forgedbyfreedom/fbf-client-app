@@ -1,0 +1,343 @@
+// ============================================================
+// AI R&D Council — Delivery
+// ============================================================
+// Handles:
+//   1. Executive memo email
+//   2. Numbered recommendations email (approve/deny/defer)
+//   3. Split vote alert email
+//   4. SMS notification
+//   5. ntfy push notification
+// ============================================================
+
+import nodemailer from 'nodemailer';
+import { CONFIG } from './config.mjs';
+
+// ── Email delivery ──────────────────────────────────────────
+async function sendEmail(subject, htmlBody, textBody) {
+  if (!CONFIG.smtp.user || !CONFIG.smtp.pass) {
+    console.log('  ⚠️  SMTP not configured — skipping email delivery');
+    console.log('     Set SMTP_USER and SMTP_PASS env vars to enable');
+    return false;
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: CONFIG.smtp.host,
+    port: CONFIG.smtp.port,
+    secure: CONFIG.smtp.port === 465,
+    auth: {
+      user: CONFIG.smtp.user,
+      pass: CONFIG.smtp.pass,
+    },
+  });
+
+  for (const recipient of CONFIG.recipients) {
+    try {
+      await transporter.sendMail({
+        from: `"FBF R&D Council" <${CONFIG.smtp.user}>`,
+        to: `"${recipient.name}" <${recipient.email}>`,
+        subject,
+        text: textBody,
+        html: htmlBody,
+      });
+      console.log(`  📧 Email sent to ${recipient.name} (${recipient.email})`);
+    } catch (err) {
+      console.error(`  ❌ Email failed for ${recipient.name}:`, err.message);
+    }
+  }
+  return true;
+}
+
+// ── SMS notification ────────────────────────────────────────
+async function sendSMS(message) {
+  if (!CONFIG.twilio.authToken) {
+    console.log('  ⚠️  Twilio not configured — skipping SMS delivery');
+    return false;
+  }
+
+  const url = `https://api.twilio.com/2010-04-01/Accounts/${CONFIG.twilio.accountSid}/Messages.json`;
+  const auth = Buffer.from(`${CONFIG.twilio.accountSid}:${CONFIG.twilio.authToken}`).toString('base64');
+
+  for (const recipient of CONFIG.recipients) {
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${auth}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          From: CONFIG.twilio.from,
+          To: recipient.phone,
+          Body: message,
+        }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      console.log(`  📱 SMS sent to ${recipient.name} (${recipient.phone})`);
+    } catch (err) {
+      console.error(`  ❌ SMS failed for ${recipient.name}:`, err.message);
+    }
+  }
+  return true;
+}
+
+// ── ntfy push notification ──────────────────────────────────
+async function sendNtfy(title, message, priority = 'default', tags = []) {
+  const { server, topic } = CONFIG.ntfy;
+  try {
+    const res = await fetch(`${server}/${topic}`, {
+      method: 'POST',
+      headers: {
+        'Title': title,
+        'Priority': priority,
+        'Tags': tags.join(','),
+      },
+      body: message,
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    console.log(`  🔔 ntfy push sent (topic: ${topic})`);
+    return true;
+  } catch (err) {
+    console.error(`  ❌ ntfy push failed:`, err.message);
+    console.log('     Make sure ntfy app is installed and subscribed to topic:', topic);
+    return false;
+  }
+}
+
+// ── Markdown → HTML conversion ──────────────────────────────
+function mdToHtml(md) {
+  return md
+    .replace(/^### (.*$)/gm, '<h3 style="color:#FF6A00;margin-top:16px">$1</h3>')
+    .replace(/^## (.*$)/gm, '<h2 style="color:#FF6A00;margin-top:20px;border-bottom:1px solid #333;padding-bottom:6px">$1</h2>')
+    .replace(/^# (.*$)/gm, '<h1 style="color:#FF6A00;margin-top:24px">$1</h1>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/^- (.*$)/gm, '<li style="margin:4px 0">$1</li>')
+    .replace(/^(\d+)\. (.*$)/gm, '<li style="margin:4px 0"><strong>$1.</strong> $2</li>')
+    .replace(/---/g, '<hr style="border-color:#333;margin:20px 0">')
+    .replace(/\n\n/g, '</p><p style="margin:8px 0">')
+    .replace(/\n/g, '<br>');
+}
+
+// ── Email wrapper with FBF branding ─────────────────────────
+function wrapHtml(content, subtitle) {
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="background:#0a0a0a;color:#e0e0e0;font-family:'Inter',Arial,sans-serif;padding:24px;max-width:800px;margin:0 auto">
+  <div style="text-align:center;padding:20px 0;border-bottom:2px solid #FF6A00">
+    <h1 style="color:#FF6A00;margin:0;font-size:28px">🏛️ AI R&D Council</h1>
+    <p style="color:#888;margin:8px 0 0">${subtitle}</p>
+  </div>
+  <div style="padding:20px 0">
+    ${content}
+  </div>
+  <div style="text-align:center;padding:20px 0;border-top:1px solid #333;color:#666;font-size:12px">
+    <p>Generated by the AI R&D Council — 9 AI strategists working autonomously</p>
+    <p>${new Date().toLocaleDateString()}</p>
+  </div>
+</body>
+</html>`;
+}
+
+// ── Build recommendations email with approve/deny/defer ─────
+function buildRecommendationsHtml(business, sessionType, leader, voteResults) {
+  const recs = voteResults.recommendations;
+  if (!recs.length) return null;
+
+  const replyEmail = CONFIG.smtp.user || 'forgedbyfreedom@proton.me';
+
+  let rows = '';
+  for (const rec of recs) {
+    const maxVote = Math.max(rec.votes.APPROVE, rec.votes.DENY, rec.votes.DEFER);
+    const total = rec.votes.APPROVE + rec.votes.DENY + rec.votes.DEFER;
+    const isSplit = total > 0 && (maxVote / total) < 0.6;
+
+    const verdict = isSplit ? '⚠️ SPLIT VOTE' :
+      rec.votes.APPROVE >= rec.votes.DENY && rec.votes.APPROVE >= rec.votes.DEFER ? '✅ Council: APPROVE' :
+      rec.votes.DENY >= rec.votes.DEFER ? '❌ Council: DENY' : '⏸️ Council: DEFER';
+
+    const splitBanner = isSplit ? `
+      <div style="background:#3a2000;border:1px solid #FF6A00;border-radius:6px;padding:8px 12px;margin:8px 0;font-size:13px">
+        ⚠️ <strong>SPLIT VOTE</strong> — The council could not reach majority. Please discuss with Wendy and reply with your decision. This item will be re-raised next session.
+      </div>` : '';
+
+    const voterList = (rec.voters || []).map(v =>
+      `<span style="display:inline-block;margin:2px 4px;padding:2px 8px;border-radius:12px;font-size:11px;background:${
+        v.vote === 'APPROVE' ? '#1a3a1a;color:#4ade80' :
+        v.vote === 'DENY' ? '#3a1a1a;color:#f87171' :
+        '#3a3a1a;color:#facc15'
+      }">${v.name}: ${v.vote}</span>`
+    ).join('');
+
+    rows += `
+    <div style="background:#141414;border:1px solid #2a2a2a;border-radius:8px;padding:16px;margin:12px 0">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="color:#FF6A00;margin:0;font-size:16px">Rec #${rec.number}: ${rec.title}</h3>
+        <span style="font-size:12px;color:#888">${verdict}</span>
+      </div>
+      <p style="margin:6px 0;color:#ccc;font-size:14px">${rec.description}</p>
+      <div style="margin:8px 0;font-size:12px;color:#888">
+        Vote tally: <strong style="color:#4ade80">${rec.votes.APPROVE} Approve</strong> ·
+        <strong style="color:#f87171">${rec.votes.DENY} Deny</strong> ·
+        <strong style="color:#facc15">${rec.votes.DEFER} Defer</strong>
+      </div>
+      <div style="margin:6px 0">${voterList}</div>
+      ${splitBanner}
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid #2a2a2a">
+        <span style="font-size:13px;color:#888;margin-right:8px">Your decision:</span>
+        <a href="mailto:${replyEmail}?subject=COUNCIL VOTE: ${encodeURIComponent(rec.title)}&body=REC%20%23${rec.number}%3A%20APPROVE"
+           style="display:inline-block;padding:6px 16px;background:#166534;color:#fff;border-radius:6px;text-decoration:none;font-size:13px;font-weight:bold;margin:0 4px">
+          ✅ APPROVE
+        </a>
+        <a href="mailto:${replyEmail}?subject=COUNCIL VOTE: ${encodeURIComponent(rec.title)}&body=REC%20%23${rec.number}%3A%20DENY"
+           style="display:inline-block;padding:6px 16px;background:#991b1b;color:#fff;border-radius:6px;text-decoration:none;font-size:13px;font-weight:bold;margin:0 4px">
+          ❌ DENY
+        </a>
+        <a href="mailto:${replyEmail}?subject=COUNCIL VOTE: ${encodeURIComponent(rec.title)}&body=REC%20%23${rec.number}%3A%20DEFER"
+           style="display:inline-block;padding:6px 16px;background:#854d0e;color:#fff;border-radius:6px;text-decoration:none;font-size:13px;font-weight:bold;margin:0 4px">
+          ⏸️ DEFER
+        </a>
+      </div>
+    </div>`;
+  }
+
+  const html = `
+    <h2 style="color:#FF6A00;margin-top:0">🗳️ Council Recommendations — Action Required</h2>
+    <p style="color:#aaa;font-size:14px">The council has voted on the following recommendations. Please review and click <strong>Approve</strong>, <strong>Deny</strong>, or <strong>Defer</strong> on each item.</p>
+    <p style="color:#888;font-size:13px">Session: ${sessionType} | Led by: ${leader}</p>
+    ${rows}
+    <p style="color:#666;font-size:12px;margin-top:24px">
+      Clicking a button will open a pre-filled email reply. Just hit send.
+    </p>`;
+
+  return wrapHtml(html, `${business} — Recommendations for Review`);
+}
+
+// ── Build split vote alert email ─────────────────────────────
+function buildSplitVoteHtml(business, sessionType, splitVotes) {
+  if (!splitVotes.length) return null;
+
+  let rows = '';
+  for (const sv of splitVotes) {
+    const voterDetails = (sv.voters || []).map(v =>
+      `<tr>
+        <td style="padding:4px 8px;border-bottom:1px solid #2a2a2a;font-size:13px">${v.name}</td>
+        <td style="padding:4px 8px;border-bottom:1px solid #2a2a2a;font-size:13px">${v.title}</td>
+        <td style="padding:4px 8px;border-bottom:1px solid #2a2a2a;font-size:13px;font-weight:bold;color:${
+          v.vote === 'APPROVE' ? '#4ade80' : v.vote === 'DENY' ? '#f87171' : '#facc15'
+        }">${v.vote}</td>
+        <td style="padding:4px 8px;border-bottom:1px solid #2a2a2a;font-size:12px;color:#aaa">${v.reasoning}</td>
+      </tr>`
+    ).join('');
+
+    rows += `
+    <div style="background:#1a1000;border:2px solid #FF6A00;border-radius:8px;padding:16px;margin:12px 0">
+      <h3 style="color:#FF6A00;margin:0 0 8px">⚠️ Rec #${sv.number}: ${sv.title}</h3>
+      <p style="color:#ccc;font-size:14px;margin:6px 0">${sv.description}</p>
+      <div style="margin:8px 0;font-size:14px">
+        Vote: <strong style="color:#4ade80">${sv.votes.APPROVE} Approve</strong> ·
+        <strong style="color:#f87171">${sv.votes.DENY} Deny</strong> ·
+        <strong style="color:#facc15">${sv.votes.DEFER} Defer</strong>
+      </div>
+      <table style="width:100%;border-collapse:collapse;margin-top:8px">
+        <tr style="color:#888;font-size:12px;text-transform:uppercase">
+          <th style="text-align:left;padding:4px 8px">Member</th>
+          <th style="text-align:left;padding:4px 8px">Role</th>
+          <th style="text-align:left;padding:4px 8px">Vote</th>
+          <th style="text-align:left;padding:4px 8px">Reasoning</th>
+        </tr>
+        ${voterDetails}
+      </table>
+    </div>`;
+  }
+
+  const html = `
+    <h2 style="color:#FF6A00;margin-top:0">⚠️ SPLIT VOTE ALERT</h2>
+    <p style="color:#ff9944;font-size:15px;font-weight:bold">
+      The council could NOT reach majority on ${splitVotes.length} recommendation${splitVotes.length > 1 ? 's' : ''}.
+    </p>
+    <p style="color:#ccc;font-size:14px">
+      Bryan & Wendy — please discuss these items together and reply with your decision.
+      The council will revisit these in the next session with your guidance.
+    </p>
+    ${rows}
+    <div style="background:#141414;border:1px solid #2a2a2a;border-radius:8px;padding:16px;margin:20px 0">
+      <h3 style="color:#FF6A00;margin:0 0 8px">📋 What To Do</h3>
+      <ol style="color:#ccc;font-size:14px">
+        <li>Review the arguments from each council member above</li>
+        <li>Discuss with each other</li>
+        <li>Reply to this email with your decision on each split item</li>
+        <li>The council will incorporate your decision in tomorrow's session</li>
+      </ol>
+    </div>`;
+
+  return wrapHtml(html, `${business} — Split Vote Alert (${sessionType})`);
+}
+
+// ── Main delivery function ──────────────────────────────────
+export async function deliverMemo(sessionResult) {
+  const { business, sessionType, memo, voteResults, leader } = sessionResult;
+
+  console.log(`\n📬 Delivering for ${business}...`);
+
+  // 1. Executive memo email
+  const memoSubject = `🏛️ R&D Council Memo — ${business} (${sessionType})`;
+  const memoHtml = wrapHtml(`<p style="margin:8px 0">${mdToHtml(memo)}</p>`, `${business} — Strategy Memo`);
+  await sendEmail(memoSubject, memoHtml, memo);
+
+  // 2. ntfy: Memo notification
+  await sendNtfy(
+    `🏛️ R&D Council — ${business}`,
+    `${sessionType} session complete!\nLed by: ${leader}\n${voteResults.recommendations.length} recommendations voted on.\nCheck your email for the full memo.`,
+    'default',
+    ['clipboard', 'office'],
+  );
+
+  // 3. Recommendations email with approve/deny/defer buttons
+  if (voteResults && voteResults.recommendations.length > 0) {
+    const recsHtml = buildRecommendationsHtml(business, sessionType, leader, voteResults);
+    if (recsHtml) {
+      const recsSubject = `🗳️ ACTION REQUIRED: ${voteResults.recommendations.length} Recommendations — ${business} (${sessionType})`;
+      const recsText = voteResults.recommendations.map(r =>
+        `#${r.number}. ${r.title}\n   ${r.description}\n   Vote: ${r.votes.APPROVE}A / ${r.votes.DENY}D / ${r.votes.DEFER}Df\n   → Reply APPROVE, DENY, or DEFER`
+      ).join('\n\n');
+      await sendEmail(recsSubject, recsHtml, recsText);
+
+      // ntfy: Recommendations notification
+      const recsSummary = voteResults.recommendations.map(r =>
+        `#${r.number} ${r.title}: ${r.votes.APPROVE}A/${r.votes.DENY}D/${r.votes.DEFER}Df`
+      ).join('\n');
+      await sendNtfy(
+        `🗳️ Votes Ready — ${business}`,
+        `${voteResults.recommendations.length} recommendations need your review:\n${recsSummary}`,
+        'high',
+        ['ballot_box', 'warning'],
+      );
+    }
+  }
+
+  // 4. Split vote alert (separate email if any)
+  if (voteResults && voteResults.splitVotes.length > 0) {
+    const splitHtml = buildSplitVoteHtml(business, sessionType, voteResults.splitVotes);
+    if (splitHtml) {
+      const splitSubject = `⚠️ SPLIT VOTE: ${voteResults.splitVotes.length} item${voteResults.splitVotes.length > 1 ? 's' : ''} need discussion — ${business}`;
+      const splitText = voteResults.splitVotes.map(sv =>
+        `⚠️ SPLIT: #${sv.number} ${sv.title}\n   APPROVE: ${sv.votes.APPROVE} / DENY: ${sv.votes.DENY} / DEFER: ${sv.votes.DEFER}\n   → Please discuss with each other and reply with your decision.`
+      ).join('\n\n');
+      await sendEmail(splitSubject, splitHtml, splitText);
+
+      // ntfy: Split vote URGENT notification
+      const splitNames = voteResults.splitVotes.map(sv => `#${sv.number} ${sv.title}`).join(', ');
+      await sendNtfy(
+        `⚠️ SPLIT VOTE — ${business}`,
+        `Council is split on: ${splitNames}\nBryan & Wendy need to discuss and decide. Check email for details.`,
+        'urgent',
+        ['rotating_light', 'warning'],
+      );
+    }
+  }
+
+  // 5. SMS ping
+  const smsText = `🏛️ R&D Council — ${business}\n${sessionType} session complete!\n\nLed by: ${leader}\n${voteResults.recommendations.length} recs voted on${voteResults.splitVotes.length > 0 ? `\n⚠️ ${voteResults.splitVotes.length} SPLIT VOTE${voteResults.splitVotes.length > 1 ? 'S' : ''} — check email!` : ''}\n\nCheck your email for the full memo + voting.`;
+  await sendSMS(smsText);
+}

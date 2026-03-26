@@ -8,9 +8,11 @@ import {
   TouchableOpacity,
   Linking,
 } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../hooks/useAuth';
+import { useFoodLog } from '../../hooks/useFoodLog';
 import { api } from '../../lib/api';
 import { Loading } from '../../components/ui/Loading';
 import { Button } from '../../components/ui/Button';
@@ -27,10 +29,12 @@ import { BrandHeader } from '../../components/ui/BrandHeader';
 import { DailyScoreCard } from '../../components/dashboard/DailyScoreCard';
 import { AIInsightsCard } from '../../components/dashboard/AIInsightsCard';
 import { ProgressProjection } from '../../components/dashboard/ProgressProjection';
+import { ActiveChallengesCard } from '../../components/challenges/ActiveChallengesCard';
 import { colors, fontSize, spacing } from '../../lib/theme';
 
 export default function DashboardScreen() {
   const { client, metrics, recentCheckins, streak, loading, clientError, refreshClientData, isAdmin } = useAuth();
+  const { totals: foodLogTotals, hasEntries: hasFoodLog } = useFoodLog();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [refreshing, setRefreshing] = React.useState(false);
@@ -124,7 +128,9 @@ export default function DashboardScreen() {
 
       <StreakCard streak={streak} />
 
-      <TargetsCard client={client} latestCheckin={latestCheckin} />
+      <ActiveChallengesCard />
+
+      <TargetsCard client={client} latestCheckin={latestCheckin} foodLogTotals={hasFoodLog ? foodLogTotals : null} />
 
       <VitalStatsCard client={client} metrics={metrics} latestCheckin={latestCheckin} />
 
@@ -186,6 +192,45 @@ export default function DashboardScreen() {
       <HistoryList checkins={recentCheckins} />
 
       <TouchableOpacity
+        style={styles.promoCard}
+        onPress={() => WebBrowser.openBrowserAsync('https://www.forgedbyfreedom.org/')}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.promoTag}>WORLD-CLASS COACHING</Text>
+        <Text style={styles.promoTitle}>Forged by Freedom</Text>
+        <Text style={styles.promoSub}>
+          AI-powered coaching, custom meal plans, real-time check-ins, and the tools to transform your physique. Visit our platform.
+        </Text>
+        <Text style={styles.promoLink}>forgedbyfreedom.org</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.recompCard}
+        onPress={() => WebBrowser.openBrowserAsync('https://www.forgedbyfreedom.org/fbf-recomp-protocol')}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.recompTag}>PROVEN RESULTS</Text>
+        <Text style={styles.recompTitle}>FBF Recomp Protocol</Text>
+        <Text style={styles.recompSub}>
+          Our signature body recomposition system — lose fat and build muscle simultaneously. Backed by data from hundreds of clients with an average of 12 lbs fat loss and 6 lbs muscle gain in 90 days.
+        </Text>
+        <Text style={styles.promoLink}>Learn More</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.peptideCard}
+        onPress={() => router.push('/peptides')}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.peptideTag}>PEPTIDE RESEARCH</Text>
+        <Text style={styles.peptideTitle}>Explore Our Peptide Catalog</Text>
+        <Text style={styles.peptideSub}>
+          16 research-backed compounds for recomp, fat loss, longevity, cognitive enhancement, and more. Learn what each peptide does and book a consult for the full protocol.
+        </Text>
+        <Text style={styles.promoLink}>Browse Peptides</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
         style={styles.storeCard}
         onPress={() => Linking.openURL('https://www.etsy.com/shop/FBFStrengthNutrition')}
         activeOpacity={0.8}
@@ -194,7 +239,7 @@ export default function DashboardScreen() {
         <Text style={styles.storeSub}>Shop gear and supplements</Text>
       </TouchableOpacity>
 
-      <View style={{ height: spacing.xxxl }} />
+      <View style={{ height: spacing.xxxl * 3 }} />
     </ScrollView>
   );
 }
@@ -254,6 +299,95 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     maxWidth: 120,
     textAlign: 'right',
+  },
+  promoCard: {
+    backgroundColor: 'rgba(255,106,0,0.08)',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: colors.accent,
+    padding: spacing.xl,
+    alignItems: 'center',
+  },
+  promoTag: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: colors.accent,
+    letterSpacing: 2,
+    marginBottom: spacing.sm,
+  },
+  promoTitle: {
+    fontSize: fontSize.xl,
+    fontWeight: '800',
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
+  },
+  promoSub: {
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: spacing.md,
+  },
+  promoLink: {
+    fontSize: fontSize.sm,
+    fontWeight: '700',
+    color: colors.accent,
+  },
+  recompCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: colors.gold,
+    padding: spacing.xl,
+    alignItems: 'center',
+  },
+  recompTag: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: colors.gold,
+    letterSpacing: 2,
+    marginBottom: spacing.sm,
+  },
+  recompTitle: {
+    fontSize: fontSize.lg,
+    fontWeight: '800',
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
+  },
+  recompSub: {
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: spacing.md,
+  },
+  peptideCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#22c55e',
+    padding: spacing.xl,
+    alignItems: 'center' as const,
+  },
+  peptideTag: {
+    fontSize: 10,
+    fontWeight: '800' as const,
+    color: '#22c55e',
+    letterSpacing: 2,
+    marginBottom: spacing.sm,
+  },
+  peptideTitle: {
+    fontSize: fontSize.lg,
+    fontWeight: '800' as const,
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
+  },
+  peptideSub: {
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
+    textAlign: 'center' as const,
+    lineHeight: 20,
+    marginBottom: spacing.md,
   },
   storeCard: {
     backgroundColor: colors.surface,

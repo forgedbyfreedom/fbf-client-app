@@ -23,6 +23,7 @@ import { StepActivity } from '../../components/checkin/StepActivity';
 import { StepSleep } from '../../components/checkin/StepSleep';
 import { StepSupplements } from '../../components/checkin/StepSupplements';
 import { StepNotes } from '../../components/checkin/StepNotes';
+import { StepRecommendations } from '../../components/checkin/StepRecommendations';
 import { Button } from '../../components/ui/Button';
 import { colors, spacing } from '../../lib/theme';
 
@@ -40,7 +41,8 @@ function CheckinFormContent() {
     <StepActivity key={2} />,
     <StepSleep key={3} />,
     <StepSupplements key={4} />,
-    <StepNotes key={5} />,
+    <StepRecommendations key={5} />,
+    <StepNotes key={6} />,
   ];
 
   const goBack = () => {
@@ -98,6 +100,10 @@ function CheckinFormContent() {
       payload.ped_log_json = form.ped_log_json.length > 0 ? form.ped_log_json : null;
       payload.side_effects_notes = form.side_effects_notes || null;
       payload.general_notes = form.general_notes || null;
+      const activeOptIns = Object.entries(form.recommendation_opt_ins)
+        .filter(([, v]) => v)
+        .map(([k]) => k);
+      payload.recommendation_opt_ins = activeOptIns.length > 0 ? activeOptIns : null;
       payload.progress_photo_urls = form.progress_photo_urls.length > 0
         ? form.progress_photo_urls
         : null;
@@ -133,9 +139,10 @@ function CheckinFormContent() {
       Alert.alert('Check-in Submitted!', 'Great work today. Your coach will review your data.', [
         { text: 'OK', onPress: () => router.replace('/(tabs)') },
       ]);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Submit error:', err);
-      Alert.alert('Error', 'Failed to submit check-in. Please try again.');
+      const detail = err?.message || 'Unknown error';
+      Alert.alert('Error', `Failed to submit check-in.\n\n${detail}`);
     } finally {
       setSubmitting(false);
     }

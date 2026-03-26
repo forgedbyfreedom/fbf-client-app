@@ -4,12 +4,37 @@ import { CheckinContext } from '../../providers/CheckinProvider';
 import { useAuth } from '../../hooks/useAuth';
 import { Input } from '../ui/Input';
 import { MoodSelector } from './MoodSelector';
+import { HealthKitImportButton } from './HealthKitImportButton';
+import { useHealthKit } from '../../hooks/useHealthKit';
 import { colors, fontSize, spacing, borderRadius } from '../../lib/theme';
 import { TRAINING_TYPES } from '../../lib/constants';
 
 export function StepActivity() {
   const { form, updateForm } = useContext(CheckinContext);
   const { client } = useAuth();
+  const { available, requestPermission, getTodaySteps, getTodayCaloriesBurned, getTodayWorkouts, getTodayHeartRate } = useHealthKit();
+
+  const handleHealthImport = async () => {
+    await requestPermission();
+    const [steps, calories, workouts, heartRate] = await Promise.all([
+      getTodaySteps(),
+      getTodayCaloriesBurned(),
+      getTodayWorkouts(),
+      getTodayHeartRate(),
+    ]);
+    const updates: Record<string, any> = {};
+    if (steps > 0) updates.steps = String(steps);
+    if (calories > 0) updates.estimated_calories_burned = String(calories);
+    if (heartRate.average > 0) updates.avg_heart_rate = String(heartRate.average);
+    if (workouts.length > 0) {
+      updates.training_done = true;
+      const totalDuration = workouts.reduce((sum, w) => sum + w.duration, 0);
+      if (totalDuration > 0) updates.workout_duration_min = String(totalDuration);
+      const workoutNames = workouts.map((w) => `${w.type} (${w.duration}min)`).join(', ');
+      updates.workout_description = workoutNames;
+    }
+    if (Object.keys(updates).length > 0) updateForm(updates);
+  };
 
   const toggleTrainingType = (type: string) => {
     const current = form.training_type;
@@ -21,6 +46,14 @@ export function StepActivity() {
 
   return (
     <View>
+      {available && (
+        <HealthKitImportButton
+          onImport={handleHealthImport}
+          label="Import activity from Apple Health"
+          dataTypes="steps, calories burned, workouts, heart rate"
+        />
+      )}
+
       <Input
         label={`Steps${client?.target_steps ? ` (target: ${client.target_steps.toLocaleString()})` : ''}`}
         value={form.steps}

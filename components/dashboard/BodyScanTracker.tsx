@@ -287,7 +287,7 @@ export function BodyScanTracker({ clientId }: BodyScanTrackerProps) {
                         {(() => {
                           const first = values[0];
                           const last = values[values.length - 1];
-                          const delta = last - first;
+                          const delta = (last ?? 0) - (first ?? 0);
                           const sign = delta > 0 ? '+' : '';
                           return `Change: ${sign}${delta.toFixed(1)}${metric.unit}`;
                         })()}

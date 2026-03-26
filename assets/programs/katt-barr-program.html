@@ -1,0 +1,1822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Katt Barr – FBF Coaching Program</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    @media print {
+      body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      .page-break { page-break-before: always; }
+      .no-print { display: none !important; }
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #0a0a0a;
+      color: #ffffff;
+      line-height: 1.6;
+    }
+
+    .program {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 40px;
+    }
+
+    /* ── Header / Cover ── */
+    .cover {
+      text-align: center;
+      padding: 60px 0 48px;
+      border-bottom: 2px solid #FF6A00;
+      margin-bottom: 48px;
+    }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .logo-circle {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, #FF6A00, #FF8533);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 900;
+      color: #0a0a0a;
+    }
+
+    .brand-name {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: #FF6A00;
+    }
+
+    .cover h1 {
+      font-size: 42px;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+
+    .cover h1 span { color: #FF6A00; }
+
+    .cover .subtitle {
+      font-size: 18px;
+      color: #888;
+      margin-bottom: 24px;
+    }
+
+    .client-badge {
+      display: inline-block;
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 16px 32px;
+      margin-top: 8px;
+    }
+
+    .client-badge .name {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .client-badge .date {
+      font-size: 13px;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    /* ── Sections ── */
+    .section {
+      margin-bottom: 48px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    .section-icon {
+      width: 36px;
+      height: 36px;
+      background: rgba(255, 106, 0, 0.15);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .section-header h2 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .section-header h2 span { color: #FF6A00; }
+
+    /* ── Stats Grid ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-card .label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .stat-card .value {
+      font-size: 24px;
+      font-weight: 800;
+      color: #FF6A00;
+    }
+
+    .stat-card .unit {
+      font-size: 13px;
+      color: #888;
+      font-weight: 400;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 12px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .card h3 {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .card h3 span { color: #FF6A00; }
+
+    .badge {
+      display: inline-block;
+      background: rgba(255, 106, 0, 0.15);
+      color: #FF6A00;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge.green {
+      background: rgba(34, 197, 94, 0.15);
+      color: #22c55e;
+    }
+
+    .badge.gold {
+      background: rgba(212, 160, 23, 0.15);
+      color: #D4A017;
+    }
+
+    .badge.red {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 8px 12px;
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    tbody td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #1a1a1a;
+      vertical-align: top;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .exercise-name {
+      font-weight: 600;
+    }
+
+    .exercise-note {
+      font-size: 12px;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    /* ── Meal Plan ── */
+    .meal-card {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 12px;
+    }
+
+    .meal-card h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #FF6A00;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .meal-card .meal-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .meal-card .meal-desc {
+      font-size: 13px;
+      color: #ccc;
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+
+    .macro-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .macro-item {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .macro-item strong {
+      color: #fff;
+    }
+
+    /* ── Supplement / Protocol Cards ── */
+    .protocol-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+    }
+
+    .protocol-card {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 18px;
+    }
+
+    .protocol-card h4 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .protocol-card .dose {
+      font-size: 13px;
+      color: #FF6A00;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .protocol-card .timing {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .protocol-card .notes {
+      font-size: 12px;
+      color: #666;
+      margin-top: 6px;
+      font-style: italic;
+    }
+
+    /* ── Callout Box ── */
+    .callout {
+      background: rgba(255, 106, 0, 0.08);
+      border: 1px solid rgba(255, 106, 0, 0.25);
+      border-left: 4px solid #FF6A00;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 16px 0;
+    }
+
+    .callout h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #FF6A00;
+      margin-bottom: 6px;
+    }
+
+    .callout p, .callout li {
+      font-size: 13px;
+      color: #ccc;
+      line-height: 1.6;
+    }
+
+    .callout ul {
+      padding-left: 18px;
+      margin-top: 6px;
+    }
+
+    /* ── Recomp Highlight ── */
+    .recomp-banner {
+      background: linear-gradient(135deg, rgba(255,106,0,0.12), rgba(212,160,23,0.08));
+      border: 1px solid rgba(255,106,0,0.3);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .recomp-banner h3 {
+      font-size: 20px;
+      font-weight: 800;
+      color: #FF6A00;
+      margin-bottom: 8px;
+    }
+
+    .recomp-banner p {
+      font-size: 14px;
+      color: #ccc;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ── Lists ── */
+    .checklist {
+      list-style: none;
+      padding: 0;
+    }
+
+    .checklist li {
+      padding: 8px 0;
+      font-size: 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .checklist li::before {
+      content: '▸';
+      color: #FF6A00;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .text-muted { color: #888; }
+    .text-accent { color: #FF6A00; }
+    .text-sm { font-size: 13px; }
+    .text-xs { font-size: 12px; }
+    .fw-700 { font-weight: 700; }
+    .mt-8 { margin-top: 8px; }
+    .mt-16 { margin-top: 16px; }
+    .mb-8 { margin-bottom: 8px; }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 40px 0 20px;
+      border-top: 1px solid #2a2a2a;
+      margin-top: 48px;
+    }
+
+    .footer .brand {
+      font-size: 16px;
+      font-weight: 800;
+      color: #FF6A00;
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+
+    .footer .tagline {
+      font-size: 12px;
+      color: #555;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .footer .disclaimer {
+      font-size: 11px;
+      color: #444;
+      margin-top: 16px;
+      line-height: 1.5;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
+</head>
+<body>
+<div class="program">
+
+  <!-- ═══════════════ COVER ═══════════════ -->
+  <div class="cover">
+    <div class="logo-row">
+      <div class="logo-circle">F</div>
+      <div>
+        <div class="brand-name">FORGED BY FREEDOM</div>
+      </div>
+    </div>
+    <h1>Custom <span>Coaching Program</span></h1>
+    <p class="subtitle">Lean Recomposition Protocol</p>
+    <div class="client-badge">
+      <div class="name">Katt Barr</div>
+      <div class="date">Program Start: March 24, 2026</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ CLIENT OVERVIEW ═══════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">📋</div>
+      <h2>Client <span>Overview</span></h2>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="label">Current Weight</div>
+        <div class="value">135 <span class="unit">lbs</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Goal</div>
+        <div class="value">125–128 <span class="unit">lbs</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Approach</div>
+        <div class="value" style="font-size: 18px;">Lean Recomp</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Experience</div>
+        <div class="value" style="font-size: 18px;">Advanced</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <ul class="checklist">
+        <li><strong>Sex:</strong>&nbsp; Female</li>
+        <li><strong>Training Experience:</strong>&nbsp; Very experienced lifter — advanced programming appropriate</li>
+        <li><strong>Compound Status:</strong>&nbsp; Currently active on Retatrutide + Tesofensine</li>
+        <li><strong>Peptide Experience:</strong>&nbsp; Experienced with peptides and GLP-1 compounds</li>
+        <li><strong>Goal:</strong>&nbsp; Body composition optimization — lean recomp at 135 lbs, target 125–128 lbs or maintain weight while trading fat for muscle</li>
+        <li><strong>Weigh-In Day:</strong>&nbsp; Monday mornings (fasted, before eating)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══════════════ DAILY TARGETS ═══════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🎯</div>
+      <h2>Daily <span>Targets</span></h2>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="label">Calories</div>
+        <div class="value">1,500</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Protein</div>
+        <div class="value">145<span class="unit">g</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Carbs</div>
+        <div class="value">120<span class="unit">g</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Fats</div>
+        <div class="value">50<span class="unit">g</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Daily Steps</div>
+        <div class="value">8,000</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Water</div>
+        <div class="value">80+ <span class="unit">oz</span></div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <h4>Lean Recomp Nutrition Strategy</h4>
+      <p>At 135 lbs and already relatively lean, this is a moderate deficit (~250–300 below maintenance) designed to preserve every ounce of muscle while chipping away at remaining body fat. Protein is set at 1.07g/lb to maximize muscle protein synthesis during recomp. Carbs are timed around training for performance. With Retatrutide already in play, appetite regulation is handled — focus on hitting macros consistently rather than fighting hunger.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════ RECOMP PROTOCOL ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">🔥</div>
+      <h2>FBF <span>Recomp Protocol</span></h2>
+      <span class="badge gold">HIGHLY RECOMMENDED</span>
+    </div>
+
+    <div class="recomp-banner">
+      <h3>Body Recomposition — The Optimal Path</h3>
+      <p>At 135 lbs with advanced training experience, active Retatrutide, and a structured peptide stack, you are in an elite position for a true lean recomp. The goal is not just weight loss — it's a complete body composition transformation. Trade fat for muscle, improve every line and curve, and end up looking dramatically different at the same (or similar) scale weight.</p>
+    </div>
+
+    <div class="card">
+      <h3>How the <span>Recomp Protocol</span> Works</h3>
+      <ul class="checklist mt-8">
+        <li><strong>High Protein Anchor (145g/day):</strong> Protein stays constant every single day. At 1.07g/lb, this drives muscle protein synthesis and keeps you full — non-negotiable.</li>
+        <li><strong>Strategic Carb Placement:</strong> 120g carbs timed around training (pre/post workout) to fuel performance and recovery while keeping the deficit working.</li>
+        <li><strong>Moderate Caloric Deficit:</strong> 1,500 calories keeps you in a mild deficit (~250–300 below maintenance) without tanking energy, hormones, or recovery.</li>
+        <li><strong>Progressive Overload Training:</strong> You know how to train. The stimulus for muscle growth comes from systematically increasing weight/reps — the programming reflects your experience level.</li>
+        <li><strong>Reta + Teso Synergy:</strong> Your current Retatrutide handles appetite regulation and metabolic optimization. Tesofensine adds thermogenesis and focus. Together, they make this recomp significantly more effective.</li>
+        <li><strong>Peptide Support:</strong> The comprehensive peptide stack below accelerates fat oxidation, supports recovery, enhances sleep quality, and adds skin/hair/anti-aging benefits.</li>
+      </ul>
+    </div>
+
+    <div class="callout mt-16">
+      <h4>Expected Timeline</h4>
+      <p>Weeks 1–4: Body adapts, strength begins climbing, scale may fluctuate ± 2 lbs (this is normal — water shifts, especially with creatine). Weeks 5–12: Visible changes in the mirror, clothes fit differently, strength PRs regularly. Weeks 12–24: Dramatic body composition shift — potentially 7–10 lbs of fat lost with lean mass preserved or gained. You may land at 125–128 lbs looking completely different, or stay at 135 lbs with a radically improved body composition. The InBody scan tells the real story.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════ TRAINING PROGRAM ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">🏋️</div>
+      <h2>Training <span>Program</span></h2>
+      <span class="badge">4-Day Upper/Lower</span>
+    </div>
+
+    <p class="text-sm text-muted mb-8">Progressive overload: when you hit the top of the rep range with good form on all sets, increase weight by the smallest increment available next session. Advanced techniques (drop sets, rest-pause, myo-reps) are included on isolation movements — you know how to execute these. Log every set in the app.</p>
+
+    <!-- Day 1 -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Day 1 — <span>Upper Body Push</span></h3>
+        <span class="badge">Monday</span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Rest</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="exercise-name">Dumbbell Incline Press</div>
+              <div class="exercise-note">30° incline, full stretch at bottom, controlled eccentric</div>
+            </td>
+            <td>4</td><td>8–10</td><td>90s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Machine Chest Press</div>
+              <div class="exercise-note">3 sec eccentric, last set → drop set (strip 30%, rep to failure)</div>
+            </td>
+            <td>3</td><td>10–12</td><td>75s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Dumbbell Shoulder Press (Seated)</div>
+              <div class="exercise-note">Neutral or pronated grip, full lockout</div>
+            </td>
+            <td>3</td><td>10–12</td><td>75s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Cable Lateral Raise</div>
+              <div class="exercise-note">Behind body, last set → myo-reps (5+3+3+3)</div>
+            </td>
+            <td>3</td><td>12–15</td><td>60s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Tricep Rope Pushdown</div>
+              <div class="exercise-note">Squeeze and spread at bottom, last set → rest-pause (fail, 15s, fail)</div>
+            </td>
+            <td>3</td><td>12–15</td><td>60s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Overhead Dumbbell Tricep Extension</div>
+              <div class="exercise-note">Deep stretch at bottom, controlled tempo</div>
+            </td>
+            <td>3</td><td>10–12</td><td>60s</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Day 2 -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Day 2 — <span>Lower Body Quad & Glute Focus</span></h3>
+        <span class="badge">Tuesday</span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Rest</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="exercise-name">Leg Press</div>
+              <div class="exercise-note">Feet shoulder width, mid-platform, full depth — go heavy</div>
+            </td>
+            <td>4</td><td>10–12</td><td>2 min</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Hack Squat or Pendulum Squat</div>
+              <div class="exercise-note">Heels elevated, deep stretch, 3 sec eccentric</div>
+            </td>
+            <td>3</td><td>10–12</td><td>90s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Hip Thrust (Machine or Smith)</div>
+              <div class="exercise-note">Pause 2 sec at top, full hip extension, squeeze glutes hard</div>
+            </td>
+            <td>4</td><td>10–12</td><td>90s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Walking Dumbbell Lunges</div>
+              <div class="exercise-note">Long stride for glute emphasis, controlled descent</div>
+            </td>
+            <td>3</td><td>12/leg</td><td>75s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Leg Extension</div>
+              <div class="exercise-note">Pause 1 sec at top, last set → drop set</div>
+            </td>
+            <td>3</td><td>12–15</td><td>60s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Seated Calf Raise</div>
+              <div class="exercise-note">2 sec pause at stretch, 1 sec squeeze at top</div>
+            </td>
+            <td>4</td><td>12–15</td><td>60s</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Day 3 -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Day 3 — <span>Upper Body Pull</span></h3>
+        <span class="badge">Thursday</span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Rest</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="exercise-name">Lat Pulldown (Wide Grip)</div>
+              <div class="exercise-note">Full stretch at top, drive elbows down into lats</div>
+            </td>
+            <td>4</td><td>8–10</td><td>90s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Seated Cable Row (Close Grip)</div>
+              <div class="exercise-note">V-handle, squeeze 1 sec at contraction, 3 sec eccentric</div>
+            </td>
+            <td>3</td><td>10–12</td><td>75s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Dumbbell Row (Single Arm)</div>
+              <div class="exercise-note">Bench supported, full stretch at bottom, drive elbow back</div>
+            </td>
+            <td>3</td><td>10–12</td><td>75s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Machine Rear Delt Fly</div>
+              <div class="exercise-note">Light weight, squeeze and hold 1 sec, last set → myo-reps</div>
+            </td>
+            <td>3</td><td>15–20</td><td>45s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Dumbbell Bicep Curl</div>
+              <div class="exercise-note">Alternating, slight supination, full ROM</div>
+            </td>
+            <td>3</td><td>10–12</td><td>60s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Incline Dumbbell Hammer Curl</div>
+              <div class="exercise-note">45° incline, deep stretch, last set → rest-pause</div>
+            </td>
+            <td>3</td><td>10–12</td><td>60s</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Day 4 -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Day 4 — <span>Lower Body Posterior & Glute Focus</span></h3>
+        <span class="badge">Friday</span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Rest</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="exercise-name">Romanian Dumbbell Deadlift</div>
+              <div class="exercise-note">Dumbbells along sides, deep hinge, feel hamstrings stretch — go heavy</div>
+            </td>
+            <td>4</td><td>8–10</td><td>90s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Lying Leg Curl</div>
+              <div class="exercise-note">Squeeze at top, slow release, last set → drop set</div>
+            </td>
+            <td>3</td><td>10–12</td><td>75s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Hip Thrust (Machine or Smith)</div>
+              <div class="exercise-note">Pause 2 sec at top, full hip extension — heavier than Day 2</div>
+            </td>
+            <td>4</td><td>8–10</td><td>90s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Cable Kickback</div>
+              <div class="exercise-note">Ankle strap, squeeze glute at full extension, controlled eccentric</div>
+            </td>
+            <td>3</td><td>12–15/leg</td><td>60s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Bulgarian Split Squat (Dumbbells)</div>
+              <div class="exercise-note">Rear foot on bench, lean slight forward for glute bias</div>
+            </td>
+            <td>3</td><td>10/leg</td><td>75s</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="exercise-name">Standing Calf Raise (Machine)</div>
+              <div class="exercise-note">Full ROM, 2 sec pause at bottom stretch</div>
+            </td>
+            <td>4</td><td>10–12</td><td>60s</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════ CARDIO PROTOCOL ═══════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🚶</div>
+      <h2>Cardio <span>Protocol</span></h2>
+    </div>
+
+    <div class="card">
+      <ul class="checklist">
+        <li><strong>Daily (weekdays):</strong> 8,000 steps minimum (walk the dog, take calls walking, park far, treadmill desk)</li>
+        <li><strong>Weekends:</strong> 10,000–12,000 steps target — use the extra time to your advantage</li>
+        <li><strong>Post-Workout (3x/week):</strong> 15–20 min incline treadmill walk (10–12% incline, 3.0–3.5 mph)</li>
+        <li><strong>Optional (weekends):</strong> 30–45 min moderate activity — hike, bike, yoga, swim, Pilates</li>
+        <li><strong>LISS over HIIT:</strong> Low-intensity steady state protects recovery capacity during recomp. Save your energy for the weights.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══════════════ MEAL PLAN ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">🍽️</div>
+      <h2>Meal <span>Plan</span></h2>
+      <span class="badge">1,500 Cal · High Protein</span>
+    </div>
+
+    <p class="text-sm text-muted mb-8">All meals are designed for easy batch prep. Macro targets: 145g protein, 120g carbs, 50g fat. With Reta managing appetite, the focus is on hitting protein targets and keeping meals practical and enjoyable.</p>
+
+    <!-- Meal 1 -->
+    <div class="meal-card">
+      <h4>Meal 1 — Pre-Workout (6:00 AM)</h4>
+      <div class="meal-title">Protein Oats + Egg Whites</div>
+      <div class="meal-desc">
+        1/3 cup dry oats cooked with water, stir in 1/2 scoop whey isolate and 1 tsp cinnamon. Side: 3/4 cup liquid egg whites scrambled with spinach.
+      </div>
+      <div class="macro-row">
+        <span class="macro-item"><strong>290</strong> cal</span>
+        <span class="macro-item"><strong>32g</strong> protein</span>
+        <span class="macro-item"><strong>28g</strong> carbs</span>
+        <span class="macro-item"><strong>5g</strong> fat</span>
+      </div>
+    </div>
+
+    <!-- Meal 2 -->
+    <div class="meal-card">
+      <h4>Meal 2 — Post-Workout (9:00 AM)</h4>
+      <div class="meal-title">Chicken & Rice Bowl</div>
+      <div class="meal-desc">
+        5 oz grilled chicken breast, diced, over 1/2 cup cooked jasmine rice. Top with 1 cup steamed broccoli, squeeze of lemon, and 1 tsp olive oil.
+      </div>
+      <div class="macro-row">
+        <span class="macro-item"><strong>370</strong> cal</span>
+        <span class="macro-item"><strong>38g</strong> protein</span>
+        <span class="macro-item"><strong>30g</strong> carbs</span>
+        <span class="macro-item"><strong>10g</strong> fat</span>
+      </div>
+    </div>
+
+    <!-- Meal 3 -->
+    <div class="meal-card">
+      <h4>Meal 3 — Lunch (12:30 PM)</h4>
+      <div class="meal-title">Turkey & Veggie Power Bowl</div>
+      <div class="meal-desc">
+        5 oz 99% lean ground turkey browned with bell peppers and onions over 2 cups mixed greens. Top with 1/4 avocado, cherry tomatoes, and 1 tbsp balsamic vinaigrette.
+      </div>
+      <div class="macro-row">
+        <span class="macro-item"><strong>340</strong> cal</span>
+        <span class="macro-item"><strong>35g</strong> protein</span>
+        <span class="macro-item"><strong>18g</strong> carbs</span>
+        <span class="macro-item"><strong>14g</strong> fat</span>
+      </div>
+    </div>
+
+    <!-- Meal 4 -->
+    <div class="meal-card">
+      <h4>Meal 4 — Dinner (6:00 PM)</h4>
+      <div class="meal-title">Salmon with Roasted Vegetables</div>
+      <div class="meal-desc">
+        5 oz wild-caught salmon fillet, baked with lemon and garlic. Side: 1.5 cups roasted asparagus and zucchini tossed in 1 tsp olive oil. 1/3 cup roasted sweet potato.
+      </div>
+      <div class="macro-row">
+        <span class="macro-item"><strong>360</strong> cal</span>
+        <span class="macro-item"><strong>33g</strong> protein</span>
+        <span class="macro-item"><strong>22g</strong> carbs</span>
+        <span class="macro-item"><strong>15g</strong> fat</span>
+      </div>
+    </div>
+
+    <!-- Snack -->
+    <div class="meal-card">
+      <h4>Meal 5 — Evening Snack (8:00 PM)</h4>
+      <div class="meal-title">Casein Pudding</div>
+      <div class="meal-desc">
+        1 scoop casein protein mixed thick with minimal water, stir in 1/2 tbsp natural almond butter. Slow-digesting to fuel overnight recovery and muscle protein synthesis.
+      </div>
+      <div class="macro-row">
+        <span class="macro-item"><strong>160</strong> cal</span>
+        <span class="macro-item"><strong>26g</strong> protein</span>
+        <span class="macro-item"><strong>5g</strong> carbs</span>
+        <span class="macro-item"><strong>5g</strong> fat</span>
+      </div>
+    </div>
+
+    <!-- Daily Totals -->
+    <div class="stats-grid mt-16">
+      <div class="stat-card">
+        <div class="label">Total Calories</div>
+        <div class="value">1,520</div>
+        <div class="text-xs text-muted">~1,500 target</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Total Protein</div>
+        <div class="value">164<span class="unit">g</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Total Carbs</div>
+        <div class="value">103<span class="unit">g</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Total Fats</div>
+        <div class="value">49<span class="unit">g</span></div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <h4>Meal Prep Tips</h4>
+      <ul>
+        <li>Sunday: batch-cook chicken breasts, ground turkey, and salmon. Roast all vegetables for the week.</li>
+        <li>Pre-portion oats in jars with dry cinnamon — just add water in the morning.</li>
+        <li>Wash and chop salad greens, store with paper towel in containers.</li>
+        <li>Cook rice in bulk — portion 1/2 cup servings into containers.</li>
+        <li><strong>Water:</strong> Minimum 80 oz daily. Keep a water bottle visible at all times.</li>
+      </ul>
+    </div>
+
+    <div class="callout">
+      <h4>Swap Options (variety without re-counting macros)</h4>
+      <ul>
+        <li><strong>Chicken →</strong> 99% lean ground turkey, shrimp, or white fish (same oz)</li>
+        <li><strong>Salmon →</strong> Cod + 1 tsp olive oil, or tuna steak</li>
+        <li><strong>Egg whites →</strong> 1 scoop whey + 1 whole egg</li>
+        <li><strong>Rice →</strong> 1/3 cup quinoa or 1/2 cup sweet potato</li>
+        <li><strong>Broccoli →</strong> Zucchini, green beans, Brussels sprouts, asparagus</li>
+        <li><strong>Turkey →</strong> 93% lean ground chicken, bison, or lean steak (4 oz)</li>
+        <li><strong>Almond butter →</strong> Natural peanut butter (same amount)</li>
+      </ul>
+    </div>
+
+    <!-- ═══════════════ WEEKLY SHOPPING LIST ═══════════════ -->
+    <div class="card" style="margin-top: 24px;">
+      <div class="card-header">
+        <h3>Weekly <span>Shopping List</span></h3>
+        <span class="badge green">MEAL PREP</span>
+      </div>
+      <p class="text-sm text-muted mt-8 mb-8">Everything you need for one week of meal prep. Shop Sunday, prep Sunday afternoon.</p>
+
+      <table>
+        <thead>
+          <tr><th>Item</th><th>Qty (7 days)</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="3" style="font-weight: 800; color: #FF6A00; padding-top: 16px; border-bottom: 1px solid #2a2a2a;">PROTEIN</td></tr>
+          <tr>
+            <td class="exercise-name">Chicken Breast (boneless, skinless)</td>
+            <td>2.5 lbs</td>
+            <td class="text-muted text-xs">5oz/day × 7 = ~35oz. Buy ~2.5 lbs to account for shrinkage.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">99% Lean Ground Turkey</td>
+            <td>2.25 lbs</td>
+            <td class="text-muted text-xs">5oz/day × 7 = 35oz. One family-size pack.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Wild-Caught Salmon Fillets</td>
+            <td>2.25 lbs</td>
+            <td class="text-muted text-xs">5oz/day × 7 = 35oz. Fresh or frozen — both work.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Liquid Egg Whites</td>
+            <td>2 cartons (32oz each)</td>
+            <td class="text-muted text-xs">3/4 cup/day × 7. Two standard cartons covers the week.</td>
+          </tr>
+
+          <tr><td colspan="3" style="font-weight: 800; color: #FF6A00; padding-top: 16px; border-bottom: 1px solid #2a2a2a;">DAIRY & PROTEIN POWDER</td></tr>
+          <tr>
+            <td class="exercise-name">Whey Protein Isolate</td>
+            <td>1 tub (2 lb)</td>
+            <td class="text-muted text-xs">1/2 scoop/day in oats. Low-carb isolate. Lasts 4+ weeks at this rate.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Casein Protein</td>
+            <td>1 tub (2 lb)</td>
+            <td class="text-muted text-xs">1 scoop/day. Lasts 2+ weeks.</td>
+          </tr>
+
+          <tr><td colspan="3" style="font-weight: 800; color: #FF6A00; padding-top: 16px; border-bottom: 1px solid #2a2a2a;">VEGETABLES & PRODUCE</td></tr>
+          <tr>
+            <td class="exercise-name">Broccoli (fresh crowns)</td>
+            <td>2–3 heads</td>
+            <td class="text-muted text-xs">1 cup/day for post-workout bowl. Buy crowns for easy chopping.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Asparagus</td>
+            <td>2 bunches</td>
+            <td class="text-muted text-xs">For dinner roast veggies.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Zucchini</td>
+            <td>3–4 medium</td>
+            <td class="text-muted text-xs">Pairs with asparagus for dinner roast.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Baby Spinach</td>
+            <td>1 large container (16oz)</td>
+            <td class="text-muted text-xs">For egg white scrambles. Pre-washed saves time.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Mixed Greens (salad)</td>
+            <td>2 large containers (10oz each)</td>
+            <td class="text-muted text-xs">2 cups/day for lunch bowls.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Bell Peppers (any color)</td>
+            <td>3–4 peppers</td>
+            <td class="text-muted text-xs">For turkey scramble. Dice and store in container.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Yellow Onions</td>
+            <td>2</td>
+            <td class="text-muted text-xs">For turkey scramble.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Cherry Tomatoes</td>
+            <td>1 pint</td>
+            <td class="text-muted text-xs">Halved for lunch bowls.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Avocados</td>
+            <td>2</td>
+            <td class="text-muted text-xs">1/4 per day. Buy firm, they'll ripen through the week.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Sweet Potatoes</td>
+            <td>2–3 medium</td>
+            <td class="text-muted text-xs">1/3 cup roasted per day. Cube and roast in batch.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Lemons</td>
+            <td>3–4</td>
+            <td class="text-muted text-xs">For salmon prep and chicken bowl.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Garlic (whole head)</td>
+            <td>2 heads</td>
+            <td class="text-muted text-xs">For salmon + roasted veggies. Mince in bulk.</td>
+          </tr>
+
+          <tr><td colspan="3" style="font-weight: 800; color: #FF6A00; padding-top: 16px; border-bottom: 1px solid #2a2a2a;">PANTRY & GRAINS</td></tr>
+          <tr>
+            <td class="exercise-name">Old-Fashioned Oats</td>
+            <td>1 canister (18oz)</td>
+            <td class="text-muted text-xs">1/3 cup dry per day. One canister lasts 2+ weeks.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Jasmine Rice</td>
+            <td>1 bag (2 lb)</td>
+            <td class="text-muted text-xs">1/2 cup cooked per day. Lasts multiple weeks.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Olive Oil (extra virgin)</td>
+            <td>1 bottle</td>
+            <td class="text-muted text-xs">For cooking + roasting. Lasts multiple weeks.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Balsamic Vinaigrette</td>
+            <td>1 bottle</td>
+            <td class="text-muted text-xs">1 tbsp/day for lunch bowl. Low-sugar variety.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Cinnamon (ground)</td>
+            <td>1 jar</td>
+            <td class="text-muted text-xs">For oats. Lasts months.</td>
+          </tr>
+
+          <tr><td colspan="3" style="font-weight: 800; color: #FF6A00; padding-top: 16px; border-bottom: 1px solid #2a2a2a;">NUTS & BUTTERS</td></tr>
+          <tr>
+            <td class="exercise-name">Almond Butter (natural)</td>
+            <td>1 jar (16oz)</td>
+            <td class="text-muted text-xs">1/2 tbsp/day in casein pudding. No added sugar. Lasts 4+ weeks.</td>
+          </tr>
+
+          <tr><td colspan="3" style="font-weight: 800; color: #FF6A00; padding-top: 16px; border-bottom: 1px solid #2a2a2a;">BEVERAGES</td></tr>
+          <tr>
+            <td class="exercise-name">Coffee (ground or beans)</td>
+            <td>1 bag (12oz)</td>
+            <td class="text-muted text-xs">Optional morning coffee. Lasts 1–2 weeks.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Water</td>
+            <td>80oz/day target</td>
+            <td class="text-muted text-xs">Keep a water bottle visible. Refill throughout the day.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">LMNT Electrolyte Mix</td>
+            <td>1 box (30 packets)</td>
+            <td class="text-muted text-xs">1 serving/day. Critical for hydration, especially during a deficit.</td>
+          </tr>
+
+          <tr><td colspan="3" style="font-weight: 800; color: #FF6A00; padding-top: 16px; border-bottom: 1px solid #2a2a2a;">MEAL PREP SUPPLIES</td></tr>
+          <tr>
+            <td class="exercise-name">Glass Meal Prep Containers</td>
+            <td>14–20 containers</td>
+            <td class="text-muted text-xs">2–3 per day (lunch + dinner + extra). Glass reheats better than plastic.</td>
+          </tr>
+          <tr>
+            <td class="exercise-name">Parchment Paper or Foil</td>
+            <td>1 roll</td>
+            <td class="text-muted text-xs">Line sheet pans for easy roasting cleanup.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout mt-16">
+        <h4>Prep Day Game Plan (Sunday)</h4>
+        <ul>
+          <li><strong>Step 1:</strong> Season and bake all chicken breasts and salmon fillets (425°F, 20–25 min)</li>
+          <li><strong>Step 2:</strong> While protein bakes — cube sweet potatoes, chop broccoli, asparagus, and zucchini, toss with olive oil, roast on separate sheet pans (400°F, 25 min)</li>
+          <li><strong>Step 3:</strong> Brown all ground turkey with diced peppers and onions in a large skillet. Season with salt, pepper, garlic powder.</li>
+          <li><strong>Step 4:</strong> Cook rice in bulk. Portion oats into 7 jars with cinnamon.</li>
+          <li><strong>Step 5:</strong> Wash and chop salad greens, tomatoes — store with paper towel in containers.</li>
+          <li><strong>Step 6:</strong> Assemble containers — protein + veggies + carb source per meal. Label if helpful.</li>
+          <li><strong>Total time:</strong> ~75–90 minutes for a full week of meals.</li>
+        </ul>
+      </div>
+
+      <div class="callout">
+        <h4>Estimated Weekly Grocery Cost</h4>
+        <ul>
+          <li><strong>Protein:</strong> ~$45–60 (chicken, turkey, salmon, egg whites)</li>
+          <li><strong>Produce:</strong> ~$20–30 (vegetables, avocados, sweet potatoes, lemons, garlic)</li>
+          <li><strong>Pantry/Grains:</strong> ~$8–12 (oats, rice, oils — many last multiple weeks)</li>
+          <li><strong>Nuts/Butters:</strong> ~$5–8 (almond butter — lasts 4+ weeks)</li>
+          <li><strong>Beverages:</strong> ~$8–12 (coffee, electrolytes)</li>
+          <li><strong>Weekly total:</strong> ~$85–120 (first week slightly higher for pantry staples)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ SUPPLEMENT PROTOCOL ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">💊</div>
+      <h2>Supplement <span>Protocol</span></h2>
+    </div>
+
+    <div class="protocol-grid">
+      <div class="protocol-card">
+        <h4>Creatine Monohydrate</h4>
+        <div class="dose">5g/day</div>
+        <div class="timing">Any time (with meal)</div>
+        <div class="notes">Safe for women — it will NOT make you bulky. Improves body composition, strength, hydration, and cognitive function. Most researched supplement in existence.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Whey Protein Isolate</h4>
+        <div class="dose">1 scoop/day (25g protein)</div>
+        <div class="timing">Mixed into oats or post-workout</div>
+        <div class="notes">Clean protein source to hit daily targets. Low-carb isolate preferred.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Casein Protein</h4>
+        <div class="dose">1 scoop/day (25g protein)</div>
+        <div class="timing">Before bed</div>
+        <div class="notes">Slow-release for overnight recovery and muscle protein synthesis. Mix thick as pudding.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Potassium</h4>
+        <div class="dose">99–200mg 2x/day</div>
+        <div class="timing">With meals (AM + PM)</div>
+        <div class="notes">Electrolyte balance, muscle function, blood pressure support. Critical during a deficit.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>LMNT Electrolytes</h4>
+        <div class="dose">1 serving/day</div>
+        <div class="timing">Morning or intra-workout</div>
+        <div class="notes">Sodium, potassium, magnesium. Prevents cramping, fatigue, brain fog. Especially important with Reta.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Omega-3 Fish Oil</h4>
+        <div class="dose">2–3g EPA/DHA daily</div>
+        <div class="timing">With meals (split dose)</div>
+        <div class="notes">Anti-inflammatory, heart health, joint support, skin quality, hormone support.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Magnesium Glycinate</h4>
+        <div class="dose">400mg/day</div>
+        <div class="timing">Before bed</div>
+        <div class="notes">Sleep quality, recovery, stress reduction, hormone optimization. Most people are deficient.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Vitamin D3 + K2</h4>
+        <div class="dose">5,000 IU D3 + 100mcg K2</div>
+        <div class="timing">Morning with fat-containing meal</div>
+        <div class="notes">Immune function, bone health, hormone optimization. K2 ensures calcium goes to bones, not arteries.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Zinc (Optional)</h4>
+        <div class="dose">15–30mg/day</div>
+        <div class="timing">With dinner</div>
+        <div class="notes">Immune support, hormone optimization, skin health. Don't take on empty stomach.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Biotin (Optional)</h4>
+        <div class="dose">5,000–10,000mcg/day</div>
+        <div class="timing">Any time</div>
+        <div class="notes">Hair, nail, and skin support — especially relevant during a cut when nutrient partitioning changes.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Iron — Check Labs First</h4>
+        <div class="dose">18–27mg/day (if deficient)</div>
+        <div class="timing">With vitamin C, away from calcium</div>
+        <div class="notes">Women are frequently low in iron/ferritin due to menstruation. Get ferritin checked in baseline labs — only supplement if levels are below 50 ng/mL. Do not supplement blindly.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ PEPTIDE PROTOCOL ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">🧬</div>
+      <h2>Peptide <span>Protocol</span></h2>
+      <span class="badge gold">FBF RECOMP STACK</span>
+    </div>
+
+    <div class="recomp-banner">
+      <h3>Comprehensive Peptide Protocol</h3>
+      <p>You have the experience to run a full peptide stack. This protocol covers fat loss, recovery, anti-aging, skin/hair quality, cognitive enhancement, immune modulation, and sexual wellness. All peptides are subcutaneous injection ONLY. Layer in gradually using the schedule below — do not start everything at once.</p>
+    </div>
+
+    <div class="protocol-grid">
+      <div class="protocol-card">
+        <h4>CJC-1295 / Ipamorelin</h4>
+        <div class="dose">300mcg CJC / 300mcg Ipamorelin</div>
+        <div class="timing">SubQ injection — before bed (fasted 2+ hours)</div>
+        <div class="notes">GH-releasing peptide combo. Enhances deep sleep, accelerates fat loss, supports lean muscle, improves skin quality and collagen turnover. The cornerstone of the recomp stack.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>BPC-157</h4>
+        <div class="dose">250–500mcg/day</div>
+        <div class="timing">SubQ injection — AM or split AM/PM</div>
+        <div class="notes">Tissue repair, gut healing, joint recovery. Excellent for anyone training at high intensity. Supports GI health — synergistic with Reta.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Tesamorelin</h4>
+        <div class="dose">2mg/day</div>
+        <div class="timing">SubQ injection — before bed (fasted)</div>
+        <div class="notes">FDA-approved GHRH analog. Specifically targets visceral fat reduction. Ideal for lean recomp — preserves lean mass while reducing stubborn fat compartments.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Thymosin Alpha-1</h4>
+        <div class="dose">1.6mg 2x/week</div>
+        <div class="timing">SubQ injection — any time</div>
+        <div class="notes">Immune modulation, enhanced recovery capacity, supports immune function during the stress of dieting and hard training.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>TB-500 (Thymosin Beta-4)</h4>
+        <div class="dose">2.5–5mg 2x/week</div>
+        <div class="timing">SubQ injection — any time</div>
+        <div class="notes">Tissue repair, flexibility, anti-inflammatory. Complements BPC-157 — together they are the ultimate recovery stack for joints, tendons, and soft tissue.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>GHK-Cu</h4>
+        <div class="dose">1–2mg/day</div>
+        <div class="timing">SubQ injection — AM</div>
+        <div class="notes">Skin rejuvenation, collagen synthesis, wound healing, anti-aging. One of the most powerful skin-quality peptides available. Visible improvements in 4–6 weeks.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Epithalon</h4>
+        <div class="dose">5–10mg/day for 10–20 day cycles</div>
+        <div class="timing">SubQ injection — AM or PM</div>
+        <div class="notes">Telomere lengthening, anti-aging, sleep quality improvement. Run in cycles (10–20 days on, 4–6 months off). The premier longevity peptide.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>MOTS-c</h4>
+        <div class="dose">5–10mg 3x/week</div>
+        <div class="timing">SubQ injection — AM (before activity)</div>
+        <div class="notes">Mitochondrial peptide, exercise mimetic, metabolic optimization, insulin sensitivity. Enhances the metabolic benefits of training and supports fat oxidation.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>AOD-9604</h4>
+        <div class="dose">300mcg/day</div>
+        <div class="timing">SubQ injection — AM (fasted)</div>
+        <div class="notes">Fat loss fragment of GH. Targets adipose tissue without GH side effects. Synergistic with CJC/Ipa and Tesamorelin for comprehensive fat mobilization.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Selank</h4>
+        <div class="dose">250–500mcg/day</div>
+        <div class="timing">SubQ injection — AM</div>
+        <div class="notes">Anxiolytic, cognitive enhancement, immune modulation. Reduces stress and anxiety without sedation. Supports focus and mood during a deficit.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Semax</h4>
+        <div class="dose">200–600mcg/day</div>
+        <div class="timing">SubQ injection — AM</div>
+        <div class="notes">Nootropic, cognitive enhancement, neuroprotection. Enhances BDNF, focus, and mental clarity. Pairs well with Selank for a comprehensive cognitive stack.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>PT-141 (Bremelanotide)</h4>
+        <div class="dose">1–2mg as needed</div>
+        <div class="timing">SubQ injection — 2–4 hours before desired effect</div>
+        <div class="notes">FDA-approved for female sexual dysfunction (Vyleesi). Supports libido and sexual wellness via melanocortin receptor activation. Clinical data supports efficacy in women. Use as needed, not daily.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Dihexa</h4>
+        <div class="dose">10–20mg 3x/week</div>
+        <div class="timing">SubQ injection — AM</div>
+        <div class="notes">Cognitive enhancement, BDNF upregulation, synaptogenesis. Research peptide — limited human clinical data but potent preclinical results. Use with awareness of its research status.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>NAD+ (Injectable)</h4>
+        <div class="dose">50–100mg SubQ or IV</div>
+        <div class="timing">SubQ injection — AM, or IV infusion 1–2x/month</div>
+        <div class="notes">Cellular energy, DNA repair, anti-aging, mitochondrial function. The master coenzyme for cellular health. SubQ for daily use, IV for periodic deep loading.</div>
+      </div>
+
+      <div class="protocol-card">
+        <h4>Pentosan Polysulfate (PPS)</h4>
+        <div class="dose">2–3mg/kg SubQ weekly</div>
+        <div class="timing">SubQ injection — once per week</div>
+        <div class="notes">Joint and cartilage repair, disc regeneration, anti-inflammatory. Excellent for long-term joint health in experienced lifters with years of accumulated training stress.</div>
+      </div>
+    </div>
+
+    <div class="callout mt-16">
+      <h4>Peptide Layering Schedule</h4>
+      <p class="mb-8">Do not start everything at once. Layer in gradually to assess tolerance and response:</p>
+      <ul>
+        <li><strong>Weeks 1–2:</strong> CJC-1295/Ipamorelin + BPC-157 — Establish the foundation. Assess sleep improvement, recovery, and any injection site reactions.</li>
+        <li><strong>Weeks 3–4:</strong> Add Tesamorelin + TB-500 — Layer in the visceral fat targeting and enhanced tissue repair. Monitor for any GH-related water retention.</li>
+        <li><strong>Weeks 5–6:</strong> Add GHK-Cu + Epithalon cycle — The skin/anti-aging stack. Run Epithalon for 10–20 days, then cycle off.</li>
+        <li><strong>Weeks 7–8:</strong> Add MOTS-c + AOD-9604 — The metabolic optimization layer. You should be seeing significant body composition changes by now.</li>
+        <li><strong>Ongoing:</strong> Layer in Selank, Semax, PT-141, Dihexa, NAD+, and PPS as desired based on your goals and budget. These are enhancement peptides — not required for the core recomp but highly beneficial.</li>
+      </ul>
+    </div>
+
+    <div class="callout">
+      <h4>Important Peptide Notes</h4>
+      <ul>
+        <li>ALL peptides are subcutaneous injection ONLY — no nasal spray delivery for any peptide</li>
+        <li>Store all peptides refrigerated. Reconstitute with bacteriostatic water only.</li>
+        <li>Rotate injection sites (abdomen, thigh, upper arm) to prevent lipodystrophy</li>
+        <li>Use insulin syringes (29–31 gauge, 1/2 inch) for SubQ injections</li>
+        <li>Log peptide compliance daily in the FBF app check-in</li>
+        <li>If you experience any unusual side effects, notify your coach and reduce dose or discontinue the most recently added peptide</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══════════════ COMPOUND STATUS ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">💊</div>
+      <h2>Active <span>Compounds</span></h2>
+      <span class="badge green">CURRENTLY ON</span>
+    </div>
+
+    <div class="recomp-banner" style="border-color: rgba(34,197,94,0.3); background: linear-gradient(135deg, rgba(34,197,94,0.08), rgba(255,106,0,0.08));">
+      <h3>Retatrutide + Tesofensine — Active Protocol</h3>
+      <p>You are already active on both compounds. This section covers maintenance protocols, what to monitor, and when to consider adjustments. No "discuss with your doctor" caveats — you know what you're doing.</p>
+    </div>
+
+    <div class="card">
+      <h3>Retatrutide <span>(Reta)</span></h3>
+      <p class="text-sm text-muted mt-8 mb-8">Triple-hormone receptor agonist (GIP/GLP-1/Glucagon). You are currently active on Reta — this is your primary metabolic compound.</p>
+
+      <ul class="checklist mt-8">
+        <li><strong>Maintenance Protocol:</strong> If you've completed titration and are at a stable maintenance dose, continue at that dose. Reta's effects compound over time — consistency is more important than dose escalation.</li>
+        <li><strong>Appetite Management:</strong> At 1,500 cal with Reta, appetite should be well-controlled. If you're struggling to eat enough protein, prioritize protein shakes and casein pudding to hit 145g.</li>
+        <li><strong>Dose Adjustment Triggers:</strong> Consider dose adjustment if: (1) appetite suppression is too strong and you can't hit protein targets, (2) GI side effects persist beyond the first 2–3 weeks of a dose increase, (3) weight loss stalls for 3+ weeks despite adherence.</li>
+        <li><strong>GI Management:</strong> Eat slowly, chew thoroughly, avoid high-fat meals in a single sitting. Ginger tea and peppermint can help with nausea if it occurs.</li>
+        <li><strong>Metabolic Benefits You Should Be Seeing:</strong> Reduced appetite, improved insulin sensitivity, visceral fat reduction, better lipid profile, stabilized blood sugar, reduced systemic inflammation.</li>
+        <li><strong>Titration Reference (if needed):</strong> Standard titration is 1mg → 2mg → 4mg → 8mg → 12mg, with each dose held for 4 weeks minimum before escalation. Most women stabilize at 4–8mg maintenance.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Tesofensine <span>(Teso)</span></h3>
+      <p class="text-sm text-muted mt-8 mb-8">Triple monoamine reuptake inhibitor (serotonin, norepinephrine, dopamine). You are currently active on Tesofensine.</p>
+
+      <ul class="checklist mt-8">
+        <li><strong>Benefits You Should Be Seeing:</strong> Enhanced thermogenesis (you may notice you run warmer), improved mood and focus, reduced appetite, increased energy expenditure at rest.</li>
+        <li><strong>Monitoring — Heart Rate & Blood Pressure:</strong> Tesofensine can increase resting HR by 5–10 bpm and modestly raise BP. Check resting HR and BP weekly. If resting HR consistently exceeds 90 bpm or BP exceeds 140/90, consider dose reduction.</li>
+        <li><strong>Sleep Considerations:</strong> Due to norepinephrine/dopamine activity, take Tesofensine in the morning only. If sleep quality declines, this is the first compound to evaluate timing on.</li>
+        <li><strong>Synergy with Reta:</strong> Reta handles appetite and metabolic signaling. Tesofensine adds thermogenesis and mood/focus support. Together, they are one of the most effective recomp compound stacks available.</li>
+        <li><strong>Standard Dosing:</strong> 0.25–0.5mg/day for women. Stay at the lowest effective dose — more is not better with Teso.</li>
+        <li><strong>Cycling Consideration:</strong> Some practitioners recommend cycling Teso (8–12 weeks on, 4 weeks off) to prevent receptor desensitization. Discuss with your coach based on your response.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══════════════ FEMALE HORMONE OPTIMIZATION ═══════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🔬</div>
+      <h2>Female <span>Hormone Optimization</span></h2>
+      <span class="badge gold">IMPORTANT</span>
+    </div>
+
+    <div class="card">
+      <h3>Recommended <span>Hormone Panel</span></h3>
+      <p class="text-sm text-muted mt-8 mb-8">As an experienced female lifter on active compounds and peptides, monitoring your hormonal landscape is critical. Request these labs at baseline and every 12 weeks:</p>
+
+      <ul class="checklist mt-8">
+        <li><strong>Estradiol (E2):</strong> Key estrogen marker. Affects body composition, mood, bone density, skin quality, and libido. Optimal range depends on cycle phase — track accordingly.</li>
+        <li><strong>Progesterone:</strong> Balances estrogen, affects sleep quality, anxiety, and body composition. Low progesterone is extremely common and often overlooked.</li>
+        <li><strong>DHEA-S:</strong> Precursor to both estrogen and testosterone. Affects energy, libido, muscle building capacity, and skin quality. Supplemental DHEA (10–25mg/day) may be appropriate if levels are low.</li>
+        <li><strong>Thyroid Panel (TSH, Free T3, Free T4):</strong> Thyroid drives metabolic rate. Caloric deficit and hard training can suppress thyroid output. Free T3 is the active hormone — if it drops below optimal, recomp stalls regardless of adherence.</li>
+        <li><strong>Ferritin & Iron:</strong> Women frequently have low ferritin (< 50 ng/mL) due to menstruation. Low ferritin causes fatigue, poor recovery, hair loss, and cold intolerance — often misdiagnosed as thyroid issues. Critical to check.</li>
+        <li><strong>B12:</strong> Energy, neurological function, red blood cell production. Deficiency is common and causes fatigue that mimics other issues.</li>
+        <li><strong>Total Testosterone & Free Testosterone:</strong> Even in women, testosterone matters for muscle building, energy, libido, and mood. Low levels can impair recomp results.</li>
+        <li><strong>SHBG:</strong> Sex hormone binding globulin — affects how much free testosterone and estradiol are available. High SHBG can bind up your hormones and reduce their effectiveness.</li>
+        <li><strong>Cortisol (AM):</strong> Stress hormone. Chronically elevated cortisol impairs fat loss, disrupts sleep, and causes water retention. One of the most overlooked barriers to body composition change.</li>
+      </ul>
+    </div>
+
+    <div class="callout">
+      <h4>Menstrual Cycle Considerations</h4>
+      <ul>
+        <li><strong>Follicular Phase (Days 1–14):</strong> Estrogen rises, insulin sensitivity is better, energy is higher. Best phase for pushing training intensity and hitting PRs. Carb tolerance is higher.</li>
+        <li><strong>Luteal Phase (Days 15–28):</strong> Progesterone rises, body temp increases, water retention is common, cravings may increase. Scale weight may be 2–5 lbs higher — this is water, not fat. Training may feel harder. This is normal.</li>
+        <li><strong>Note on Reta:</strong> GLP-1 compounds can affect menstrual regularity, especially during titration. Track your cycle and note any changes — report to your coach.</li>
+        <li><strong>Training Periodization:</strong> Push intensity in the follicular phase. In the luteal phase, if energy dips, maintain weights but reduce volume slightly. Do not panic about the scale during luteal phase.</li>
+        <li><strong>Temperature Tracking:</strong> Your daily temperature check will naturally be 0.3–0.5°F higher during the luteal phase due to progesterone. This is normal and expected — factor it into the reference table below.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══════════════ BASELINE ASSESSMENTS ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">🔬</div>
+      <h2>Baseline <span>Assessments</span></h2>
+      <span class="badge red">ACTION REQUIRED</span>
+    </div>
+
+    <p class="text-sm text-muted mb-8">Before we begin, we need two baseline data points to track your progress accurately and make informed adjustments throughout your program. Both should be completed within your first week.</p>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>1. Blood Lab <span>Panel</span></h3>
+        <span class="badge">Upload to App</span>
+      </div>
+      <p class="text-sm mt-8">Obtain a current or recent comprehensive blood panel (within the last 60 days). If you don't have one, request the following from your physician:</p>
+      <ul class="checklist mt-8">
+        <li><strong>Metabolic Panel:</strong> Fasting glucose, fasting insulin, HbA1c</li>
+        <li><strong>Lipid Panel:</strong> Total cholesterol, LDL, HDL, triglycerides, VLDL</li>
+        <li><strong>Liver Panel:</strong> ALT, AST, GGT, alkaline phosphatase, bilirubin</li>
+        <li><strong>Kidney Function:</strong> BUN, creatinine, eGFR, uric acid</li>
+        <li><strong>Thyroid:</strong> TSH, Free T3, Free T4</li>
+        <li><strong>Female Hormones:</strong> Estradiol, progesterone, DHEA-S, total testosterone, free testosterone, SHBG</li>
+        <li><strong>Inflammation:</strong> hs-CRP, ESR, homocysteine</li>
+        <li><strong>CBC:</strong> Complete blood count with differential</li>
+        <li><strong>Vitamins/Minerals:</strong> Vitamin D (25-OH), B12, ferritin, iron, folate</li>
+        <li><strong>Cortisol:</strong> AM cortisol (drawn before 9 AM)</li>
+      </ul>
+      <div class="callout mt-16">
+        <h4>Why This Matters</h4>
+        <p>Your blood work gives us a complete picture of your metabolic and hormonal health before we start. We'll re-test at 12 weeks and 24 weeks to measure improvements in hormones, lipids, liver enzymes, inflammation markers, and micronutrient status. Combined with your body composition changes, these objective markers tell the full story. Upload your results directly in the FBF app under your profile, or send a photo/PDF to your coach via chat.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>2. InBody <span>Composition Scan</span></h3>
+        <span class="badge green">FREE AT YOUR GYM</span>
+      </div>
+      <p class="text-sm mt-8">Most gyms have an InBody scanner available to members at no charge. Complete your baseline scan within the first week.</p>
+      <ul class="checklist mt-8">
+        <li><strong>What it measures:</strong> Body fat %, lean muscle mass (per limb), visceral fat level, total body water, basal metabolic rate</li>
+        <li><strong>When to scan:</strong> Morning, fasted (same conditions as your weigh-in). Before your Monday workout is ideal.</li>
+        <li><strong>How often:</strong> Baseline (Week 1), then every 4 weeks. The InBody tracks skeletal muscle vs. fat changes — this is how we measure recomp, not just the scale.</li>
+        <li><strong>What to expect:</strong> Takes ~60 seconds. Stand on the machine, grip the handles, hold still. Ask the front desk to print your results sheet.</li>
+        <li><strong>Upload:</strong> Take a photo of your InBody results sheet and upload it to the FBF app with your first check-in, or send it via chat.</li>
+      </ul>
+      <div class="callout mt-16">
+        <h4>Why InBody Over Scale Weight</h4>
+        <p>During a lean recomp at 135 lbs, the scale can be extremely misleading — especially for women with hormonal water fluctuations. You might lose 5 lbs of fat and gain 3 lbs of muscle — the scale only shows a 2 lb change, but your body looks completely different. The InBody scan separates fat from muscle so we can verify the protocol is working. This is the gold standard for tracking recomp.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ CHECK-IN PROTOCOL ═══════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">📱</div>
+      <h2>Daily <span>Check-In</span></h2>
+    </div>
+
+    <div class="recomp-banner">
+      <h3>Log Your Daily Check-In</h3>
+      <p>Consistency is everything. Your daily check-in takes less than 2 minutes and gives your coach the data needed to keep your program dialed in. Tap the link below to open your check-in directly in the FBF app.</p>
+      <div style="margin-top: 24px; display: flex; align-items: center; justify-content: center; gap: 32px; flex-wrap: wrap;">
+        <div>
+          <a href="fbf://checkin" style="display: inline-block; background: linear-gradient(135deg, #FF6A00, #FF8533); color: #0a0a0a; font-weight: 800; font-size: 16px; padding: 14px 36px; border-radius: 12px; text-decoration: none; letter-spacing: 0.5px;">Open Daily Check-In</a>
+          <p style="margin-top: 10px; font-size: 12px; color: #666;">fbf://checkin</p>
+        </div>
+        <div style="text-align: center;">
+          <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiCAIAAADS3EjhAAAE70lEQVR4nO3dQW4jNxBAUTvISn3JHC2XVNbZZtWYoOebReq9vSVL1gcFuFD8fr1eX0Dpj/TRAZnBT3CaQU5mkJMZ5GQGOZlBTmaQkxnkZAY5mUFOZpCTGeRkBjmZQU5mkJMZ5GQGOZlB7s8nP/z+65+vs1x/v6J348kjP3nezv0r8tn4L6cZ5GQGOZlBTmaQkxnkZAY5mUFOZpCTGcyeArnXzT08sWo64cmMyJPfeeZf4fqwz4bTDHIyg5zMICczyMkMcjKDnMwgJzPIyQx2ngJZ9R/387Zu3DtvguS94WfjntMMcjKDnMwgJzPIyQxyMoOczCAnM8jJDM6dAvk0M7df8DOcZpCTGeRkBjmZQU5mkJMZ5GQGOZlBTmaQMwWywSTHk+ftNoXw65xmkJMZ5GQGOZlBTmaQkxnkZAY5mUFOZnDuFMh5uzG6u1c+bVbjOu6z4TSDnMwgJzPIyQxyMoOczCAnM8jJDHIyg52nQM6bXbh/RasmOZ48b/ezn/bZuOc0g5zMICczyMkMcjKDnMwgJzPIyQxyMoPc9+t12t6FmWZuCjlv68ZMTjPIyQxyMoOczCAnM8jJDHIyg5zMICczOPdGmPNmJlY98qdNcrw3nHpxmkFOZpCTGeRkBjmZQU5mkJMZ5GQGOZnB7F0gM+/1mDkVMfO9emLHG2EuUyBwKl8aISczyMkMcjKDnMwgJzPIyQxyMoPZu0BWzQF82k6O7n3ecZKj071XTjPIyQxyMoOczCAnM8jJDHIyg5zMICczyB24C2TmBMmq6YTzXtG9ma/XaQY5mUFOZpCTGeRkBjmZQU5mkJMZ5GQGO0+BzNzY8eSRZ74b572ia9H0yT27QGA0XxohJzPIyQxyMoOczCAnM8jJDHIyg9k3wnSe/Me9myHonnfHrRs7Tp9ciz4bTjPIyQxyMoOczCAnM8jJDHIyg5zMICcz2HkKZNWtHzN3kKx6vavmHmbOebztAoFT+dIIOZlBTmaQkxnkZAY5mUFOZpCTGeS2vBHm3qp5iye6d+OJHbduvEf+Vk4zyMkMcjKDnMwgJzPIyQxyMoOczCAnMzj3RphuVmPVvofOjntTZs61rJogcZpBTmaQkxnkZAY5mUFOZpCTGcgM9uc0g9m7QD7NjptCPm0zyjVyf4nTDHIyg5zMICczyMkMcjKDnMwgJzPIyQxm7wLZcd/DvVWTDTPvT5n5eq/sZ+0CgY350gg5mUFOZpCTGeRkBjmZQU5mkJMZ7HwjzMzbVVbt1Vg1f7DqRpjz/vpPOM0gJzPIyQxyMoOczCAnM8jJDHIyg5zMYOcpkFX/j595U8mq5+3mPGa+G9eiLSP3nGaQkxnkZAY5mUFOZpCTGeRkBjmZQU5mcO4UCL9u1S6QJ4987xr5vG6EgY350gg5mUFOZpCTGeRkBjmZQU5mkJMZ5EyB/A+r7k/pphN23EFyZY/ccZpBTmaQkxnkZAY5mUFOZpCTGeRkBjmZwblTIN3swkyrZhe6G1Jm3ggzk9MMcjKDnMwgJzPIyQxyMoOczCAnM8jJDHaeAtnxv/X8rh0kq/7616K7Zu45zSAnM8jJDHIyg5zMICczyMkMcjKDnMwg9/16fdZODvh5TjPIyQxyMoOczCAnM8jJDHIyg5zMICczyMkMcjKDnMwgJzPIyQxyMoOczCAnM8jJDHIyg5zMICczyMkMcjKDnMwgJzPIyQxyMoOczCAnM8jJDHIyg6/av+iLVgr/CkCNAAAAAElFTkSuQmCC" alt="Check-In QR Code" style="width: 160px; height: 160px; border-radius: 12px; border: 2px solid #2a2a2a;" />
+          <p style="margin-top: 8px; font-size: 12px; color: #888; font-weight: 600;">Scan to Check In</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>What to Log <span>Every Day</span></h3>
+      <ul class="checklist mt-8">
+        <li><strong>Temperature:</strong> Waking oral body temperature — immediately upon waking, before getting out of bed (see Temperature Check section below)</li>
+        <li><strong>Body:</strong> Morning weight (scale), how you look/feel, any progress photos</li>
+        <li><strong>Nutrition:</strong> Meals eaten, calorie/macro adherence, water intake</li>
+        <li><strong>Activity:</strong> Workout completed (exercises, weights, reps), step count</li>
+        <li><strong>Sleep:</strong> Hours slept, quality rating (1–10), any disruptions</li>
+        <li><strong>Supplements:</strong> Which supplements/peptides were taken (compliance tracking)</li>
+        <li><strong>Notes:</strong> Energy level, mood, hunger, soreness, menstrual cycle day, any Reta/Teso side effects</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Weekly Check-In <span>(Monday AM)</span></h3>
+      <ul class="checklist mt-8">
+        <li><strong>Weigh in</strong> first thing Monday morning — after bathroom, before food/water</li>
+        <li><strong>Progress photos</strong> every 2 weeks (front, side, back) — same lighting, same time</li>
+        <li><strong>Rate your week</strong> 1–10 in the notes section — energy, mood, hunger, soreness</li>
+        <li><strong>Cycle tracking:</strong> Note menstrual cycle day and any hormonal symptoms</li>
+        <li><strong>InBody scan</strong> every 4 weeks (fasted, Monday morning before workout)</li>
+      </ul>
+    </div>
+
+    <div class="callout">
+      <h4>Communication</h4>
+      <p>Message your coach anytime through the FBF app chat. Response time is typically same-day. Your coach can adjust macros, training, supplement timing, and peptide dosing based on your check-in data.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════ DAILY TEMPERATURE CHECK ═══════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-icon">🌡️</div>
+      <h2>Daily <span>Temperature Check</span></h2>
+      <span class="badge gold">METABOLIC TRACKING</span>
+    </div>
+
+    <div class="recomp-banner">
+      <h3>Why We Track Your Morning Temperature</h3>
+      <p>Your waking body temperature is one of the most underused and powerful biomarkers in coaching. It gives us a direct, daily window into your metabolic rate, thyroid function, recovery status, and overall hormonal health — all without a blood draw. This single data point, tracked consistently, can reveal problems weeks before they show up on lab work or the scale.</p>
+    </div>
+
+    <div class="card">
+      <h3>How to <span>Take Your Temperature</span></h3>
+      <ul class="checklist mt-8">
+        <li><strong>When:</strong> Immediately upon waking, before getting out of bed, before drinking water, before any activity</li>
+        <li><strong>How:</strong> Use a digital oral thermometer. Place under your tongue for the full reading cycle (usually 30–60 seconds). Do not talk or breathe through your mouth.</li>
+        <li><strong>Where to log:</strong> Record it in your daily check-in in the FBF app under the body/notes section</li>
+        <li><strong>Keep your thermometer on your nightstand</strong> — if you forget and get up first, the reading is no longer valid for that day</li>
+        <li><strong>Consistency is key:</strong> Same thermometer, same method, every single morning. The trend over days and weeks is what matters, not any single reading.</li>
+        <li><strong>Cycle Note:</strong> Your temperature will naturally be 0.3–0.5°F higher during the luteal phase (post-ovulation). This is progesterone-driven and completely normal. Factor this into your trend analysis.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>What Your Temperature <span>Tells Us</span></h3>
+
+      <div class="card" style="border-color: rgba(34,197,94,0.3); margin-top: 12px;">
+        <h3 style="color: #22c55e;">Metabolic Rate & Thyroid Function</h3>
+        <p class="text-sm mt-8">Your basal body temperature is a direct reflection of your metabolic rate. Thyroid hormones (T3 and T4) are the primary regulators. They control how every cell in your body converts nutrients into heat and energy.</p>
+        <ul class="checklist mt-8">
+          <li><strong>Healthy range: 97.8°F – 98.6°F</strong> upon waking indicates a well-functioning metabolism and adequate thyroid output</li>
+          <li><strong>Consistently below 97.6°F</strong> is a red flag for metabolic downregulation — your body is slowing its engine. This is the earliest warning sign that calories may be too low or thyroid function is suppressed.</li>
+          <li><strong>Female-specific:</strong> Women are at higher risk for thyroid dysfunction. Low waking temp combined with fatigue, cold hands/feet, hair loss, and irregular cycles warrants immediate thyroid labs.</li>
+          <li>If we see a sustained drop, we can increase calories (refeed), adjust carb timing, or flag it for labs — all before you hit a plateau.</li>
+        </ul>
+      </div>
+
+      <div class="card" style="border-color: rgba(255,106,0,0.3); margin-top: 12px;">
+        <h3 style="color: #FF6A00;">Adaptive Thermogenesis & Diet Response</h3>
+        <p class="text-sm mt-8">When you diet, your body can fight back through adaptive thermogenesis — literally turning down the thermostat to burn fewer calories. This is the #1 reason diets stall.</p>
+        <ul class="checklist mt-8">
+          <li><strong>A gradual temperature decline (0.3–0.5°F over 2–3 weeks)</strong> while in a deficit tells us your metabolism is adapting. Some adaptation is normal, but too much requires intervention.</li>
+          <li><strong>What we do about it:</strong> Strategic refeed days (temporary calorie increase, especially carbs) to reset leptin signaling and bump thermogenesis back up.</li>
+          <li><strong>Tesofensine interaction:</strong> Teso increases thermogenesis — your waking temperature may actually be slightly higher than baseline. If it drops despite being on Teso, that's a stronger signal that metabolic suppression is occurring.</li>
+          <li><strong>Reta interaction:</strong> Reta can affect thermoregulation. Tracking temperature helps us distinguish between normal compound effects and genuine metabolic suppression.</li>
+        </ul>
+      </div>
+
+      <div class="card" style="border-color: rgba(212,160,23,0.3); margin-top: 12px;">
+        <h3 style="color: #D4A017;">Recovery, Stress & Overtraining</h3>
+        <p class="text-sm mt-8">Your temperature reflects your autonomic nervous system balance — the interplay between your sympathetic and parasympathetic systems.</p>
+        <ul class="checklist mt-8">
+          <li><strong>A sudden temperature drop (0.5°F+ from your baseline)</strong> after a hard training week can indicate overreaching</li>
+          <li><strong>A spike above your normal range</strong> can indicate acute stress, inflammation, infection onset, or an immune response</li>
+          <li><strong>Pattern recognition:</strong> Over 4–6 weeks, we'll know your personal baseline. Then deviations become incredibly informative.</li>
+          <li><strong>Cortisol connection:</strong> Chronically elevated cortisol suppresses thyroid conversion (T4→T3) and lowers waking temperature. If we see this pattern, we address stress and recovery first.</li>
+        </ul>
+      </div>
+
+      <div class="card" style="border-color: rgba(34,197,94,0.3); margin-top: 12px;">
+        <h3 style="color: #22c55e;">Hormonal Health & Peptide Response</h3>
+        <p class="text-sm mt-8">Temperature is a downstream marker of your entire hormonal cascade.</p>
+        <ul class="checklist mt-8">
+          <li><strong>Tracking response to peptides:</strong> When you add CJC/Ipamorelin and Tesamorelin, we expect improved sleep, better recovery, and a stable or slightly elevated waking temperature over 4–6 weeks.</li>
+          <li><strong>Menstrual cycle tracking:</strong> Your temperature naturally shifts across your cycle. Combining daily temp with cycle day tracking gives us a powerful hormonal health dataset.</li>
+          <li><strong>Progesterone marker:</strong> A clear temperature shift at ovulation (~0.3–0.5°F rise) confirms healthy ovulation. If this shift disappears, it may indicate anovulatory cycles worth investigating.</li>
+          <li><strong>Sleep quality feedback loop:</strong> CJC/Ipamorelin enhances deep sleep → better hormone output → higher waking temperature. If temperature isn't trending up after starting peptides, we investigate sleep quality first.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>What to <span>Expect</span></h3>
+      <table>
+        <thead>
+          <tr><th>Temperature</th><th>What It Means</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="fw-700 text-accent">98.0–98.6°F</td>
+            <td>Optimal. Metabolism humming, thyroid healthy, well-recovered.</td>
+            <td style="color: #22c55e;">Stay the course. Protocol is working.</td>
+          </tr>
+          <tr>
+            <td class="fw-700" style="color: #D4A017;">97.6–97.9°F</td>
+            <td>Acceptable low-normal. Common during a caloric deficit. Monitor trend.</td>
+            <td style="color: #D4A017;">Watch for downward trend over 7–10 days. May schedule a refeed.</td>
+          </tr>
+          <tr>
+            <td class="fw-700" style="color: #ef4444;">Below 97.5°F</td>
+            <td>Metabolic suppression likely. Thyroid, recovery, or caloric intake issue.</td>
+            <td style="color: #ef4444;">Notify coach immediately. Likely need calorie increase, deload, or thyroid labs.</td>
+          </tr>
+          <tr>
+            <td class="fw-700" style="color: #ef4444;">Above 99.0°F</td>
+            <td>Possible infection, acute inflammation, or luteal phase peak.</td>
+            <td style="color: #ef4444;">Check cycle day first. If not luteal, monitor. If sustained 2+ days, check with physician.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout mt-16">
+      <h4>The Bottom Line</h4>
+      <p>Most coaching programs only look at the scale and the mirror. We go deeper. Your daily temperature — combined with weight, training logs, sleep data, cycle tracking, and periodic InBody scans — gives us a complete metabolic picture. It takes 10 seconds each morning and gives your coach data that no other single metric can provide.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════ COACH RECOMMENDATIONS ═══════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">💡</div>
+      <h2>Coach <span>Recommendations</span></h2>
+    </div>
+
+    <div class="card">
+      <h3>Recovery & <span>Sleep Optimization</span></h3>
+      <ul class="checklist mt-8">
+        <li><strong>Sleep Target: 7–9 hours/night.</strong> Sleep is when GH peaks, muscle repairs, and fat oxidation accelerates. CJC/Ipamorelin will enhance deep sleep — protect your sleep window.</li>
+        <li><strong>Blue light cutoff 60 min before bed.</strong> Screen time suppresses melatonin. Use night mode on devices or blue-light blocking glasses.</li>
+        <li><strong>Magnesium glycinate 400mg before bed</strong> for sleep quality and recovery (already in your supplement stack).</li>
+        <li><strong>Cool bedroom: 65–68°F.</strong> Cold environment enhances deep sleep and GH release.</li>
+        <li><strong>Consistent sleep/wake times</strong> — even on weekends. Your circadian rhythm drives hormone production.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Skin, Hair & <span>Anti-Aging Benefits</span></h3>
+      <ul class="checklist mt-8">
+        <li><strong>GHK-Cu:</strong> You'll notice visible skin quality improvements within 4–6 weeks — tighter, more hydrated skin with improved collagen density.</li>
+        <li><strong>Epithalon:</strong> Telomere lengthening is the frontier of anti-aging. Run in 10–20 day cycles and you're investing in cellular longevity.</li>
+        <li><strong>NAD+ (injectable):</strong> Cellular energy and DNA repair. Many women report improved skin radiance, energy, and mental clarity.</li>
+        <li><strong>Biotin + Omega-3 + Collagen Peptides:</strong> Supplement stack supports hair, skin, and nails from the nutritional side. The peptides handle it from the cellular side.</li>
+        <li><strong>Hydration:</strong> 80+ oz water daily is non-negotiable for skin quality. Dehydrated skin looks older regardless of what else you do.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Stress <span>Management</span></h3>
+      <ul class="checklist mt-8">
+        <li><strong>Cortisol is the recomp killer.</strong> Chronic stress elevates cortisol, which increases water retention, impairs fat loss, and disrupts sleep. Address it proactively.</li>
+        <li><strong>10 min daily mindfulness or breathwork.</strong> Box breathing (4-4-4-4), meditation apps, or simple deep breathing before bed.</li>
+        <li><strong>Selank</strong> in your peptide stack provides anxiolytic support without sedation. It blunts the cortisol response to daily stressors.</li>
+        <li><strong>Training IS stress management.</strong> Your 4 training days provide a physical outlet. On rest days, walk, stretch, or do yoga to maintain the outlet.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══════════════ WEEKLY SCHEDULE ═══════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">📅</div>
+      <h2>Weekly <span>Schedule</span></h2>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Day</th><th>Training</th><th>Cardio</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="fw-700 text-accent">Monday</td>
+            <td>Upper Push</td>
+            <td>15–20 min incline walk post-workout</td>
+            <td>Weigh-in (fasted AM)</td>
+          </tr>
+          <tr>
+            <td class="fw-700 text-accent">Tuesday</td>
+            <td>Lower Quad & Glute</td>
+            <td>15–20 min incline walk post-workout</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td class="fw-700">Wednesday</td>
+            <td>OFF</td>
+            <td>Steps only (8K)</td>
+            <td>Active recovery, stretching, yoga</td>
+          </tr>
+          <tr>
+            <td class="fw-700 text-accent">Thursday</td>
+            <td>Upper Pull</td>
+            <td>15–20 min incline walk post-workout</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td class="fw-700 text-accent">Friday</td>
+            <td>Lower Posterior & Glute</td>
+            <td>Steps only</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td class="fw-700">Saturday</td>
+            <td>OFF</td>
+            <td>10K–12K steps + optional activity</td>
+            <td>Meal prep day</td>
+          </tr>
+          <tr>
+            <td class="fw-700">Sunday</td>
+            <td>OFF</td>
+            <td>10K–12K steps</td>
+            <td>Meal prep, rest, recover</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════ FOOTER ═══════════════ -->
+  <div class="footer">
+    <div class="brand">FORGED BY FREEDOM</div>
+    <div class="tagline">Build the body. Free the mind.</div>
+    <div class="disclaimer">
+      This program is designed for Katt Barr as a personalized coaching plan. It is not medical advice.
+      All supplement, peptide, and compound recommendations should be reviewed with a licensed healthcare provider.
+      Coordinate any protocol changes with your physician.
+      <br><br>
+      © 2026 Forged by Freedom Coaching. All rights reserved. | forgedbyfreedom@proton.me
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

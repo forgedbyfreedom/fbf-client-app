@@ -20,13 +20,55 @@ export interface PeptideItem {
 
 export interface WorkoutExercise {
   name: string;
-  sets: string;
+  sets: string | number;
   reps: string;
+  rest?: string;
+  notes?: string;
 }
 
 export interface WorkoutDay {
   day: string;
+  name?: string;
+  dayOfWeek?: string;
   exercises: WorkoutExercise[];
+}
+
+// Workout logging types
+export interface WorkoutSet {
+  set_number: number;
+  target_reps: string;
+  weight_lbs: string;
+  actual_reps: string;
+  completed: boolean;
+  is_pr?: boolean;
+}
+
+export interface ExerciseLog {
+  exercise_name: string;
+  exercise_note?: string;
+  sets: WorkoutSet[];
+}
+
+export interface WorkoutLog {
+  id: string;
+  date: string;
+  day_name: string;
+  started_at: string;
+  completed_at?: string;
+  duration_min?: number;
+  exercises: ExerciseLog[];
+  total_volume_lbs: number;
+  notes?: string;
+  prs_hit: PersonalRecord[];
+}
+
+export interface PersonalRecord {
+  exercise_name: string;
+  weight_lbs: number;
+  reps: number;
+  estimated_1rm: number;
+  date: string;
+  previous_best?: number;
 }
 
 export interface CardioProtocol {
@@ -61,6 +103,7 @@ export interface Client {
   current_supplements: SupplementItem[];
   current_peds: PedItem[];
   current_peptides: PeptideItem[];
+  meal_plan: any[] | null;
   workout_program: WorkoutDay[] | null;
   cardio_protocol: CardioProtocol[] | null;
   medical_protocol: MedicalProtocol[] | null;
@@ -147,6 +190,8 @@ export interface CheckinFormData {
   side_effects_notes: string;
   progress_photo_urls: string[];
   general_notes: string;
+  // Recommendation opt-ins
+  recommendation_opt_ins: Record<string, boolean>;
   // BJJ fields
   bjj_done: boolean;
   bjj_type: string;
@@ -169,6 +214,9 @@ export interface ChatMessage {
   content: string;
   created_at: string;
   user_id: string;
+  attachment_url?: string | null;
+  attachment_type?: 'image' | 'file' | null;
+  attachment_name?: string | null;
   profiles: {
     full_name: string | null;
     avatar_url: string | null;
@@ -293,6 +341,71 @@ export interface OrgCoach {
     email: string;
     avatar_url: string | null;
   };
+}
+
+export interface FoodLogEntry {
+  id: string;
+  name: string;
+  calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  serving_size: string;
+  quantity: number;
+  meal_label: string;
+  timestamp: string;
+  source: 'manual' | 'meal_plan' | 'barcode';
+}
+
+export interface DailyFoodLog {
+  date: string;
+  entries: FoodLogEntry[];
+  totals: {
+    calories: number;
+    protein_g: number;
+    carbs_g: number;
+    fat_g: number;
+  };
+}
+
+export type ChallengeType =
+  | 'weight_loss_pct'
+  | 'body_fat_pct'
+  | 'strength_gain_pct'
+  | 'steps'
+  | 'adherence'
+  | 'custom';
+
+export type ChallengeStatus = 'upcoming' | 'active' | 'completed';
+
+export interface Challenge {
+  id: string;
+  name: string;
+  description: string;
+  type: ChallengeType;
+  status: ChallengeStatus;
+  start_date: string;
+  end_date: string;
+  duration_weeks: number;
+  entry_fee_cents?: number;
+  prize_pool_description?: string;
+  rules: string[];
+  metric_label: string;
+  created_at: string;
+  participant_count: number;
+}
+
+export interface ChallengeEntry {
+  id: string;
+  challenge_id: string;
+  client_id: string;
+  client_name: string;
+  baseline_value: number;
+  current_value: number;
+  change_pct: number;
+  rank: number;
+  verified: boolean;
+  joined_at: string;
 }
 
 export interface ClientMeResponse {

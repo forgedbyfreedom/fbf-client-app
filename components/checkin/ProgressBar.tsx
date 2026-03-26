@@ -13,6 +13,7 @@ const STEP_LABELS = [
   'Activity',
   'Sleep',
   'Supplements',
+  'Recommendations',
   'Notes & Photos',
 ];
 

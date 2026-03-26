@@ -3,6 +3,7 @@ import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { api } from '../lib/api';
 import { Client, ClientMetrics, Checkin, StreakData, EarnedBadge, BadgeDefinition, UserRole } from '../types';
+import { demoClientMeResponse } from '../lib/demo-data';
 
 interface AuthContextType {
   session: Session | null;
@@ -18,6 +19,8 @@ interface AuthContextType {
   allBadges: BadgeDefinition[];
   loading: boolean;
   clientError: string | null;
+  isDemoMode: boolean;
+  toggleDemoMode: () => void;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   refreshClientData: () => Promise<void>;
@@ -37,6 +40,8 @@ export const AuthContext = createContext<AuthContextType>({
   allBadges: [],
   loading: true,
   clientError: null,
+  isDemoMode: false,
+  toggleDemoMode: () => {},
   signIn: async () => ({ error: null }),
   signOut: async () => {},
   refreshClientData: async () => {},
@@ -55,8 +60,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [allBadges, setAllBadges] = useState<BadgeDefinition[]>([]);
   const [loading, setLoading] = useState(true);
   const [clientError, setClientError] = useState<string | null>(null);
+  const [isDemoMode, setIsDemoMode] = useState(false);
+
+  const loadDemoData = useCallback(() => {
+    const d = demoClientMeResponse;
+    setClient(d.client ?? null);
+    setUserRole(d.userRole ?? null);
+    setOrganizationId(d.organizationId ?? null);
+    setMetrics(d.metrics);
+    setRecentCheckins(d.recentCheckins);
+    setStreak(d.streak ?? null);
+    setEarnedBadges(d.earnedBadges ?? []);
+    setAllBadges(d.allBadges ?? []);
+    setClientError(null);
+    setLoading(false);
+  }, []);
+
+  const clearAllData = useCallback(() => {
+    setClient(null);
+    setUserRole(null);
+    setOrganizationId(null);
+    setMetrics(null);
+    setRecentCheckins([]);
+    setStreak(null);
+    setEarnedBadges([]);
+    setAllBadges([]);
+  }, []);
 
   const fetchClientData = useCallback(async () => {
+    // Skip API calls when demo mode is active
+    if (isDemoMode) return;
     try {
       setClientError(null);
       const data = await api.get<{
@@ -82,7 +115,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Failed to fetch client data:', message);
       setClientError(message);
     }
-  }, []);
+  }, [isDemoMode]);
+
+  const toggleDemoMode = useCallback(() => {
+    setIsDemoMode((prev) => {
+      const next = !prev;
+      if (next) {
+        loadDemoData();
+      } else {
+        clearAllData();
+        // Re-fetch real data if there is an active session
+        if (session) {
+          // Use a microtask so isDemoMode state has updated before fetchClientData reads it
+          setTimeout(() => {
+            api.get<{
+              client: Client | null;
+              userRole: UserRole;
+              organizationId: string | null;
+              metrics: ClientMetrics | null;
+              recentCheckins: Checkin[];
+              streak: StreakData;
+              earnedBadges: EarnedBadge[];
+              allBadges: BadgeDefinition[];
+            }>('/api/client/me').then((data) => {
+              setClient(data.client ?? null);
+              setUserRole(data.userRole ?? null);
+              setOrganizationId(data.organizationId ?? null);
+              setMetrics(data.metrics);
+              setRecentCheckins(data.recentCheckins);
+              setStreak(data.streak ?? null);
+              setEarnedBadges(data.earnedBadges ?? []);
+              setAllBadges(data.allBadges ?? []);
+            }).catch(() => {});
+          }, 0);
+        }
+      }
+      return next;
+    });
+  }, [loadDemoData, clearAllData, session]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session: s } }) => {
@@ -97,21 +167,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(s);
         setUser(s?.user ?? null);
         if (s) fetchClientData();
-        else {
-          setClient(null);
-          setUserRole(null);
-          setOrganizationId(null);
-          setMetrics(null);
-          setRecentCheckins([]);
-          setStreak(null);
-          setEarnedBadges([]);
-          setAllBadges([]);
+        else if (!isDemoMode) {
+          clearAllData();
         }
       }
     );
 
     return () => subscription.unsubscribe();
-  }, [fetchClientData]);
+  }, [fetchClientData, isDemoMode, clearAllData]);
 
   const signIn = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -119,16 +182,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
+    setIsDemoMode(false);
     await supabase.auth.signOut();
-    setClient(null);
-    setUserRole(null);
-    setOrganizationId(null);
-    setMetrics(null);
-    setRecentCheckins([]);
-    setStreak(null);
-    setEarnedBadges([]);
-    setAllBadges([]);
-  }, []);
+    clearAllData();
+  }, [clearAllData]);
 
   return (
     <AuthContext.Provider
@@ -146,6 +203,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         allBadges,
         loading,
         clientError,
+        isDemoMode,
+        toggleDemoMode,
         signIn,
         signOut,
         refreshClientData: fetchClientData,

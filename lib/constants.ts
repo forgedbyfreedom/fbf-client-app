@@ -141,3 +141,16 @@ export const MOOD_LABELS: Record<number, string> = {
   9: 'Excellent',
   10: 'Amazing',
 };
+
+export const STRESS_LABELS: Record<number, string> = {
+  1: 'Minimal',
+  2: 'Very Low',
+  3: 'Low',
+  4: 'Mild',
+  5: 'Moderate',
+  6: 'Elevated',
+  7: 'High',
+  8: 'Very High',
+  9: 'Severe',
+  10: 'Extreme',
+};

@@ -7,6 +7,7 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,6 +21,10 @@ import { NewChatModal } from '../../components/chat/NewChatModal';
 import { BrandHeader } from '../../components/ui/BrandHeader';
 import { colors, fontSize, spacing } from '../../lib/theme';
 import { ChatChannel, ChatMessage } from '../../types';
+import type { SelectedAttachment } from '../../components/chat/AttachmentPicker';
+
+const CHAT_ATTACHMENT_BUCKET = 'chat-attachments';
+const MESSAGE_SELECT_FIELDS = 'id, content, created_at, user_id, attachment_url, attachment_type, attachment_name';
 
 export default function ChatScreen() {
   const insets = useSafeAreaInsets();
@@ -76,7 +81,7 @@ export default function ChatScreen() {
   const fetchMessages = useCallback(async (channelId: string) => {
     const { data, error } = await supabaseRef.current
       .from('chat_messages')
-      .select('id, content, created_at, user_id')
+      .select(MESSAGE_SELECT_FIELDS)
       .eq('channel_id', channelId)
       .order('created_at', { ascending: true })
       .limit(100);
@@ -106,7 +111,7 @@ export default function ChatScreen() {
         async (payload) => {
           const { data: msg } = await supabaseRef.current
             .from('chat_messages')
-            .select('id, content, created_at, user_id')
+            .select(MESSAGE_SELECT_FIELDS)
             .eq('id', payload.new.id)
             .single();
           if (msg) {
@@ -150,15 +155,68 @@ export default function ChatScreen() {
     subscribeTo(channelId);
   }, [activeChannelId, fetchMessages, subscribeTo]);
 
-  const sendMessage = async (content: string) => {
+  // Upload attachment to Supabase Storage
+  const uploadAttachment = useCallback(async (attachment: SelectedAttachment): Promise<{ url: string } | null> => {
+    if (!activeChannelId) return null;
+
+    const timestamp = Date.now();
+    const safeName = attachment.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const storagePath = `${activeChannelId}/${timestamp}_${safeName}`;
+
+    console.log('[Chat] Uploading attachment:', storagePath);
+
+    try {
+      // Read the file as a blob for upload
+      const response = await fetch(attachment.uri);
+      const blob = await response.blob();
+
+      const { data, error } = await supabaseRef.current.storage
+        .from(CHAT_ATTACHMENT_BUCKET)
+        .upload(storagePath, blob, {
+          contentType: attachment.mimeType || 'application/octet-stream',
+          upsert: false,
+        });
+
+      if (error) {
+        console.error('[Chat] Storage upload error:', error);
+        Alert.alert('Upload Failed', 'Could not upload the attachment. Please try again.');
+        return null;
+      }
+
+      // Get the public URL
+      const { data: urlData } = supabaseRef.current.storage
+        .from(CHAT_ATTACHMENT_BUCKET)
+        .getPublicUrl(data.path);
+
+      console.log('[Chat] Upload success, URL:', urlData.publicUrl);
+      return { url: urlData.publicUrl };
+    } catch (err) {
+      console.error('[Chat] Upload exception:', err);
+      Alert.alert('Upload Failed', 'Could not upload the attachment. Please try again.');
+      return null;
+    }
+  }, [activeChannelId]);
+
+  const sendMessage = async (
+    content: string,
+    attachment?: { url: string; type: 'image' | 'file'; name: string }
+  ) => {
     if (!activeChannelId || !user) return;
 
-    console.log('[Chat] sendMessage:', { channelId: activeChannelId, userId: user.id, content });
-    const { data, error } = await supabaseRef.current.from('chat_messages').insert({
+    const insertPayload: Record<string, any> = {
       channel_id: activeChannelId,
       user_id: user.id,
-      content,
-    }).select();
+      content: content || '',
+    };
+
+    if (attachment) {
+      insertPayload.attachment_url = attachment.url;
+      insertPayload.attachment_type = attachment.type;
+      insertPayload.attachment_name = attachment.name;
+    }
+
+    console.log('[Chat] sendMessage:', insertPayload);
+    const { data, error } = await supabaseRef.current.from('chat_messages').insert(insertPayload).select();
     console.log('[Chat] sendMessage result:', { data, error });
   };
 
@@ -258,7 +316,10 @@ export default function ChatScreen() {
       />
 
       <View style={{ paddingBottom: insets.bottom }}>
-        <ChatInput onSend={sendMessage} />
+        <ChatInput
+          onSend={sendMessage}
+          onUploadAttachment={uploadAttachment}
+        />
       </View>
     </KeyboardAvoidingView>
   );

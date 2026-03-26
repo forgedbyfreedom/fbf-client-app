@@ -29,7 +29,8 @@
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://sdrsoccfingecvlzrlym.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_hZCl16bChwDHZ4d9OFZf1A_lshrzLx1",
-        "EXPO_PUBLIC_API_URL": "https://fbf-dashboard.vercel.app"
+        "EXPO_PUBLIC_API_URL": "https://fbf-dashboard.vercel.app",
+        "EXPO_PUBLIC_GOOGLE_PLACES_KEY": "AIzaSyDya5wfFxo-ufO79_OveRD-2JmTE__RiX4"
       },
       "autoIncrement": true,
       "ios": {

@@ -5,6 +5,17 @@
 2. **CONFIDENTIAL DATA**: Wholesale peptide pricing (stored in memory as `reference_peptide_cost_sheet.md`) is restricted to Bryan Antonelli and Wendy Antonelli ONLY. NEVER expose cost/wholesale pricing in any client-facing document, code, UI, API response, commit, or shared file. This data must never appear in the codebase, logs, or any output visible to coaches, admins, or clients.
 3. **No nasal peptide administration**: Never recommend or mention nasal spray delivery for any peptide (Selank, Semax, BPC-157, etc.). Always recommend SubQ injection only. Bryan does not believe in nasal bioavailability.
 
+## Default Workout Program
+Use Bryan's 4-day upper/lower rotating split as the standard for all new clients unless otherwise specified:
+- **Day A (Mon):** Upper Push — Chest/Shoulders/Triceps (dumbbells/machines over barbells for pressing)
+- **Day B (Tue):** Lower Quad Focus — Leg press, hack squat, extensions, lunges, calves
+- **Day C (Thu):** Upper Pull — Back/Biceps — Pulldowns, rows, rear delts, curls
+- **Day D (Fri):** Lower Posterior — RDLs, leg curls, hip thrusts, BSS, calves
+- **Wed:** Rest / Cardio only
+- **Sat/Sun:** Optional rest days — user can start any workout manually but not auto-assigned
+
+The full template is exported as `DEFAULT_WORKOUT_PROGRAM` in `lib/constants.ts`.
+
 ## Client Program Delivery Standard
 
 When building a new client program, ALWAYS use the branded HTML/PDF template at `assets/programs/john-steadman-program.html` as the reference format. Copy and customize it for each new client.

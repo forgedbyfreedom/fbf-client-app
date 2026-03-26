@@ -34,6 +34,13 @@ interface UseWorkoutLogReturn {
   finishWorkout: (notes?: string) => Promise<{ log: WorkoutLog; newPRs: PersonalRecord[] }>;
   cancelWorkout: () => void;
 
+  // Exercise editing
+  renameExercise: (exerciseIndex: number, newName: string) => void;
+  removeExercise: (exerciseIndex: number) => void;
+  addExercise: (name: string, numSets: number, targetReps: string) => void;
+  addSet: (exerciseIndex: number) => void;
+  removeSet: (exerciseIndex: number, setIndex: number) => void;
+
   // History & PRs
   workoutLogs: WorkoutLog[];
   personalRecords: Record<PRCategory, PersonalRecord | null>;
@@ -280,6 +287,59 @@ export function useWorkoutLog(): UseWorkoutLogReturn {
     return { log, newPRs };
   }, [exercises, startedAt, currentDay, workoutLogs, personalRecords, prHistory, logsKey, prsKey, draftKey]);
 
+  const renameExercise = useCallback((exerciseIndex: number, newName: string) => {
+    setExercises((prev) => {
+      const updated = [...prev];
+      updated[exerciseIndex] = { ...updated[exerciseIndex], exercise_name: newName };
+      return updated;
+    });
+  }, []);
+
+  const removeExercise = useCallback((exerciseIndex: number) => {
+    setExercises((prev) => prev.filter((_, i) => i !== exerciseIndex));
+  }, []);
+
+  const addExercise = useCallback((name: string, numSets: number, targetReps: string) => {
+    const sets = Array.from({ length: numSets }, (_, i) => ({
+      set_number: i + 1,
+      target_reps: targetReps,
+      weight_lbs: '',
+      actual_reps: '',
+      completed: false,
+    }));
+    setExercises((prev) => [...prev, { exercise_name: name, sets }]);
+  }, []);
+
+  const addSet = useCallback((exerciseIndex: number) => {
+    setExercises((prev) => {
+      const updated = [...prev];
+      const exercise = { ...updated[exerciseIndex] };
+      const lastSet = exercise.sets[exercise.sets.length - 1];
+      const newSet = {
+        set_number: exercise.sets.length + 1,
+        target_reps: lastSet?.target_reps || '10',
+        weight_lbs: lastSet?.weight_lbs || '',
+        actual_reps: '',
+        completed: false,
+      };
+      exercise.sets = [...exercise.sets, newSet];
+      updated[exerciseIndex] = exercise;
+      return updated;
+    });
+  }, []);
+
+  const removeSet = useCallback((exerciseIndex: number, setIndex: number) => {
+    setExercises((prev) => {
+      const updated = [...prev];
+      const exercise = { ...updated[exerciseIndex] };
+      exercise.sets = exercise.sets
+        .filter((_, i) => i !== setIndex)
+        .map((s, i) => ({ ...s, set_number: i + 1 }));
+      updated[exerciseIndex] = exercise;
+      return updated;
+    });
+  }, []);
+
   const cancelWorkout = useCallback(async () => {
     setExercises([]);
     setIsWorkoutActive(false);
@@ -305,6 +365,11 @@ export function useWorkoutLog(): UseWorkoutLogReturn {
     toggleSetComplete,
     finishWorkout,
     cancelWorkout,
+    renameExercise,
+    removeExercise,
+    addExercise,
+    addSet,
+    removeSet,
     workoutLogs,
     personalRecords,
     prHistory,

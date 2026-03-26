@@ -11,12 +11,19 @@ export function getTodayDayOfWeek(): string {
 }
 
 /**
- * Match today's workout from the program based on dayOfWeek field or day index
+ * Match today's workout from the program based on dayOfWeek field or day index.
+ * Saturday and Sunday are treated as optional — they show as rest days by default
+ * but the user can still start any workout from the "Other Workouts" list.
  */
 export function getTodaysWorkout(program: WorkoutDay[] | null): WorkoutDay | null {
   if (!program || program.length === 0) return null;
 
   const today = getTodayDayOfWeek();
+
+  // Saturday & Sunday are optional rest days — return null so they show as rest
+  // with the option to start any workout manually
+  const dayIndex = new Date().getDay();
+  if (dayIndex === 0 || dayIndex === 6) return null;
 
   // First try matching by dayOfWeek field
   const byDayOfWeek = program.find(

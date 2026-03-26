@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.forgedbyfreedom.client",
-      "buildNumber": "29",
+      "buildNumber": "36",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "Allow Forged by Freedom to access your camera to scan food barcodes for nutrition tracking.",

@@ -10,18 +10,28 @@ interface SetRowProps {
   setIndex: number;
   onUpdateSet: (exerciseIndex: number, setIndex: number, field: 'weight_lbs' | 'actual_reps', value: string) => void;
   onToggleComplete: (exerciseIndex: number, setIndex: number) => void;
+  onRemoveSet?: (exerciseIndex: number, setIndex: number) => void;
 }
 
-export function SetRow({ set, exerciseIndex, setIndex, onUpdateSet, onToggleComplete }: SetRowProps) {
+export function SetRow({ set, exerciseIndex, setIndex, onUpdateSet, onToggleComplete, onRemoveSet }: SetRowProps) {
   const isComplete = set.completed;
 
   return (
     <View style={[styles.row, isComplete && styles.rowComplete]}>
-      <View style={styles.setNumberContainer}>
+      <TouchableOpacity
+        style={styles.setNumberContainer}
+        onLongPress={() => {
+          if (onRemoveSet && !isComplete) {
+            onRemoveSet(exerciseIndex, setIndex);
+          }
+        }}
+        activeOpacity={0.7}
+        delayLongPress={500}
+      >
         <Text style={[styles.setNumber, isComplete && styles.textComplete]}>
           {set.set_number}
         </Text>
-      </View>
+      </TouchableOpacity>
 
       <View style={styles.targetContainer}>
         <Text style={[styles.targetReps, isComplete && styles.textComplete]}>

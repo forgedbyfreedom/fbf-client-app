@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ScrollView, Text, StyleSheet, RefreshControl } from 'react-native';
+import { View, ScrollView, Text, StyleSheet, RefreshControl, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -50,6 +50,15 @@ export default function ChallengesScreen() {
         />
       }
     >
+      {/* Back Button */}
+      <TouchableOpacity
+        style={styles.backBtn}
+        onPress={() => router.back()}
+      >
+        <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
+        <Text style={styles.backText}>Back</Text>
+      </TouchableOpacity>
+
       <BrandHeader title="Challenges" />
 
       <Text style={styles.subtitle}>
@@ -114,6 +123,17 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: spacing.lg,
+  },
+  backBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginBottom: spacing.sm,
+  },
+  backText: {
+    fontSize: fontSize.md,
+    color: colors.textPrimary,
+    fontWeight: '500',
   },
   subtitle: {
     fontSize: fontSize.sm,

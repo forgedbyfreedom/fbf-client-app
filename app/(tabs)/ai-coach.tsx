@@ -378,6 +378,14 @@ export default function AICoachScreen() {
               </View>
             )}
 
+            {/* Apple Health Note */}
+            <View style={styles.healthKitNote}>
+              <Ionicons name="heart-circle-outline" size={18} color={colors.accent} />
+              <Text style={styles.healthKitNoteText}>
+                Apple Health data (heart rate, steps, sleep, weight) is auto-imported into your daily check-ins.
+              </Text>
+            </View>
+
             <Text style={styles.orText}>— or paste results below —</Text>
 
             <TextInput
@@ -584,6 +592,21 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: fontSize.sm,
     color: colors.textPrimary,
+  },
+  healthKitNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.accentMuted,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    marginTop: spacing.md,
+  },
+  healthKitNoteText: {
+    flex: 1,
+    fontSize: fontSize.xs,
+    color: colors.textSecondary,
+    lineHeight: 18,
   },
   orText: {
     textAlign: 'center',

@@ -17,6 +17,7 @@ import { useFoodLog } from '../../hooks/useFoodLog';
 import { BrandHeader } from '../../components/ui/BrandHeader';
 import { Card } from '../../components/ui/Card';
 import { MealCard } from '../../components/meals/MealCard';
+import { MealEntry } from '../../lib/nutrition-api';
 import { ShoppingList } from '../../components/meals/ShoppingList';
 import { DeliveryButtons } from '../../components/meals/DeliveryButtons';
 import { DaySelector } from '../../components/meals/DaySelector';
@@ -187,12 +188,22 @@ export default function MealsScreen() {
   const [exportingGrocery, setExportingGrocery] = useState(false);
 
   // Use client's coach-assigned meal plan if available, otherwise fall back to sample
-  const activeMealPlan: MealPlanDay[] = useMemo(() => {
+  const baseMealPlan: MealPlanDay[] = useMemo(() => {
     if (client?.meal_plan && Array.isArray(client.meal_plan) && client.meal_plan.length > 0) {
       return client.meal_plan as MealPlanDay[];
     }
     return SAMPLE_MEAL_PLAN;
   }, [client?.meal_plan]);
+
+  // Local editable copy of the meal plan
+  const [localMealPlan, setLocalMealPlan] = useState<MealPlanDay[]>(baseMealPlan);
+
+  // Sync when base changes (e.g. refresh from server)
+  useEffect(() => {
+    setLocalMealPlan(baseMealPlan);
+  }, [baseMealPlan]);
+
+  const activeMealPlan = localMealPlan;
 
   // Generate shopping list on mount and when meal plan changes
   useEffect(() => {
@@ -226,6 +237,31 @@ export default function MealsScreen() {
     await logMeal(meal);
     Alert.alert('Logged!', `${meal.name} added to your food log.`);
   }, [logMeal, isMealLogged]);
+
+  const handleUpdateMeal = useCallback((dayName: string, updatedMeal: MealEntry) => {
+    setLocalMealPlan((prev) =>
+      prev.map((day) =>
+        day.day === dayName
+          ? { ...day, meals: day.meals.map((m) => m.id === updatedMeal.id ? updatedMeal : m) }
+          : day
+      )
+    );
+  }, []);
+
+  const handleDeleteMealFromPlan = useCallback((dayName: string, mealId: string) => {
+    setLocalMealPlan((prev) =>
+      prev.map((day) =>
+        day.day === dayName
+          ? { ...day, meals: day.meals.filter((m) => m.id !== mealId) }
+          : day
+      ).filter((day) => day.meals.length > 0)
+    );
+  }, []);
+
+  const handleAddMealToDay = useCallback((dayName: string) => {
+    // Navigate to food log where they can add foods freely
+    router.push('/food-log');
+  }, [router]);
 
   const handleExportMealPlan = useCallback(async () => {
     setExportingMeals(true);
@@ -419,7 +455,11 @@ export default function MealsScreen() {
                 )}
                 {day.meals.map((meal) => (
                   <View key={meal.id}>
-                    <MealCard meal={meal} />
+                    <MealCard
+                      meal={meal}
+                      onUpdate={(updated) => handleUpdateMeal(day.day, updated)}
+                      onDelete={() => handleDeleteMealFromPlan(day.day, meal.id)}
+                    />
                     <TouchableOpacity
                       style={[
                         styles.logMealBtn,
@@ -445,6 +485,14 @@ export default function MealsScreen() {
                     </TouchableOpacity>
                   </View>
                 ))}
+                <TouchableOpacity
+                  style={styles.addMealBtn}
+                  onPress={() => handleAddMealToDay(day.day)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="add-circle-outline" size={16} color={colors.accent} />
+                  <Text style={styles.addMealBtnText}>Add Meal</Text>
+                </TouchableOpacity>
               </View>
             ))
           )}
@@ -660,13 +708,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.xs,
     paddingVertical: spacing.xs,
-    marginTop: -spacing.sm,
-    marginBottom: spacing.md,
-    marginHorizontal: spacing.sm,
     backgroundColor: colors.accentMuted,
     borderRadius: borderRadius.sm,
     borderWidth: 1,
     borderColor: colors.accent,
+  },
+  addMealBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    paddingVertical: spacing.sm,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    borderStyle: 'dashed',
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.accentMuted,
+  },
+  addMealBtnText: {
+    fontSize: fontSize.xs,
+    fontWeight: '600',
+    color: colors.accent,
   },
   logMealBtnLogged: {
     backgroundColor: 'rgba(34, 197, 94, 0.1)',

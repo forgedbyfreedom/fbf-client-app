@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Alert, TextInput, TouchableOpacity, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { WorkoutDay, ExerciseLog, PersonalRecord } from '../../types';
 import { Card } from '../ui/Card';
@@ -20,6 +20,11 @@ interface TodayWorkoutProps {
   onToggleComplete: (exerciseIndex: number, setIndex: number) => void;
   onFinishWorkout: (notes?: string) => Promise<{ log: any; newPRs: PersonalRecord[] }>;
   onCancelWorkout: () => void;
+  onRenameExercise?: (exerciseIndex: number, newName: string) => void;
+  onRemoveExercise?: (exerciseIndex: number) => void;
+  onAddExercise?: (name: string, numSets: number, targetReps: string) => void;
+  onAddSet?: (exerciseIndex: number) => void;
+  onRemoveSet?: (exerciseIndex: number, setIndex: number) => void;
 }
 
 export function TodayWorkout({
@@ -33,10 +38,19 @@ export function TodayWorkout({
   onToggleComplete,
   onFinishWorkout,
   onCancelWorkout,
+  onRenameExercise,
+  onRemoveExercise,
+  onAddExercise,
+  onAddSet,
+  onRemoveSet,
 }: TodayWorkoutProps) {
   const [finishing, setFinishing] = useState(false);
   const [workoutNotes, setWorkoutNotes] = useState('');
   const [selectedDay, setSelectedDay] = useState<WorkoutDay | null>(null);
+  const [addExerciseVisible, setAddExerciseVisible] = useState(false);
+  const [newExName, setNewExName] = useState('');
+  const [newExSets, setNewExSets] = useState('3');
+  const [newExReps, setNewExReps] = useState('10');
 
   // Active workout view
   if (isWorkoutActive && exercises.length > 0) {
@@ -81,13 +95,98 @@ export function TodayWorkout({
         {/* Exercise cards */}
         {exercises.map((exercise, i) => (
           <ExerciseLogCard
-            key={i}
+            key={`${i}-${exercise.exercise_name}`}
             exercise={exercise}
             exerciseIndex={i}
             onUpdateSet={onUpdateSet}
             onToggleComplete={onToggleComplete}
+            onRenameExercise={onRenameExercise}
+            onRemoveExercise={onRemoveExercise}
+            onAddSet={onAddSet}
+            onRemoveSet={onRemoveSet}
           />
         ))}
+
+        {/* Add Exercise */}
+        {onAddExercise && (
+          <TouchableOpacity
+            style={styles.addExerciseBtn}
+            onPress={() => setAddExerciseVisible(true)}
+          >
+            <Ionicons name="add-circle-outline" size={20} color={colors.accent} />
+            <Text style={styles.addExerciseText}>Add Exercise</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Add Exercise Modal */}
+        <Modal
+          visible={addExerciseVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setAddExerciseVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Add Exercise</Text>
+              <Text style={styles.modalLabel}>Exercise Name</Text>
+              <TextInput
+                style={styles.modalInput}
+                value={newExName}
+                onChangeText={setNewExName}
+                placeholder="e.g. Lat Pulldown"
+                placeholderTextColor={colors.textTertiary}
+                autoFocus
+              />
+              <View style={styles.modalRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.modalLabel}>Sets</Text>
+                  <TextInput
+                    style={styles.modalInput}
+                    value={newExSets}
+                    onChangeText={setNewExSets}
+                    keyboardType="number-pad"
+                    placeholderTextColor={colors.textTertiary}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.modalLabel}>Target Reps</Text>
+                  <TextInput
+                    style={styles.modalInput}
+                    value={newExReps}
+                    onChangeText={setNewExReps}
+                    keyboardType="number-pad"
+                    placeholderTextColor={colors.textTertiary}
+                  />
+                </View>
+              </View>
+              <View style={styles.modalActions}>
+                <Button
+                  title="Cancel"
+                  variant="ghost"
+                  onPress={() => {
+                    setAddExerciseVisible(false);
+                    setNewExName('');
+                    setNewExSets('3');
+                    setNewExReps('10');
+                  }}
+                  style={{ flex: 1 }}
+                />
+                <Button
+                  title="Add"
+                  onPress={() => {
+                    if (!newExName.trim()) return;
+                    onAddExercise!(newExName.trim(), parseInt(newExSets, 10) || 3, newExReps || '10');
+                    setAddExerciseVisible(false);
+                    setNewExName('');
+                    setNewExSets('3');
+                    setNewExReps('10');
+                  }}
+                  style={{ flex: 1 }}
+                />
+              </View>
+            </View>
+          </View>
+        </Modal>
 
         {/* Notes input */}
         <Card>
@@ -161,7 +260,13 @@ export function TodayWorkout({
         </Card>
 
         <Text style={styles.altTitle}>Start a Different Workout</Text>
-        {allDays.map((day, i) => (
+        {allDays
+          .filter((d) => {
+            const name = (d.day || d.name || '').toLowerCase();
+            // Filter out BJJ-only days and weekend-labeled optional days
+            return !name.includes('bjj') || name.includes('upper') || name.includes('lower') || name.includes('push') || name.includes('pull');
+          })
+          .map((day, i) => (
           <Card key={i} style={styles.dayCard}>
             <View style={styles.dayRow}>
               <View style={styles.dayInfo}>
@@ -238,7 +343,12 @@ export function TodayWorkout({
         <>
           <Text style={styles.altTitle}>Other Workouts</Text>
           {allDays
-            .filter((d) => d !== todayWorkout)
+            .filter((d) => {
+              if (d === todayWorkout) return false;
+              const name = (d.day || d.name || '').toLowerCase();
+              // Filter out BJJ-only days — BJJ is handled by the dedicated BJJ Logger
+              return !name.includes('bjj') || name.includes('upper') || name.includes('lower') || name.includes('push') || name.includes('pull');
+            })
             .map((day, i) => (
               <Card key={i} style={styles.dayCard}>
                 <View style={styles.dayRow}>
@@ -455,5 +565,68 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     minHeight: 36,
     paddingVertical: spacing.sm,
+  },
+  addExerciseBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    paddingVertical: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    borderStyle: 'dashed',
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.accentMuted,
+  },
+  addExerciseText: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    color: colors.accent,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: spacing.xl,
+    paddingBottom: spacing.xxxl,
+  },
+  modalTitle: {
+    fontSize: fontSize.lg,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    marginBottom: spacing.lg,
+    textAlign: 'center',
+  },
+  modalLabel: {
+    fontSize: fontSize.xs,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    marginBottom: spacing.xs,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  modalInput: {
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    color: colors.textPrimary,
+    fontSize: fontSize.md,
+    marginBottom: spacing.md,
+  },
+  modalRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
   },
 });

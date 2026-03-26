@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,12 +6,11 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
-  Platform,
+  ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker, Callout, PROVIDER_DEFAULT } from 'react-native-maps';
 import { useLocation } from '../../hooks/useLocation';
 import { searchNearbyGyms, hasApiKey, GymPlace } from '../../lib/places-api';
 import { GymCard } from '../../components/gyms/GymCard';
@@ -32,7 +31,6 @@ export default function GymsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { latitude, longitude, loading: locationLoading, error: locationError, requestPermission } = useLocation();
-  const mapRef = useRef<MapView>(null);
 
   const [gyms, setGyms] = useState<GymPlace[]>([]);
   const [filteredGyms, setFilteredGyms] = useState<GymPlace[]>([]);
@@ -53,8 +51,8 @@ export default function GymsScreen() {
       const results = await searchNearbyGyms(latitude, longitude);
       results.sort((a, b) => a.distance - b.distance);
       setGyms(results);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load gyms');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load gyms');
     } finally {
       setLoading(false);
     }
@@ -64,7 +62,6 @@ export default function GymsScreen() {
     fetchGyms();
   }, [fetchGyms]);
 
-  // Apply filters
   useEffect(() => {
     if (activeFilters.size === 0) {
       setFilteredGyms(gyms);
@@ -99,81 +96,11 @@ export default function GymsScreen() {
     });
   };
 
-  const renderHeader = () => (
-    <View>
-      {/* Map */}
-      {latitude && longitude && (
-        <View style={styles.mapContainer}>
-          <MapView
-            ref={mapRef}
-            style={styles.map}
-            provider={PROVIDER_DEFAULT}
-            initialRegion={{
-              latitude,
-              longitude,
-              latitudeDelta: 0.08,
-              longitudeDelta: 0.08,
-            }}
-            showsUserLocation
-            showsMyLocationButton
-            customMapStyle={darkMapStyle}
-          >
-            {filteredGyms.map((gym) => (
-              <Marker
-                key={gym.place_id}
-                coordinate={{ latitude: gym.lat, longitude: gym.lng }}
-                pinColor={colors.accent}
-              >
-                <Callout>
-                  <View style={styles.callout}>
-                    <Text style={styles.calloutTitle}>{gym.name}</Text>
-                    <Text style={styles.calloutRating}>
-                      {gym.rating > 0 ? `${gym.rating.toFixed(1)} ★` : 'No rating'}
-                    </Text>
-                  </View>
-                </Callout>
-              </Marker>
-            ))}
-          </MapView>
-        </View>
-      )}
-
-      {/* Filter Bar */}
-      <FlatList
-        horizontal
-        data={FILTERS}
-        keyExtractor={(item) => item.key}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterBar}
-        renderItem={({ item }) => {
-          const active = activeFilters.has(item.key);
-          return (
-            <TouchableOpacity
-              style={[styles.filterChip, active && styles.filterChipActive]}
-              onPress={() => toggleFilter(item.key)}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.filterChipText, active && styles.filterChipTextActive]}>
-                {item.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        }}
-      />
-
-      {/* Results count */}
-      <Text style={styles.resultsCount}>
-        {filteredGyms.length} gym{filteredGyms.length !== 1 ? 's' : ''} nearby
-      </Text>
-    </View>
-  );
-
   const isLoading = locationLoading || loading;
   const displayError = locationError || error;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Header */}
       <View style={styles.headerRow}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
@@ -200,8 +127,32 @@ export default function GymsScreen() {
         <FlatList
           data={filteredGyms}
           keyExtractor={(item) => item.place_id}
-          ListHeaderComponent={renderHeader}
           contentContainerStyle={styles.listContent}
+          ListHeaderComponent={
+            <View>
+              {/* Filter Bar */}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterBar}>
+                {FILTERS.map((item) => {
+                  const active = activeFilters.has(item.key);
+                  return (
+                    <TouchableOpacity
+                      key={item.key}
+                      style={[styles.filterChip, active && styles.filterChipActive]}
+                      onPress={() => toggleFilter(item.key)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[styles.filterChipText, active && styles.filterChipTextActive]}>
+                        {item.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+              <Text style={styles.resultsCount}>
+                {filteredGyms.length} gym{filteredGyms.length !== 1 ? 's' : ''} nearby
+              </Text>
+            </View>
+          }
           renderItem={({ item }) => <GymCard gym={item} />}
           ListEmptyComponent={
             <View style={styles.centered}>
@@ -214,18 +165,6 @@ export default function GymsScreen() {
     </View>
   );
 }
-
-// Dark-themed map style for consistency with FBF theme
-const darkMapStyle = [
-  { elementType: 'geometry', stylers: [{ color: '#1d1d1d' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#8ec3b9' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#1a3646' }] },
-  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#2c2c2c' }] },
-  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#212a37' }] },
-  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#17263c' }] },
-  { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#283d6a' }] },
-  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#1e3a2a' }] },
-];
 
 const styles = StyleSheet.create({
   container: {
@@ -247,32 +186,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  mapContainer: {
-    height: 280,
-    borderRadius: borderRadius.lg,
-    overflow: 'hidden',
-    marginBottom: spacing.md,
-  },
-  map: {
-    flex: 1,
-  },
-  callout: {
-    padding: 4,
-    minWidth: 120,
-  },
-  calloutTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#000',
-  },
-  calloutRating: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 2,
-  },
   filterBar: {
-    paddingBottom: spacing.md,
-    gap: spacing.sm,
+    marginBottom: spacing.md,
   },
   filterChip: {
     paddingHorizontal: spacing.lg,
@@ -281,6 +196,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
+    marginRight: spacing.sm,
   },
   filterChipActive: {
     backgroundColor: colors.accentMuted,

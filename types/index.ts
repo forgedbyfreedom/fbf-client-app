@@ -49,6 +49,16 @@ export interface ExerciseLog {
   sets: WorkoutSet[];
 }
 
+export interface BJJSession {
+  type: 'gi' | 'no-gi' | 'both';
+  rounds: number;
+  round_length_min: number;
+  rest_between_min: number;
+  drill_time_min: number;
+  intensity: 'light' | 'moderate' | 'hard';
+  notes?: string;
+}
+
 export interface WorkoutLog {
   id: string;
   date: string;
@@ -60,6 +70,7 @@ export interface WorkoutLog {
   total_volume_lbs: number;
   notes?: string;
   prs_hit: PersonalRecord[];
+  bjj_session?: BJJSession;
 }
 
 export interface PersonalRecord {

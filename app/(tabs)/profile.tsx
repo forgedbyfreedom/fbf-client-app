@@ -231,7 +231,7 @@ export default function ProfileScreen() {
         <Button
           title="Bloodwork AI Analysis"
           variant="secondary"
-          onPress={() => Linking.openURL('https://forgedbyfreedom.org/ai-coach')}
+          onPress={() => router.push('/(tabs)/ai-coach')}
           style={styles.linkBtn}
         />
         <Button

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Card } from '../ui/Card';
 import { colors, fontSize, spacing, borderRadius } from '../../lib/theme';
-import { MealEntry } from '../../lib/nutrition-api';
+import { MealEntry, IngredientItem } from '../../lib/nutrition-api';
 
 interface MealCardProps {
   meal: MealEntry;
+  onUpdate?: (updatedMeal: MealEntry) => void;
+  onDelete?: (mealId: string) => void;
 }
 
 const MEAL_ICONS: Record<string, string> = {
@@ -16,9 +18,63 @@ const MEAL_ICONS: Record<string, string> = {
   snack: 'nutrition-outline',
 };
 
-export function MealCard({ meal }: MealCardProps) {
+export function MealCard({ meal, onUpdate, onDelete }: MealCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editName, setEditName] = useState(meal.name);
+  const [editCalories, setEditCalories] = useState(String(meal.calories ?? ''));
+  const [editProtein, setEditProtein] = useState(String(meal.protein_g ?? ''));
+  const [editCarbs, setEditCarbs] = useState(String(meal.carbs_g ?? ''));
+  const [editFat, setEditFat] = useState(String(meal.fat_g ?? ''));
+  const [editIngredients, setEditIngredients] = useState<IngredientItem[]>([...meal.ingredients]);
   const icon = MEAL_ICONS[meal.type] || 'restaurant-outline';
+
+  const handleSave = () => {
+    const updated: MealEntry = {
+      ...meal,
+      name: editName.trim() || meal.name,
+      calories: editCalories ? parseFloat(editCalories) : null,
+      protein_g: editProtein ? parseFloat(editProtein) : null,
+      carbs_g: editCarbs ? parseFloat(editCarbs) : null,
+      fat_g: editFat ? parseFloat(editFat) : null,
+      ingredients: editIngredients.filter((ing) => ing.name.trim()),
+    };
+    onUpdate?.(updated);
+    setEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditName(meal.name);
+    setEditCalories(String(meal.calories ?? ''));
+    setEditProtein(String(meal.protein_g ?? ''));
+    setEditCarbs(String(meal.carbs_g ?? ''));
+    setEditFat(String(meal.fat_g ?? ''));
+    setEditIngredients([...meal.ingredients]);
+    setEditing(false);
+  };
+
+  const handleDeleteIngredient = (index: number) => {
+    setEditIngredients((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleUpdateIngredient = (index: number, field: keyof IngredientItem, value: string) => {
+    setEditIngredients((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
+
+  const handleAddIngredient = () => {
+    setEditIngredients((prev) => [...prev, { name: '', quantity: '', unit: '', category: 'other' as any, checked: false }]);
+  };
+
+  const handleDelete = () => {
+    Alert.alert('Remove Meal', `Remove "${meal.name}" from today's plan?`, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Remove', style: 'destructive', onPress: () => onDelete?.(meal.id) },
+    ]);
+  };
 
   return (
     <Card style={styles.card}>
@@ -32,11 +88,28 @@ export function MealCard({ meal }: MealCardProps) {
         </View>
         <View style={styles.headerText}>
           <Text style={styles.mealType}>{meal.type.toUpperCase()}</Text>
-          <Text style={styles.mealName}>{meal.name}</Text>
+          {editing ? (
+            <TextInput
+              style={styles.editNameInput}
+              value={editName}
+              onChangeText={setEditName}
+              autoFocus
+            />
+          ) : (
+            <Text style={styles.mealName}>{meal.name}</Text>
+          )}
         </View>
-        <View style={styles.macros}>
-          {meal.calories != null && (
+        <View style={styles.headerActions}>
+          {meal.calories != null && !editing && (
             <Text style={styles.macroText}>{meal.calories} cal</Text>
+          )}
+          {onUpdate && !editing && (
+            <TouchableOpacity
+              onPress={(e) => { e.stopPropagation?.(); setEditing(true); setExpanded(true); }}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Ionicons name="pencil-outline" size={16} color={colors.textTertiary} />
+            </TouchableOpacity>
           )}
         </View>
         <Ionicons
@@ -46,7 +119,7 @@ export function MealCard({ meal }: MealCardProps) {
         />
       </TouchableOpacity>
 
-      {expanded && (
+      {expanded && !editing && (
         <View style={styles.details}>
           <View style={styles.macroRow}>
             {meal.protein_g != null && (
@@ -81,6 +154,109 @@ export function MealCard({ meal }: MealCardProps) {
           )}
         </View>
       )}
+
+      {expanded && editing && (
+        <View style={styles.details}>
+          {/* Macro editing */}
+          <Text style={styles.editSectionLabel}>MACROS</Text>
+          <View style={styles.macroEditRow}>
+            <View style={styles.macroEditField}>
+              <Text style={styles.macroEditLabel}>Cal</Text>
+              <TextInput
+                style={styles.macroEditInput}
+                value={editCalories}
+                onChangeText={setEditCalories}
+                keyboardType="numeric"
+                placeholder="0"
+                placeholderTextColor={colors.textTertiary}
+              />
+            </View>
+            <View style={styles.macroEditField}>
+              <Text style={styles.macroEditLabel}>Protein</Text>
+              <TextInput
+                style={styles.macroEditInput}
+                value={editProtein}
+                onChangeText={setEditProtein}
+                keyboardType="numeric"
+                placeholder="0"
+                placeholderTextColor={colors.textTertiary}
+              />
+            </View>
+            <View style={styles.macroEditField}>
+              <Text style={styles.macroEditLabel}>Carbs</Text>
+              <TextInput
+                style={styles.macroEditInput}
+                value={editCarbs}
+                onChangeText={setEditCarbs}
+                keyboardType="numeric"
+                placeholder="0"
+                placeholderTextColor={colors.textTertiary}
+              />
+            </View>
+            <View style={styles.macroEditField}>
+              <Text style={styles.macroEditLabel}>Fat</Text>
+              <TextInput
+                style={styles.macroEditInput}
+                value={editFat}
+                onChangeText={setEditFat}
+                keyboardType="numeric"
+                placeholder="0"
+                placeholderTextColor={colors.textTertiary}
+              />
+            </View>
+          </View>
+
+          {/* Ingredient editing */}
+          <Text style={styles.editSectionLabel}>INGREDIENTS</Text>
+          {editIngredients.map((ing, i) => (
+            <View key={i} style={styles.ingredientEditRow}>
+              <TextInput
+                style={[styles.ingredientEditInput, { flex: 0.3 }]}
+                value={ing.quantity}
+                onChangeText={(v) => handleUpdateIngredient(i, 'quantity', v)}
+                placeholder="Qty"
+                placeholderTextColor={colors.textTertiary}
+              />
+              <TextInput
+                style={[styles.ingredientEditInput, { flex: 0.2 }]}
+                value={ing.unit}
+                onChangeText={(v) => handleUpdateIngredient(i, 'unit', v)}
+                placeholder="Unit"
+                placeholderTextColor={colors.textTertiary}
+              />
+              <TextInput
+                style={[styles.ingredientEditInput, { flex: 1 }]}
+                value={ing.name}
+                onChangeText={(v) => handleUpdateIngredient(i, 'name', v)}
+                placeholder="Ingredient name"
+                placeholderTextColor={colors.textTertiary}
+              />
+              <TouchableOpacity onPress={() => handleDeleteIngredient(i)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Ionicons name="close-circle" size={18} color={colors.textTertiary} />
+              </TouchableOpacity>
+            </View>
+          ))}
+          <TouchableOpacity style={styles.addIngBtn} onPress={handleAddIngredient}>
+            <Ionicons name="add" size={14} color={colors.accent} />
+            <Text style={styles.addIngText}>Add Ingredient</Text>
+          </TouchableOpacity>
+
+          {/* Save / Cancel / Delete */}
+          <View style={styles.editActions}>
+            <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
+              <Text style={styles.saveBtnText}>Save Changes</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.cancelBtn} onPress={handleCancel}>
+              <Text style={styles.cancelBtnText}>Cancel</Text>
+            </TouchableOpacity>
+            {onDelete && (
+              <TouchableOpacity style={styles.deleteBtn} onPress={handleDelete}>
+                <Ionicons name="trash-outline" size={16} color="#ef4444" />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      )}
     </Card>
   );
 }
@@ -106,6 +282,12 @@ const styles = StyleSheet.create({
   headerText: {
     flex: 1,
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginRight: spacing.xs,
+  },
   mealType: {
     fontSize: fontSize.xs,
     fontWeight: '600',
@@ -117,8 +299,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.textPrimary,
   },
-  macros: {
-    marginRight: spacing.sm,
+  editNameInput: {
+    fontSize: fontSize.md,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    borderRadius: borderRadius.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
   },
   macroText: {
     fontSize: fontSize.sm,
@@ -164,5 +354,111 @@ const styles = StyleSheet.create({
   ingredientText: {
     fontSize: fontSize.sm,
     color: colors.textPrimary,
+  },
+  // Edit mode styles
+  editSectionLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: colors.textTertiary,
+    letterSpacing: 1,
+    marginBottom: spacing.sm,
+    marginTop: spacing.xs,
+  },
+  macroEditRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  macroEditField: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  macroEditLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: colors.textTertiary,
+    marginBottom: 4,
+  },
+  macroEditInput: {
+    width: '100%',
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: borderRadius.sm,
+    padding: spacing.sm,
+    color: colors.textPrimary,
+    fontSize: fontSize.md,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  ingredientEditRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginBottom: spacing.sm,
+  },
+  ingredientEditInput: {
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: borderRadius.sm,
+    padding: spacing.sm,
+    color: colors.textPrimary,
+    fontSize: fontSize.sm,
+  },
+  addIngBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    paddingVertical: spacing.sm,
+    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    borderStyle: 'dashed',
+    borderRadius: borderRadius.sm,
+    backgroundColor: colors.accentMuted,
+  },
+  addIngText: {
+    fontSize: fontSize.xs,
+    fontWeight: '600',
+    color: colors.accent,
+  },
+  editActions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    alignItems: 'center',
+  },
+  saveBtn: {
+    flex: 1,
+    backgroundColor: colors.accent,
+    borderRadius: borderRadius.md,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+  },
+  saveBtnText: {
+    fontSize: fontSize.sm,
+    fontWeight: '700',
+    color: colors.background,
+  },
+  cancelBtn: {
+    flex: 0.6,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: borderRadius.md,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+  },
+  cancelBtnText: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  deleteBtn: {
+    padding: spacing.md,
+    borderWidth: 1,
+    borderColor: 'rgba(239,68,68,0.3)',
+    borderRadius: borderRadius.md,
+    backgroundColor: 'rgba(239,68,68,0.08)',
   },
 });

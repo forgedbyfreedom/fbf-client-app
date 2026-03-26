@@ -17,6 +17,7 @@ import { TodayWorkout } from '../../components/workouts/TodayWorkout';
 import { PRTracker } from '../../components/workouts/PRTracker';
 import { WorkoutHistory } from '../../components/workouts/WorkoutHistory';
 import { PRAlert } from '../../components/workouts/PRAlert';
+import { BJJLogger } from '../../components/workouts/BJJLogger';
 import { Loading } from '../../components/ui/Loading';
 import { WorkoutDay } from '../../types';
 import { getTodaysWorkout } from '../../lib/workout-utils';
@@ -36,6 +37,11 @@ export default function WorkoutsScreen() {
     toggleSetComplete,
     finishWorkout,
     cancelWorkout,
+    renameExercise,
+    removeExercise,
+    addExercise,
+    addSet,
+    removeSet,
     workoutLogs,
     personalRecords,
     prHistory,
@@ -56,10 +62,16 @@ export default function WorkoutsScreen() {
 
   if (authLoading) return <Loading />;
 
-  const workoutProgram: WorkoutDay[] =
+  const allProgramDays: WorkoutDay[] =
     client?.workout_program && Array.isArray(client.workout_program) && client.workout_program.length > 0
       ? (client.workout_program as WorkoutDay[])
       : [];
+
+  // Filter out BJJ-only days — BJJ is handled by the dedicated BJJ Logger
+  const workoutProgram = allProgramDays.filter((d) => {
+    const name = (d.day || d.name || '').toLowerCase();
+    return !(name.includes('bjj') && !name.includes('upper') && !name.includes('lower') && !name.includes('push') && !name.includes('pull'));
+  });
 
   const todayWorkout = getTodaysWorkout(workoutProgram.length > 0 ? workoutProgram : null);
 
@@ -136,11 +148,21 @@ export default function WorkoutsScreen() {
             onToggleComplete={toggleSetComplete}
             onFinishWorkout={finishWorkout}
             onCancelWorkout={cancelWorkout}
+            onRenameExercise={renameExercise}
+            onRemoveExercise={removeExercise}
+            onAddExercise={addExercise}
+            onAddSet={addSet}
+            onRemoveSet={removeSet}
           />
         ) : activeTab === 'prs' ? (
           <PRTracker personalRecords={personalRecords} prHistory={prHistory} />
         ) : (
           <WorkoutHistory logs={workoutLogs} />
+        )}
+
+        {/* BJJ Logger — show on workout tab when not in active workout */}
+        {!isWorkoutActive && activeTab === 'workout' && (
+          <BJJLogger />
         )}
 
         {/* Quick stats when not in active workout */}

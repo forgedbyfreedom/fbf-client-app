@@ -196,6 +196,14 @@ export function BodyScanTracker({ clientId }: BodyScanTrackerProps) {
         </TouchableOpacity>
       </View>
 
+      {/* Apple Health Attribution */}
+      <View style={styles.healthKitBanner}>
+        <Ionicons name="heart-circle-outline" size={16} color={colors.accent} />
+        <Text style={styles.healthKitBannerText}>
+          Weight from Apple Health auto-fills your daily check-ins
+        </Text>
+      </View>
+
       {scans.length === 0 ? (
         <Card>
           <Text style={styles.emptyText}>
@@ -506,6 +514,20 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     color: colors.accent,
     fontWeight: '600',
+  },
+  healthKitBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.accentMuted,
+    borderRadius: borderRadius.md,
+    padding: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  healthKitBannerText: {
+    flex: 1,
+    fontSize: fontSize.xs,
+    color: colors.textSecondary,
   },
   emptyText: {
     fontSize: fontSize.sm,

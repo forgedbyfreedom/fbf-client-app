@@ -16,6 +16,7 @@ import { CheckinProvider } from '../../providers/CheckinProvider';
 import { useCheckinDraft } from '../../hooks/useCheckinDraft';
 import { useAuth } from '../../hooks/useAuth';
 import { api } from '../../lib/api';
+import { supabase } from '../../lib/supabase';
 import { ProgressBar } from '../../components/checkin/ProgressBar';
 import { StepBodyWellness } from '../../components/checkin/StepBodyWellness';
 import { StepNutrition } from '../../components/checkin/StepNutrition';
@@ -104,9 +105,32 @@ function CheckinFormContent() {
         .filter(([, v]) => v)
         .map(([k]) => k);
       payload.recommendation_opt_ins = activeOptIns.length > 0 ? activeOptIns : null;
-      payload.progress_photo_urls = form.progress_photo_urls.length > 0
-        ? form.progress_photo_urls
-        : null;
+      // Upload progress photos to Supabase storage
+      if (form.progress_photo_urls.length > 0) {
+        const uploadedUrls: string[] = [];
+        for (const uri of form.progress_photo_urls) {
+          try {
+            const ext = uri.split('.').pop()?.toLowerCase() || 'jpg';
+            const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
+            const path = `${client.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+            const response = await fetch(uri);
+            const blob = await response.blob();
+            const { error: uploadError } = await supabase.storage
+              .from('checkin-files')
+              .upload(path, blob, { contentType: mime, upsert: false });
+            if (uploadError) throw uploadError;
+            const { data: signedData } = await supabase.storage
+              .from('checkin-files')
+              .createSignedUrl(path, 60 * 60 * 24 * 365); // 1 year
+            if (signedData?.signedUrl) uploadedUrls.push(signedData.signedUrl);
+          } catch (photoErr) {
+            console.warn('Photo upload failed, skipping:', photoErr);
+          }
+        }
+        payload.progress_photo_urls = uploadedUrls.length > 0 ? uploadedUrls : null;
+      } else {
+        payload.progress_photo_urls = null;
+      }
 
       // BJJ calorie estimation
       if (form.bjj_done && form.bjj_rounds) {

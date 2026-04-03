@@ -167,13 +167,19 @@ export default function ChatScreen() {
     console.log('[Chat] Uploading attachment:', storagePath);
 
     try {
-      // Read the file as a blob for upload
-      const response = await fetch(attachment.uri);
-      const blob = await response.blob();
+      // Read file as ArrayBuffer — fetch().blob() produces 0-byte blobs on local file:// URIs in React Native
+      const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', attachment.uri);
+        xhr.responseType = 'arraybuffer';
+        xhr.onload = () => resolve(xhr.response);
+        xhr.onerror = () => reject(new Error('Failed to read file'));
+        xhr.send();
+      });
 
       const { data, error } = await supabaseRef.current.storage
         .from(CHAT_ATTACHMENT_BUCKET)
-        .upload(storagePath, blob, {
+        .upload(storagePath, arrayBuffer, {
           contentType: attachment.mimeType || 'application/octet-stream',
           upsert: false,
         });

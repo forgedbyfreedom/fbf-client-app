@@ -113,11 +113,18 @@ function CheckinFormContent() {
             const ext = uri.split('.').pop()?.toLowerCase() || 'jpg';
             const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
             const path = `${client.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-            const response = await fetch(uri);
-            const blob = await response.blob();
+            // Use XHR instead of fetch().blob() — fetch produces 0-byte blobs on local file:// URIs in React Native
+            const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+              const xhr = new XMLHttpRequest();
+              xhr.open('GET', uri);
+              xhr.responseType = 'arraybuffer';
+              xhr.onload = () => resolve(xhr.response);
+              xhr.onerror = () => reject(new Error('Failed to read photo'));
+              xhr.send();
+            });
             const { error: uploadError } = await supabase.storage
               .from('checkin-files')
-              .upload(path, blob, { contentType: mime, upsert: false });
+              .upload(path, arrayBuffer, { contentType: mime, upsert: false });
             if (uploadError) throw uploadError;
             const { data: signedData } = await supabase.storage
               .from('checkin-files')

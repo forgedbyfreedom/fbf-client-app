@@ -14,6 +14,7 @@ import { GarminConnect } from '../../components/settings/GarminConnect';
 import { colors, fontSize, spacing, borderRadius } from '../../lib/theme';
 
 const PUSH_PREF_KEY = 'fbf_push_enabled';
+const CHAT_NOTIF_KEY = 'fbf_chat_notifications';
 const VOICE_PREF_KEY = 'fbf_voice_preference';
 
 export type VoicePreference = 'male' | 'female';
@@ -27,11 +28,15 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { user, client, signOut, isDemoMode, toggleDemoMode } = useAuth();
   const [pushEnabled, setPushEnabled] = useState(true);
+  const [chatNotifications, setChatNotifications] = useState(true);
   const [voicePref, setVoicePref] = useState<VoicePreference>('male');
 
   useEffect(() => {
     AsyncStorage.getItem(PUSH_PREF_KEY).then((val) => {
       if (val !== null) setPushEnabled(val === 'true');
+    });
+    AsyncStorage.getItem(CHAT_NOTIF_KEY).then((val) => {
+      if (val !== null) setChatNotifications(val === 'true');
     });
     AsyncStorage.getItem(VOICE_PREF_KEY).then((val) => {
       if (val === 'male' || val === 'female') setVoicePref(val);
@@ -41,6 +46,17 @@ export default function ProfileScreen() {
   const togglePush = (value: boolean) => {
     setPushEnabled(value);
     AsyncStorage.setItem(PUSH_PREF_KEY, String(value));
+  };
+
+  const toggleChatNotifications = (value: boolean) => {
+    setChatNotifications(value);
+    AsyncStorage.setItem(CHAT_NOTIF_KEY, String(value));
+    // Also update server-side so the webhook knows not to send
+    if (client?.id) {
+      import('../../lib/api').then(({ api }) => {
+        api.patch(`/api/admin/clients/${client.id}`, { chat_notifications: value }).catch(() => {});
+      });
+    }
   };
 
   const handleSignOut = () => {
@@ -99,6 +115,20 @@ export default function ProfileScreen() {
           <Switch
             value={pushEnabled}
             onValueChange={togglePush}
+            trackColor={{ false: colors.border, true: colors.accent }}
+            thumbColor="#fff"
+          />
+        </View>
+        <View style={[styles.switchRow, { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.md, marginTop: spacing.sm }]}>
+          <View>
+            <Text style={styles.switchLabel}>Chat Message Alerts</Text>
+            <Text style={styles.switchSub}>
+              Get notified when your coach sends a message
+            </Text>
+          </View>
+          <Switch
+            value={chatNotifications}
+            onValueChange={toggleChatNotifications}
             trackColor={{ false: colors.border, true: colors.accent }}
             thumbColor="#fff"
           />

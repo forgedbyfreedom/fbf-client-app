@@ -310,7 +310,7 @@ export async function generateGroceryListPDF(items: ShoppingListItem[]): Promise
 // ─── 2. Meal Plan PDF ────────────────────────────────────────────────
 
 export async function generateMealPlanPDF(
-  mealPlan: MealPlanDay[],
+  mealPlan: MealPlanDay[] | Array<Record<string, unknown>>,
   targets?: { calories?: number | null; protein?: number | null; carbs?: number | null; fats?: number | null },
 ): Promise<void> {
   let body = '';
@@ -327,7 +327,15 @@ export async function generateMealPlanPDF(
       </div>`;
   }
 
-  for (const day of mealPlan) {
+  // Handle both formats:
+  // 1. Nested: [{ day: "Monday", meals: [...] }]
+  // 2. Flat: [{ id, type, name, calories, ... }]
+  const isFlat = mealPlan.length > 0 && !('meals' in mealPlan[0]) && ('type' in mealPlan[0] || 'name' in mealPlan[0]);
+  const normalizedDays: MealPlanDay[] = isFlat
+    ? [{ day: 'Daily Meal Plan', meals: mealPlan as unknown as MealPlanDay['meals'] }]
+    : mealPlan as MealPlanDay[];
+
+  for (const day of normalizedDays) {
     body += `<div class="section-title">${day.day}</div>`;
 
     let dayCalories = 0;
@@ -335,7 +343,7 @@ export async function generateMealPlanPDF(
     let dayCarbs = 0;
     let dayFat = 0;
 
-    for (const meal of day.meals) {
+    for (const meal of day.meals || []) {
       dayCalories += meal.calories || 0;
       dayProtein += meal.protein_g || 0;
       dayCarbs += meal.carbs_g || 0;

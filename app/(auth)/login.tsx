@@ -7,6 +7,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  TouchableOpacity,
+  Linking,
 } from 'react-native';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
@@ -88,6 +90,13 @@ export default function LoginScreen() {
             loading={loading}
             style={styles.button}
           />
+
+          <TouchableOpacity
+            onPress={() => Linking.openURL('https://www.forgedbyfreedom.org/apply')}
+            style={styles.createAccountLink}
+          >
+            <Text style={styles.createAccountText}>New client? <Text style={styles.createAccountHighlight}>Apply here</Text></Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -131,5 +140,17 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: spacing.md,
+  },
+  createAccountLink: {
+    marginTop: spacing.md,
+    alignItems: 'center',
+  },
+  createAccountText: {
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
+  },
+  createAccountHighlight: {
+    color: colors.accent,
+    fontWeight: '600',
   },
 });

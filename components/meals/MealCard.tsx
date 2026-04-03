@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, Alert, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { Card } from '../ui/Card';
 import { colors, fontSize, spacing, borderRadius } from '../../lib/theme';
 import { MealEntry, IngredientItem } from '../../lib/nutrition-api';
@@ -27,7 +28,37 @@ export function MealCard({ meal, onUpdate, onDelete }: MealCardProps) {
   const [editCarbs, setEditCarbs] = useState(String(meal.carbs_g ?? ''));
   const [editFat, setEditFat] = useState(String(meal.fat_g ?? ''));
   const [editIngredients, setEditIngredients] = useState<IngredientItem[]>([...meal.ingredients]);
+  const [mealPhoto, setMealPhoto] = useState<string | null>(null);
   const icon = MEAL_ICONS[meal.type] || 'restaurant-outline';
+
+  const handleTakePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Camera Permission', 'Allow camera access to photograph your meals.');
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      quality: 0.7,
+      allowsEditing: true,
+      aspect: [4, 3],
+    });
+    if (!result.canceled && result.assets?.[0]?.uri) {
+      setMealPhoto(result.assets[0].uri);
+    }
+  };
+
+  const handlePickPhoto = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.7,
+      allowsEditing: true,
+      aspect: [4, 3],
+    });
+    if (!result.canceled && result.assets?.[0]?.uri) {
+      setMealPhoto(result.assets[0].uri);
+    }
+  };
 
   const handleSave = () => {
     const updated: MealEntry = {
@@ -152,6 +183,29 @@ export function MealCard({ meal, onUpdate, onDelete }: MealCardProps) {
               ))}
             </View>
           )}
+
+          {/* Meal photo */}
+          <View style={styles.photoSection}>
+            {mealPhoto ? (
+              <View>
+                <Image source={{ uri: mealPhoto }} style={styles.mealPhotoImage} />
+                <TouchableOpacity style={styles.removePhotoBtn} onPress={() => setMealPhoto(null)}>
+                  <Ionicons name="close-circle" size={24} color={colors.textTertiary} />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.photoButtons}>
+                <TouchableOpacity style={styles.photoBtn} onPress={handleTakePhoto}>
+                  <Ionicons name="camera-outline" size={18} color={colors.accent} />
+                  <Text style={styles.photoBtnText}>Take Photo</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.photoBtn} onPress={handlePickPhoto}>
+                  <Ionicons name="image-outline" size={18} color={colors.accent} />
+                  <Text style={styles.photoBtnText}>From Library</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
         </View>
       )}
 
@@ -354,6 +408,43 @@ const styles = StyleSheet.create({
   ingredientText: {
     fontSize: fontSize.sm,
     color: colors.textPrimary,
+  },
+  photoSection: {
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  photoButtons: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  photoBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    backgroundColor: colors.accentMuted,
+  },
+  photoBtnText: {
+    fontSize: fontSize.xs,
+    fontWeight: '600',
+    color: colors.accent,
+  },
+  mealPhotoImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: borderRadius.md,
+  },
+  removePhotoBtn: {
+    position: 'absolute',
+    top: spacing.xs,
+    right: spacing.xs,
   },
   // Edit mode styles
   editSectionLabel: {

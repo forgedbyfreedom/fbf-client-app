@@ -3,6 +3,7 @@ import { View, Platform, StyleSheet } from 'react-native';
 import { Stack, Redirect, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as Linking from 'expo-linking';
+import * as Updates from 'expo-updates';
 import { AuthProvider } from '../providers/AuthProvider';
 import { useAuth } from '../hooks/useAuth';
 import { usePushNotifications } from '../hooks/usePushNotifications';
@@ -50,7 +51,19 @@ function DeepLinkHandler() {
   return null;
 }
 
+async function checkForUpdates() {
+  if (__DEV__) return;
+  try {
+    const update = await Updates.checkForUpdateAsync();
+    if (update.isAvailable) {
+      await Updates.fetchUpdateAsync();
+      await Updates.reloadAsync();
+    }
+  } catch (_) {}
+}
+
 export default function RootLayout() {
+  useEffect(() => { checkForUpdates(); }, []);
   const content = (
     <AuthProvider>
       <StatusBar style="light" />

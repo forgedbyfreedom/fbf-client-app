@@ -252,9 +252,9 @@ export function TodayWorkout({
         <Card style={styles.restCard}>
           <View style={styles.restContent}>
             <Ionicons name="bed-outline" size={48} color={colors.accent} />
-            <Text style={styles.restTitle}>Rest Day</Text>
+            <Text style={styles.restTitle}>Active Rest</Text>
             <Text style={styles.restSubtitle}>
-              No workout scheduled for today. Recovery is part of the process.
+              No lifting scheduled. Hit your steps, do your cardio, and recover.
             </Text>
           </View>
         </Card>

@@ -12,6 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
+import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/useAuth';
 import { Loading } from '../../components/ui/Loading';
 import { MessageBubble } from '../../components/chat/MessageBubble';
@@ -28,7 +29,7 @@ const MESSAGE_SELECT_FIELDS = 'id, content, created_at, user_id, attachment_url,
 
 export default function ChatScreen() {
   const insets = useSafeAreaInsets();
-  const { user, organizationId, clientError } = useAuth();
+  const { user, client, organizationId, clientError } = useAuth();
 
   useEffect(() => {
     console.log('[Chat] user:', user?.id, 'orgId:', organizationId, 'clientError:', clientError);
@@ -218,6 +219,21 @@ export default function ChatScreen() {
     console.log('[Chat] sendMessage:', insertPayload);
     const { data, error } = await supabaseRef.current.from('chat_messages').insert(insertPayload).select();
     console.log('[Chat] sendMessage result:', { data, error });
+
+    // Send push notification to other members
+    if (data && !error) {
+      try {
+        const senderName = client?.first_name
+          ? `${client.first_name} ${client.last_name || ''}`.trim()
+          : 'Someone';
+        api.post('/api/webhooks/chat-message', {
+          channel_id: activeChannelId,
+          sender_id: user.id,
+          content: content || (attachment ? 'Sent an attachment' : ''),
+          sender_name: senderName,
+        }).catch(() => {});
+      } catch { /* best effort */ }
+    }
   };
 
   const handleNewChatCreated = async (channelId: string) => {

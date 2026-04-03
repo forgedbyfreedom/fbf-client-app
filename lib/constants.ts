@@ -164,7 +164,6 @@ export const STRESS_LABELS: Record<number, string> = {
 export const DEFAULT_WORKOUT_PROGRAM = [
   {
     day: 'Day A — Upper Push (Chest/Shoulders/Triceps)',
-    dayOfWeek: 'Monday',
     exercises: [
       { name: 'Dumbbell Incline Press (30-45°)', sets: '4', reps: '8-10', rest: '90s' },
       { name: 'Machine Chest Press (slow eccentric)', sets: '3', reps: '10-12', rest: '60s' },
@@ -176,7 +175,6 @@ export const DEFAULT_WORKOUT_PROGRAM = [
   },
   {
     day: 'Day B — Lower Quad Focus',
-    dayOfWeek: 'Tuesday',
     exercises: [
       { name: 'Leg Press (shoulder width, full depth)', sets: '4', reps: '10-12', rest: '90s' },
       { name: 'Hack Squat or Pendulum Squat', sets: '3', reps: '10-12', rest: '90s' },
@@ -187,7 +185,6 @@ export const DEFAULT_WORKOUT_PROGRAM = [
   },
   {
     day: 'Day C — Upper Pull (Back/Biceps)',
-    dayOfWeek: 'Thursday',
     exercises: [
       { name: 'Lat Pulldown, Wide Grip', sets: '4', reps: '8-10', rest: '90s' },
       { name: 'Seated Cable Row (V-handle)', sets: '3', reps: '10-12', rest: '60s' },
@@ -199,7 +196,6 @@ export const DEFAULT_WORKOUT_PROGRAM = [
   },
   {
     day: 'Day D — Lower Posterior (Hamstrings/Glutes)',
-    dayOfWeek: 'Friday',
     exercises: [
       { name: 'Romanian Dumbbell Deadlift', sets: '4', reps: '8-10', rest: '90s' },
       { name: 'Lying Leg Curl (slow release)', sets: '3', reps: '10-12', rest: '60s' },

@@ -163,25 +163,25 @@ export function generateShoppingList(mealPlan: MealPlanDay[]): ShoppingListItem[
 export function buildInstacartLink(items: ShoppingListItem[]): string {
   const unchecked = items.filter((i) => !i.checked);
   if (unchecked.length === 0) return 'https://www.instacart.com';
-  // Instacart supports search query param
-  const firstItem = unchecked[0].name;
-  return `https://www.instacart.com/store/search?q=${encodeURIComponent(firstItem)}`;
+  // Instacart search — combine top items for broader results
+  const query = unchecked.slice(0, 5).map((i) => i.name).join(' ');
+  return `https://www.instacart.com/store/search?q=${encodeURIComponent(query)}`;
 }
 
 // Build a deep link URL to Walmart Grocery
 export function buildWalmartLink(items: ShoppingListItem[]): string {
   const unchecked = items.filter((i) => !i.checked);
   if (unchecked.length === 0) return 'https://www.walmart.com/grocery';
-  const firstItem = unchecked[0].name;
-  return `https://www.walmart.com/search?q=${encodeURIComponent(firstItem)}&cat_id=976759`;
+  const query = unchecked.slice(0, 5).map((i) => i.name).join(' ');
+  return `https://www.walmart.com/search?q=${encodeURIComponent(query)}&cat_id=976759`;
 }
 
 // Build a deep link URL to Amazon Fresh
 export function buildAmazonFreshLink(items: ShoppingListItem[]): string {
   const unchecked = items.filter((i) => !i.checked);
   if (unchecked.length === 0) return 'https://www.amazon.com/alm/storefront?almBrandId=QW1hem9uIEZyZXNo';
-  const firstItem = unchecked[0].name;
-  return `https://www.amazon.com/s?k=${encodeURIComponent(firstItem)}&i=amazonfresh`;
+  const query = unchecked.slice(0, 5).map((i) => i.name).join(' ');
+  return `https://www.amazon.com/s?k=${encodeURIComponent(query)}&i=amazonfresh`;
 }
 
 // Category display labels and colors

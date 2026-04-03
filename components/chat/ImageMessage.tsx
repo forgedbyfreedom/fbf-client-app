@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -25,6 +25,13 @@ export function ImageMessage({ message, isOwnMessage }: ImageMessageProps) {
   const [loading, setLoading] = useState(true);
   const [fullscreen, setFullscreen] = useState(false);
   const [error, setError] = useState(false);
+
+  // Timeout loading after 10s — prevents permanent grey box
+  useEffect(() => {
+    if (!loading) return;
+    const timeout = setTimeout(() => setLoading(false), 10000);
+    return () => clearTimeout(timeout);
+  }, [loading]);
 
   const isImage = message.attachment_type === 'image';
   const url = message.attachment_url;
@@ -127,7 +134,7 @@ const styles = StyleSheet.create({
     height: 180,
     borderRadius: borderRadius.md,
     overflow: 'hidden',
-    backgroundColor: colors.border,
+    backgroundColor: colors.surface,
   },
   image: {
     width: '100%',
@@ -137,7 +144,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.border,
+    backgroundColor: colors.surface,
     zIndex: 1,
   },
   errorWrap: {

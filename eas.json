@@ -7,7 +7,13 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "channel": "development"
+      "channel": "development",
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://sdrsoccfingecvlzrlym.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_hZCl16bChwDHZ4d9OFZf1A_lshrzLx1",
+        "EXPO_PUBLIC_API_URL": "https://fbf-dashboard.vercel.app",
+        "EXPO_PUBLIC_GOOGLE_PLACES_KEY": "AIzaSyCkQM0m4A_dLwsD5tVTN28eC1zhd3Gkp2A"
+      }
     },
     "preview": {
       "channel": "preview",

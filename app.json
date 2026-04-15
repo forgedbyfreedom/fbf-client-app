@@ -2,7 +2,7 @@
   "expo": {
     "name": "Forged by Freedom",
     "slug": "fbf-client-app",
-    "version": "1.1.1",
+    "version": "1.1.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.forgedbyfreedom.client",
-      "buildNumber": "36",
+      "buildNumber": "40",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "Allow Forged by Freedom to access your camera to scan food barcodes for nutrition tracking.",

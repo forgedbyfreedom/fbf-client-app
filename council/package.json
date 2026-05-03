@@ -5,13 +5,17 @@
   "description": "AI R&D Council — multi-model autonomous business strategy sessions",
   "scripts": {
     "council:fbf": "node run.mjs --business fbf",
-    "council:tnt": "node run.mjs --business tnt",
+    "council:tad": "node run.mjs --business tad",
     "council:all": "node run.mjs --business all",
-    "test": "node run.mjs --business fbf --dry-run"
+    "test": "vitest run",
+    "test:smoke": "node run.mjs --business fbf --dry-run"
   },
   "dependencies": {
     "dotenv": "^17.3.1",
     "nodemailer": "^6.9.0",
     "openai": "^4.70.0"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.9"
   }
 }

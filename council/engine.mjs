@@ -8,7 +8,7 @@
 // 4. Synthesize into an executive memo with action items
 // ============================================================
 
-import OpenAI from 'openai';
+import { callModel as llmCall } from './llm.mjs';
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -16,7 +16,6 @@ import { PERSONAS, COUNCIL_MEMBERS, getSessionLeader, getDebaters } from './pers
 import { CONFIG } from './config.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const openai = new OpenAI({ apiKey: CONFIG.openai.apiKey });
 
 // Load detailed agent definition files (cached)
 const agentFileCache = new Map();
@@ -68,26 +67,18 @@ export function getSessionIndex() {
   return dayOfYear * 2 + (isAM ? 0 : 1);
 }
 
+// Thin wrapper around the provider adapter. modelConfig is intentionally
+// ignored — the workhorse-model decision is made centrally by llm.mjs via
+// LLM_PROVIDER + OLLAMA_MODEL env. The signature is preserved so all phase
+// functions keep working without changes.
 async function callModel(modelConfig, systemPrompt, userPrompt, temperature = 0.9) {
-  // o-series models use max_completion_tokens and don't support temperature/system
-  const isOModel = modelConfig.model.startsWith('o');
-  const params = {
-    model: modelConfig.model,
-    messages: isOModel
-      ? [{ role: 'user', content: `${systemPrompt}\n\n---\n\n${userPrompt}` }]
-      : [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-  };
-  if (isOModel) {
-    params.max_completion_tokens = 2000;
-  } else {
-    params.max_tokens = 2000;
-    params.temperature = temperature;
-  }
-  const response = await openai.chat.completions.create(params);
-  return response.choices[0].message.content;
+  const result = await llmCall({
+    system: systemPrompt,
+    user: userPrompt,
+    temperature,
+    maxTokens: 2000,
+  });
+  return result.content;
 }
 
 function personaSystemPrompt(persona, business) {
@@ -148,10 +139,14 @@ Format your proposal as:
 }
 
 // ── PHASE 2: Each member debates the proposal ─────────────────
+// Sequential, not parallel: Ollama on a single 24GB GPU has no room for
+// concurrent slots, and per-seat error recovery is cleaner one at a time.
 async function phaseDebate(debaters, proposal, leader, business) {
   console.log(`  🔥 Council members are debating ${leader.name}'s proposal...`);
 
-  const debatePromises = debaters.map((persona, i) => {
+  const results = [];
+  for (let i = 0; i < debaters.length; i++) {
+    const persona = debaters[i];
     const modelConfig = CONFIG.models[(i + 1) % CONFIG.models.length];
     const system = personaSystemPrompt(persona, business);
     const prompt = `${leader.name} (${leader.title}) just proposed the following to the council:
@@ -170,13 +165,20 @@ As ${persona.name} (${persona.title}), give your honest reaction:
 
 Be direct. Disagree if you disagree. The best ideas survive debate.`;
 
-    return callModel(modelConfig, system, prompt).then(response => ({
-      persona,
-      response,
-    }));
-  });
-
-  return await Promise.all(debatePromises);
+    console.log(`    ${persona.emoji} ${persona.name} (${i + 1}/${debaters.length})...`);
+    try {
+      const response = await callModel(modelConfig, system, prompt);
+      results.push({ persona, response });
+    } catch (err) {
+      console.log(`    ⚠️  ${persona.name} failed: ${err.message}`);
+      results.push({
+        persona,
+        response: `[ERROR: ${persona.name} unavailable — ${err.message}]`,
+        errored: true,
+      });
+    }
+  }
+  return results;
 }
 
 // ── PHASE 3: Leader responds to the debate ────────────────────
@@ -212,7 +214,10 @@ async function phaseVote(debaters, leader, proposal, rebuttal, business) {
 
   const allMembers = [{ persona: leader }, ...debaters.map(d => ({ persona: d }))];
 
-  const votePromises = allMembers.map((member, i) => {
+  // Sequential per-seat (same reasoning as phaseDebate above)
+  const rawVotes = [];
+  for (let i = 0; i < allMembers.length; i++) {
+    const member = allMembers[i];
     const modelConfig = CONFIG.models[i % CONFIG.models.length];
     const system = personaSystemPrompt(member.persona, business);
     const prompt = `The council session is concluding. Here was the original proposal and the leader's final synthesis:
@@ -241,13 +246,15 @@ Extract the key recommendations from the synthesis and vote on each one. You MUS
 
 Extract 3-7 key recommendations. Vote APPROVE if you support it, DENY if you oppose it, DEFER if you think it needs more discussion or data before deciding.`;
 
-    return callModel(modelConfig, system, prompt, 0.3).then(response => ({
-      persona: member.persona,
-      response,
-    }));
-  });
-
-  const rawVotes = await Promise.all(votePromises);
+    console.log(`    🗳️  ${member.persona.name} voting (${i + 1}/${allMembers.length})...`);
+    try {
+      const response = await callModel(modelConfig, system, prompt, 0.3);
+      rawVotes.push({ persona: member.persona, response });
+    } catch (err) {
+      console.log(`    ⚠️  ${member.persona.name} vote failed: ${err.message}`);
+      rawVotes.push({ persona: member.persona, response: '', errored: true });
+    }
+  }
 
   // Parse votes and tally
   const memberVotes = [];
@@ -499,7 +506,7 @@ export async function runSession(business, sessionIndex = null) {
   const proposal = await phaseProposal(leader, business, leaderModel);
   console.log(`  ✅ Proposal received\n`);
 
-  // Phase 2: Debate (all members in parallel)
+  // Phase 2: Debate (sequential per seat — Ollama single-GPU)
   const debates = await phaseDebate(debaters, proposal, leader, business);
   console.log(`  ✅ All ${debates.length} members have responded\n`);
 

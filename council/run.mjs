@@ -14,6 +14,7 @@ import 'dotenv/config';
 import { runSession } from './engine.mjs';
 import { deliverMemo } from './deliver.mjs';
 import { BUSINESSES } from './businesses.mjs';
+import { preflight } from './preflight.mjs';
 import { writeFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -36,6 +37,13 @@ async function main() {
   console.log('\n🏛️  ═══════════════════════════════════════════════════');
   console.log('🏛️  AI R&D COUNCIL — Autonomous Strategy Session');
   console.log('🏛️  ═══════════════════════════════════════════════════\n');
+
+  try {
+    await preflight();
+  } catch (err) {
+    console.error(`\n❌ Preflight failed: ${err.message}`);
+    process.exit(1);
+  }
 
   const businessKeys = businessArg === 'all'
     ? Object.keys(BUSINESSES)
@@ -101,9 +109,6 @@ async function main() {
       }
     } catch (err) {
       console.error(`\n❌ Council session failed for ${business.name}:`, err.message);
-      if (err.message.includes('API key')) {
-        console.error('   → Make sure OPENAI_API_KEY is set in your environment');
-      }
       console.error(err.stack);
     }
   }
@@ -111,6 +116,11 @@ async function main() {
   console.log('\n🏛️  ═══════════════════════════════════════════════════');
   console.log(`🏛️  Sessions complete: ${results.length}/${businessKeys.length}`);
   console.log('🏛️  ═══════════════════════════════════════════════════\n');
+
+  // Exit code reflects partial-failure state for the scheduler/cron
+  if (results.length < businessKeys.length) {
+    process.exit(2);
+  }
 }
 
 main().catch(err => {

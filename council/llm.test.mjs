@@ -4,7 +4,7 @@ describe('callModel — Ollama path', () => {
   beforeEach(() => {
     vi.resetModules();
     process.env.LLM_PROVIDER = 'ollama';
-    process.env.OLLAMA_HOST = 'http://localhost:11434';
+    process.env.OLLAMA_BASE_URL = 'http://localhost:11434';
     process.env.OLLAMA_MODEL = 'qwen2.5:32b';
     globalThis.fetch = vi.fn();
   });

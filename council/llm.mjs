@@ -9,14 +9,17 @@
 // ============================================================
 
 const PROVIDER = () => process.env.LLM_PROVIDER || 'ollama';
-const OLLAMA_HOST = () => process.env.OLLAMA_HOST || 'http://localhost:11434';
+// OLLAMA_BASE_URL: API endpoint URL we POST to.
+// Named distinctly from `OLLAMA_HOST` (which the Ollama installer sets to the
+// daemon's bind address, e.g. "0.0.0.0:11434") so the two don't collide.
+const OLLAMA_BASE_URL = () => process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
 const OLLAMA_MODEL = () => process.env.OLLAMA_MODEL || 'qwen2.5:32b';
 
 const CALL_TIMEOUT_MS = 90_000;
 const RETRY_BACKOFF_MS = 5_000;
 
 async function callOllama({ system, user, temperature, maxTokens }) {
-  const url = `${OLLAMA_HOST()}/v1/chat/completions`;
+  const url = `${OLLAMA_BASE_URL()}/v1/chat/completions`;
   const body = {
     model: OLLAMA_MODEL(),
     messages: [

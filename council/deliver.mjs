@@ -49,6 +49,9 @@ async function sendEmail(subject, htmlBody, textBody) {
 
 // ── SMS notification ────────────────────────────────────────
 async function sendSMS(message) {
+  if (!CONFIG.twilio.enabled) {
+    return false; // Disabled in config; silent no-op (Ollama edition)
+  }
   if (!CONFIG.twilio.authToken) {
     console.log('  ⚠️  Twilio not configured — skipping SMS delivery');
     return false;

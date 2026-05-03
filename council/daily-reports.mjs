@@ -19,7 +19,7 @@ import 'dotenv/config';
 //   node daily-reports.mjs --dry-run          # Generate but don't email
 // ============================================================
 
-import OpenAI from 'openai';
+import { callModel as llmCall } from './llm.mjs';
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -27,7 +27,6 @@ import nodemailer from 'nodemailer';
 import { CONFIG } from './config.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const openai = new OpenAI({ apiKey: CONFIG.openai.apiKey });
 
 // Parse CLI args
 const args = process.argv.slice(2);
@@ -40,19 +39,18 @@ const today = new Date().toISOString().split('T')[0];
 const dateHuman = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
 // ── Helpers ──────────────────────────────────────────────────
+// Thin wrapper around the provider adapter. The `model` param is preserved
+// for signature compatibility but ignored — the provider chooses the model
+// via LLM_PROVIDER + OLLAMA_MODEL env. The o-series special-case is gone
+// (no o-models on Ollama; the OpenAI fallback path normalizes its own).
 async function callAI(systemPrompt, userPrompt, model = 'gpt-4o', maxTokens = 4000) {
-  const isO = model.startsWith('o');
-  const params = {
-    model,
-    messages: isO
-      ? [{ role: 'user', content: `${systemPrompt}\n\n---\n\n${userPrompt}` }]
-      : [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
-  };
-  if (isO) params.max_completion_tokens = maxTokens;
-  else { params.max_tokens = maxTokens; params.temperature = 0.7; }
-
-  const res = await openai.chat.completions.create(params);
-  return res.choices[0].message.content;
+  const result = await llmCall({
+    system: systemPrompt,
+    user: userPrompt,
+    temperature: 0.7,
+    maxTokens,
+  });
+  return result.content;
 }
 
 function loadAgentFile(filename) {

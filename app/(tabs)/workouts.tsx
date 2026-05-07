@@ -21,6 +21,7 @@ import { BJJLogger } from '../../components/workouts/BJJLogger';
 import { Loading } from '../../components/ui/Loading';
 import { WorkoutDay } from '../../types';
 import { getTodaysWorkout } from '../../lib/workout-utils';
+import { normalizeWorkoutProgram } from '../../lib/normalize-plan';
 import { colors, fontSize, spacing, borderRadius } from '../../lib/theme';
 
 type TabView = 'workout' | 'prs' | 'history';
@@ -62,10 +63,7 @@ export default function WorkoutsScreen() {
 
   if (authLoading) return <Loading />;
 
-  const allProgramDays: WorkoutDay[] =
-    client?.workout_program && Array.isArray(client.workout_program) && client.workout_program.length > 0
-      ? (client.workout_program as WorkoutDay[])
-      : [];
+  const allProgramDays: WorkoutDay[] = normalizeWorkoutProgram(client?.workout_program);
 
   // Filter out BJJ-only days — BJJ is handled by the dedicated BJJ Logger
   const workoutProgram = allProgramDays.filter((d) => {

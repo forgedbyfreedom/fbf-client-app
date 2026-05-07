@@ -29,6 +29,7 @@ import {
   NutritionInfo,
   generateShoppingList,
 } from '../../lib/nutrition-api';
+import { normalizeMealPlan } from '../../lib/normalize-plan';
 import { generateMealPlanPDF, generateGroceryListPDF } from '../../lib/pdf-export';
 
 // Fallback meal plan for demo/new users without a coach-assigned plan
@@ -187,12 +188,11 @@ export default function MealsScreen() {
   const [exportingMeals, setExportingMeals] = useState(false);
   const [exportingGrocery, setExportingGrocery] = useState(false);
 
-  // Use client's coach-assigned meal plan if available, otherwise fall back to sample
+  // Use client's coach-assigned meal plan if available, otherwise fall back to sample.
+  // normalizeMealPlan handles both array and object JSONB shapes from the DB.
   const baseMealPlan: MealPlanDay[] = useMemo(() => {
-    if (client?.meal_plan && Array.isArray(client.meal_plan) && client.meal_plan.length > 0) {
-      return client.meal_plan as MealPlanDay[];
-    }
-    return SAMPLE_MEAL_PLAN;
+    const normalized = normalizeMealPlan(client?.meal_plan);
+    return normalized.length > 0 ? normalized : SAMPLE_MEAL_PLAN;
   }, [client?.meal_plan]);
 
   // Local editable copy of the meal plan

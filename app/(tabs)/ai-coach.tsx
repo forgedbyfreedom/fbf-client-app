@@ -40,37 +40,84 @@ const SAMPLE_QUESTIONS = [
 
 type Tab = 'ask' | 'bloodwork';
 
-async function askCoach(question: string, clientId?: string): Promise<string> {
-  // Try context-aware endpoint first, fall back to generic
-  try {
-    const controller1 = new AbortController();
-    const timeout1 = setTimeout(() => controller1.abort(), 60000);
-    const res = await fetch(`${AI_API_BASE}/api/coach-chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: question, client_id: clientId }),
-      signal: controller1.signal,
-    });
-    clearTimeout(timeout1);
-    const data = await res.json();
-    if (data.reply) return data.reply;
-  } catch (err) {
-    console.log('coach-chat failed, trying /ask fallback:', err);
+async function askCoachStream(
+  question: string,
+  clientId: string | undefined,
+  onChunk: (text: string) => void,
+  onFirstChunk: () => void,
+): Promise<string> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 90000);
+  let firstChunk = true;
+
+  async function readStream(response: Response, replyKey: 'reply' | 'answer'): Promise<string> {
+    const reader = response.body!.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let fullText = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (!data || data === '[DONE]') continue;
+        try {
+          const event = JSON.parse(data);
+          if (event.type === 'content' && event.text) {
+            if (firstChunk) { onFirstChunk(); firstChunk = false; }
+            fullText += event.text;
+            onChunk(event.text);
+          } else if (event.type === 'done' && event[replyKey]) {
+            return event[replyKey] as string;
+          }
+        } catch {}
+      }
+    }
+    return fullText;
   }
 
-  // Fallback to generic /ask
-  const controller2 = new AbortController();
-  const timeout2 = setTimeout(() => controller2.abort(), 60000);
-  const res = await fetch(`${AI_API_BASE}/ask`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ question }),
-    signal: controller2.signal,
-  });
-  clearTimeout(timeout2);
-  const data = await res.json();
-  if (data.error) throw new Error(data.error);
-  return data.answer || 'No answer returned.';
+  try {
+    // Try streaming coach-chat first
+    const res1 = await fetch(`${AI_API_BASE}/api/coach-chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: question, client_id: clientId, stream: true }),
+      signal: controller.signal,
+    });
+    if (res1.ok && res1.headers.get('content-type')?.includes('text/event-stream')) {
+      return await readStream(res1, 'reply');
+    }
+    // Non-streaming fallback for coach-chat
+    const data1 = await res1.json();
+    if (data1.reply) return data1.reply;
+  } catch (err) {
+    console.log('coach-chat stream failed, trying /ask:', err);
+  }
+
+  // Fallback to /ask with streaming
+  try {
+    const res2 = await fetch(`${AI_API_BASE}/ask`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question, stream: true }),
+      signal: controller.signal,
+    });
+    if (res2.ok && res2.headers.get('content-type')?.includes('text/event-stream')) {
+      return await readStream(res2, 'answer');
+    }
+    const data2 = await res2.json();
+    if (data2.error) throw new Error(data2.error);
+    return data2.answer || 'No answer returned.';
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export default function AICoachScreen() {
@@ -178,9 +225,19 @@ export default function AICoachScreen() {
     setSpeakingState('idle');
 
     try {
-      const result = await askCoach(fullQuestion, client?.id);
-      setAnswer(result);
-      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300);
+      await askCoachStream(
+        fullQuestion,
+        client?.id,
+        (chunk) => {
+          setAnswer(prev => prev + chunk);
+          scrollRef.current?.scrollToEnd({ animated: false });
+        },
+        () => {
+          // First chunk arrived — hide spinner, show streaming text
+          setLoading(false);
+        },
+      );
+      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
     } catch (e: any) {
       Alert.alert('Error', e.message || 'Failed to get a response.');
     } finally {
@@ -406,7 +463,7 @@ export default function AICoachScreen() {
             uploadingFiles
               ? 'Uploading files...'
               : loading
-              ? 'Thinking...'
+              ? 'Coach Bryan is thinking...'
               : activeTab === 'ask'
               ? 'Ask Coach Bryan'
               : 'Analyze Bloodwork'

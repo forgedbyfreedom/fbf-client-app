@@ -1,57 +1,45 @@
-# WordPress Backend Migration
+# WordPress Single-Backend Migration — COMPLETE ✅
 
-This branch points the app at **forgedbyfreedom.net (WordPress)** as its single
-backend, replacing the Vercel dashboard + Supabase pair that was causing
-intermittent failures.
+The app now uses **forgedbyfreedom.net (WordPress + FBF App Bridge plugin)**
+as its only backend. Supabase and the Vercel fbf-dashboard API are no longer
+used by the auth or client-data paths.
 
-## What changed in this branch
+## Endpoints in use (`/wp-json/fbf/v1`)
 
-- `lib/wp-auth.ts` (new) — token login against the FBF App Bridge plugin
-  (`POST /wp-json/fbf/v1/auth/login`), token stored in SecureStore, 30-day
-  sliding expiry. Same account the client created at website checkout.
-- `lib/api.ts` — `api.*` helpers now call
-  `https://forgedbyfreedom.net/wp-json/fbf/v1` with the WP token.
-  Interface is unchanged (`api.get/post/put/patch/delete/upload`).
+| Endpoint | Purpose |
+|---|---|
+| `POST /auth/login` | email+password → token + profile (same login as the website) |
+| `POST /auth/logout` | revoke token |
+| `GET /client/me` | profile, plan, status, approved program text |
+| `GET/POST /checkins` | daily check-ins |
+| `/bodyscan/*` | BodyScan (see the `bodyscan` branch) |
 
-## Server endpoints available now (FBF App Bridge plugin, live)
+## Wiring status — all done
 
-| Endpoint | Method | Notes |
-| --- | --- | --- |
-| `/auth/login` | POST | `{email, password}` → `{token, user}` (rate-limited) |
-| `/auth/logout` | POST | revokes current token |
-| `/me` | GET | profile + `program` (approved program text) |
-| `/client/me` | GET | legacy field names: `program_raw_text`, `workout_program`, `program_name`, `last_checkin` |
-| `/checkins` | GET/POST | daily check-in: `weight, waist, water_oz, cardio_min, trained, notes` |
+1. ✅ **Login screen** — `signIn` now goes through `providers/AuthProvider.tsx`
+   → `lib/wp-auth.ts` `login()` (WP token in SecureStore, 30-day sliding TTL).
+2. ✅ **Session gate** — AuthProvider bootstraps from `isLoggedIn()` /
+   `getCachedUser()`; screens keep using `session` truthiness as before.
+3. ✅ **Program reads** — `lib/wp-adapter.ts` fetches `/client/me` +
+   `/checkins` and adapts them to the `ClientMeResponse` shape screens
+   expect, including parsing the coach-approved program text into
+   `WorkoutDay[]` (with a raw-text fallback so nothing is ever hidden).
+4. ✅ **Env override** — `EXPO_PUBLIC_WP_URL` (defaults to
+   https://forgedbyfreedom.net) in `lib/wp-auth.ts`.
+5. ✅ **Signup link** — login screen points to
+   https://forgedbyfreedom.net/pricing/.
 
-## Remaining app-side wiring (small, do before building)
+## Known scope notes
 
-1. **Login screen** (`app/(auth)/…`): replace the
-   `supabase.auth.signInWithPassword(...)` call with:
-   ```ts
-   import { login } from '@/lib/wp-auth';
-   const user = await login(email, password);
-   ```
-   and route to the tabs on success. Replace sign-out calls with
-   `logout()` from the same module.
-2. **Session gate** (wherever `supabase.auth.getSession()` decides
-   logged-in vs logged-out): use `isLoggedIn()` from `lib/wp-auth`.
-3. **Client data screens**: `api.get('/client/me')` now returns the fields
-   listed above; remove any Supabase table reads.
-4. Add to `.env` / EAS env: `EXPO_PUBLIC_WP_URL=https://forgedbyfreedom.net`
-   (the code defaults to this URL if unset, so this is optional).
-5. Signup happens on the website (checkout + intake), not in-app — the app
-   login screen should link to `https://forgedbyfreedom.net/pricing` for
-   new clients.
+- `metrics`, badges, leaderboard, chat, food-log and other Supabase-era
+  features receive empty/null data from the adapter for now — screens render
+  their empty states. Core flows (login, program, check-ins) are fully live.
+- Streaks are computed client-side from WP check-ins.
 
-## Build
+## Ship it
 
+```bash
+npm install
+npx eas build --platform ios --profile production
+npx eas submit --platform ios   # then release via TestFlight
 ```
-eas build --platform ios --profile production
-```
-
-## Why this is more reliable
-
-One backend, one database, one login. No Vercel cold starts, no
-Supabase JWT ↔ API session mismatches, no service-role key handling.
-The program shown in the app is literally the text Bryan approves in the
-site's Coach Queue — no sync step at all.

@@ -92,10 +92,10 @@ export default function LoginScreen() {
           />
 
           <TouchableOpacity
-            onPress={() => Linking.openURL('https://www.forgedbyfreedom.org/apply')}
+            onPress={() => Linking.openURL('https://forgedbyfreedom.net/pricing/')}
             style={styles.createAccountLink}
           >
-            <Text style={styles.createAccountText}>New client? <Text style={styles.createAccountHighlight}>Apply here</Text></Text>
+            <Text style={styles.createAccountText}>New client? <Text style={styles.createAccountHighlight}>Join here</Text></Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

@@ -56,7 +56,7 @@ async function authHeaders(): Promise<Record<string, string>> {
 }
 
 export async function listScans(): Promise<MineResponse> {
-  const res = await fetch(`${wpApiRoot()}/bodyscan/mine`, {
+  const res = await fetch(`${wpApiRoot}/bodyscan/mine`, {
     headers: await authHeaders(),
   });
   if (!res.ok) throw new Error(`listScans failed (${res.status})`);
@@ -86,7 +86,7 @@ export async function submitScan(
     if (v !== undefined && v !== null && v !== '') form.append(k, String(v));
   });
 
-  const res = await fetch(`${wpApiRoot()}/bodyscan/submit`, {
+  const res = await fetch(`${wpApiRoot}/bodyscan/submit`, {
     method: 'POST',
     headers: await authHeaders(), // no Content-Type: RN sets the boundary
     body: form,
@@ -109,7 +109,7 @@ export async function submitScan(
 
 /** URL for the HTML report (open in a WebView with the auth header). */
 export function reportUrl(id: number): string {
-  return `${wpApiRoot()}/bodyscan/report/${id}`;
+  return `${wpApiRoot}/bodyscan/report/${id}`;
 }
 
 export async function fetchReportHtml(id: number): Promise<string> {

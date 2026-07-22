@@ -76,6 +76,29 @@ export function StepActivity() {
 
       {form.training_done && (
         <>
+          {(client?.workout_program ?? []).length > 0 && (
+            <>
+              <Text style={styles.sublabel}>Which workout is this check-in for?</Text>
+              <View style={styles.chipRow}>
+                {(client?.workout_program ?? []).map((day, i) => {
+                  const label = `${day.day}${day.name ? ` — ${day.name}` : ''}`;
+                  const selected = (form.workout_description || '').startsWith(label);
+                  return (
+                    <TouchableOpacity
+                      key={`${day.day}-${i}`}
+                      style={[styles.chip, selected && styles.chipSelected]}
+                      onPress={() => updateForm({ workout_description: label })}
+                    >
+                      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
+                        {label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </>
+          )}
+
           <Text style={styles.sublabel}>Muscle Groups</Text>
           <View style={styles.chipRow}>
             {TRAINING_TYPES.map((type) => (

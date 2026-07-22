@@ -54,7 +54,7 @@ export default function ProfileScreen() {
     // Also update server-side so the webhook knows not to send
     if (client?.id) {
       import('../../lib/api').then(({ api }) => {
-        api.patch(`/api/admin/clients/${client.id}`, { chat_notifications: value }).catch(() => {});
+        api.post(`/prefs`, { chat_notifications: value }).catch(() => {});
       });
     }
   };
@@ -237,25 +237,19 @@ export default function ProfileScreen() {
         <Button
           title="Forged by Freedom"
           variant="secondary"
-          onPress={() => Linking.openURL('https://forgedbyfreedom.org')}
+          onPress={() => Linking.openURL('https://forgedbyfreedom.net')}
           style={styles.linkBtn}
         />
         <Button
           title="FBF Recomp Protocol"
           variant="secondary"
-          onPress={() => Linking.openURL('https://www.forgedbyfreedom.org/fbf-recomp-protocol')}
-          style={styles.linkBtn}
-        />
-        <Button
-          title="FBF Sports Picks"
-          variant="secondary"
-          onPress={() => Linking.openURL('https://data.forgedbyfreedom.org')}
+          onPress={() => Linking.openURL('https://forgedbyfreedom.net/programs/')}
           style={styles.linkBtn}
         />
         <Button
           title="My Web Dashboard"
           variant="secondary"
-          onPress={() => Linking.openURL('https://fbf-dashboard.vercel.app/portal')}
+          onPress={() => Linking.openURL('https://forgedbyfreedom.net/membership-account/')}
           style={styles.linkBtn}
         />
         <Button

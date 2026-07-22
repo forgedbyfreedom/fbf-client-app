@@ -25,7 +25,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../../hooks/useAuth';
 import { VOICE_IDS, type VoicePreference } from './profile';
 
-const AI_API_BASE = process.env.EXPO_PUBLIC_AI_API_URL || 'https://forged-by-freedom-api-nm4f.onrender.com';
+import { getToken, wpApiRoot } from '../../lib/wp-auth';
 
 const SAMPLE_QUESTIONS = [
   'How is my progress this week?',
@@ -46,75 +46,30 @@ async function askCoachStream(
   onChunk: (text: string) => void,
   onFirstChunk: () => void,
 ): Promise<string> {
+  // Backed by the FBF WordPress App Bridge (single backend). The endpoint is
+  // non-streaming; the full reply is delivered through the existing chunk
+  // callbacks so the surrounding UI logic is unchanged.
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 90000);
-  let firstChunk = true;
-
-  async function readStream(response: Response, replyKey: 'reply' | 'answer'): Promise<string> {
-    const reader = response.body!.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-    let fullText = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const data = line.slice(6).trim();
-        if (!data || data === '[DONE]') continue;
-        try {
-          const event = JSON.parse(data);
-          if (event.type === 'content' && event.text) {
-            if (firstChunk) { onFirstChunk(); firstChunk = false; }
-            fullText += event.text;
-            onChunk(event.text);
-          } else if (event.type === 'done' && event[replyKey]) {
-            return event[replyKey] as string;
-          }
-        } catch {}
-      }
-    }
-    return fullText;
-  }
-
+  const timeout = setTimeout(() => controller.abort(), 120000);
   try {
-    // Try streaming coach-chat first
-    const res1 = await fetch(`${AI_API_BASE}/api/coach-chat`, {
+    const token = await getToken();
+    const res = await fetch(`${wpApiRoot}/coach/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: question, client_id: clientId, stream: true }),
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ message: question }),
       signal: controller.signal,
     });
-    if (res1.ok && res1.headers.get('content-type')?.includes('text/event-stream')) {
-      return await readStream(res1, 'reply');
+    const data = await res.json().catch(() => ({} as any));
+    if (!res.ok) {
+      throw new Error(data?.message || `Coach unavailable (${res.status}). Try again in a minute.`);
     }
-    // Non-streaming fallback for coach-chat
-    const data1 = await res1.json();
-    if (data1.reply) return data1.reply;
-  } catch (err) {
-    console.log('coach-chat stream failed, trying /ask:', err);
-  }
-
-  // Fallback to /ask with streaming
-  try {
-    const res2 = await fetch(`${AI_API_BASE}/ask`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question, stream: true }),
-      signal: controller.signal,
-    });
-    if (res2.ok && res2.headers.get('content-type')?.includes('text/event-stream')) {
-      return await readStream(res2, 'answer');
-    }
-    const data2 = await res2.json();
-    if (data2.error) throw new Error(data2.error);
-    return data2.answer || 'No answer returned.';
+    const reply: string = data.reply || 'No answer returned.';
+    onFirstChunk();
+    onChunk(reply);
+    return reply;
   } finally {
     clearTimeout(timeout);
   }
@@ -171,11 +126,12 @@ export default function AICoachScreen() {
               name: filename,
               type: mimeType,
             } as unknown as Blob);
-            formData.append('lead_id', client?.id || 'unknown');
             formData.append('category', 'bloodwork');
 
-            const res = await fetch(`${AI_API_BASE}/api/upload`, {
+            const token = await getToken();
+            const res = await fetch(`${wpApiRoot}/coach/upload`, {
               method: 'POST',
+              headers: token ? { Authorization: `Bearer ${token}` } : undefined,
               body: formData,
             });
             if (res.ok) {

@@ -163,6 +163,22 @@ export async function fetchClientMe(): Promise<ClientMeResponse> {
     // no check-ins yet (or endpoint unavailable) — non-fatal
   }
 
+  // Structured 7-day meal plan + OTC supplements, generated server-side from
+  // the coach-approved program. cached=1 never blocks: if the plan isn't
+  // generated yet the server kicks off generation in the background and this
+  // returns pending — the next refresh picks it up.
+  let mealPlanDays: unknown[] | null = null;
+  let supplements: unknown[] = [];
+  try {
+    const mp = await apiFetch<{ days?: unknown[]; supplements?: unknown[] }>(
+      '/mealplan?cached=1'
+    );
+    if (Array.isArray(mp.days) && mp.days.length > 0) mealPlanDays = mp.days;
+    if (Array.isArray(mp.supplements)) supplements = mp.supplements;
+  } catch {
+    // endpoint missing or plan not generated yet — non-fatal
+  }
+
   const { first, last } = splitName(me.name);
   const programText = me.program_raw_text || me.workout_program || '';
 
@@ -183,10 +199,10 @@ export async function fetchClientMe(): Promise<ClientMeResponse> {
     is_active: true,
     leaderboard_opt_in: false,
     weigh_in_day: 'monday',
-    current_supplements: [],
+    current_supplements: supplements,
     current_peds: [],
     current_peptides: [],
-    meal_plan: null,
+    meal_plan: mealPlanDays,
     workout_program: parseProgramText(programText),
     cardio_protocol: null,
     medical_protocol: null,

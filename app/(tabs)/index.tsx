@@ -237,7 +237,7 @@ export default function DashboardScreen() {
 
       <TouchableOpacity
         style={styles.promoCard}
-        onPress={() => WebBrowser.openBrowserAsync('https://www.forgedbyfreedom.org/')}
+        onPress={() => WebBrowser.openBrowserAsync('https://forgedbyfreedom.net/')}
         activeOpacity={0.8}
       >
         <Text style={styles.promoTag}>WORLD-CLASS COACHING</Text>
@@ -245,12 +245,12 @@ export default function DashboardScreen() {
         <Text style={styles.promoSub}>
           AI-powered coaching, custom meal plans, real-time check-ins, and the tools to transform your physique. Visit our platform.
         </Text>
-        <Text style={styles.promoLink}>forgedbyfreedom.org</Text>
+        <Text style={styles.promoLink}>forgedbyfreedom.net</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.recompCard}
-        onPress={() => WebBrowser.openBrowserAsync('https://www.forgedbyfreedom.org/fbf-recomp-protocol')}
+        onPress={() => WebBrowser.openBrowserAsync('https://forgedbyfreedom.net/programs/')}
         activeOpacity={0.8}
       >
         <Text style={styles.recompTag}>PROVEN RESULTS</Text>

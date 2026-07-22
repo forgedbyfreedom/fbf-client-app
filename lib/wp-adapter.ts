@@ -54,33 +54,52 @@ export function parseProgramText(text: string): WorkoutDay[] | null {
   const lines = text.split(/\r?\n/);
   const days: WorkoutDay[] = [];
   let current: WorkoutDay | null = null;
-  const dayRe = /^\s*(?:[-•*]\s*)?day\s*(\d+)\s*[:\-–—]?\s*(.*)$/i;
-  const exRe = /^\s*[-•*]\s*(.+?)\s*(?:[—:–-]\s*(\d+)\s*[x×]\s*([\d\s\-–to]+(?:\s*(?:per|each)\s*\w+)?))?\s*$/i;
+  let inTraining = true;
+  const dayNumRe = /^\s*(?:[-•*]\s*)?day\s*(\d+)\s*[:\-–—]?\s*(.*)$/i;
+  const weekdayRe = /^\s*(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\s*[:\-–—]\s*(.*)$/i;
+  // "- Name — 4 x 8-10" (bulleted) OR "Name 5x12-15" / "Name 3x20 steps" (plain)
+  const exBulletRe = /^\s*[-•*]\s*(.+?)\s*(?:[—:–-]\s*(\d+)\s*[x×]\s*([\d\s\-–to]+(?:\s*(?:per|each)\s*\w+)?))?\s*$/i;
+  const exPlainRe = /^(.{2,60}?)\s+(\d+)\s*[x×]\s*([\d\-–]+(?:\s*(?:steps|min|sec|reps)?)?)\s*$/i;
+  // Section headers that mean "training content is over" — never exercises.
+  const stopRe = /^(nutrition|meal|macro|supplement|peptide|compound|check[- ]?in|non[- ]?negotiable|daily targets?|cardio protocol|progression|client summary|weekly structure)\b/i;
 
   for (const raw of lines) {
     const line = raw.trim();
     if (!line) continue;
-    const d = line.match(dayRe);
+    if (stopRe.test(line)) {
+      inTraining = false;
+      current = null;
+      continue;
+    }
+    const d = line.match(dayNumRe) || line.match(weekdayRe);
     if (d) {
+      inTraining = true;
       current = {
-        day: `Day ${d[1]}`,
+        day: /^\d+$/.test(d[1]) ? `Day ${d[1]}` : d[1][0].toUpperCase() + d[1].slice(1).toLowerCase(),
         name: d[2] ? d[2].trim() : undefined,
         exercises: [],
       };
       days.push(current);
       continue;
     }
-    if (current) {
-      const m = line.match(exRe);
-      if (m && m[1]) {
-        const ex: WorkoutExercise = {
-          name: m[1].trim(),
-          sets: m[2] ? Number(m[2]) : '',
-          reps: m[3] ? m[3].trim() : '',
-        };
-        current.exercises.push(ex);
-      } else if (!/^[A-Z\s&/]+$/.test(line)) {
-        // freeform note line inside a day
+    if (current && inTraining) {
+      const b = line.match(exBulletRe);
+      if (b && b[1] && line.match(/^\s*[-•*]/)) {
+        current.exercises.push({
+          name: b[1].trim(),
+          sets: b[2] ? Number(b[2]) : '',
+          reps: b[3] ? b[3].trim() : '',
+        });
+        continue;
+      }
+      const p = line.match(exPlainRe);
+      if (p) {
+        current.exercises.push({ name: p[1].trim(), sets: Number(p[2]), reps: p[3].trim() });
+        continue;
+      }
+      // Short non-sentence lines (e.g. "Cardio 45 min", "Stretching") count;
+      // sub-headers ending with ':' and long narrative sentences do NOT.
+      if (line.length <= 45 && !line.endsWith(':') && !/[.!?]$/.test(line)) {
         current.exercises.push({ name: line, sets: '', reps: '' });
       }
     }
@@ -88,16 +107,8 @@ export function parseProgramText(text: string): WorkoutDay[] | null {
 
   const withContent = days.filter((d) => d.exercises.length > 0);
   if (withContent.length > 0) return withContent;
-
-  // Fallback: one "day" holding the raw program lines so nothing is hidden.
-  return [
-    {
-      day: 'Your Program',
-      exercises: lines
-        .filter((l) => l.trim())
-        .map((l) => ({ name: l.trim(), sets: '', reps: '' })),
-    },
-  ];
+  // No parseable training days — better to show "no program" than garbage.
+  return null;
 }
 
 function splitName(full: string): { first: string; last: string } {
@@ -179,6 +190,22 @@ export async function fetchClientMe(): Promise<ClientMeResponse> {
     // endpoint missing or plan not generated yet — non-fatal
   }
 
+  // Structured workout days, converted server-side by AI from the coach's
+  // program text — so exercise names are EXACT and days are properly split.
+  // While generation is pending (or on error) we fall back to best-effort
+  // text parsing; once the server answers non-pending, its data is truth.
+  let workoutDays: WorkoutDay[] | null = null;
+  try {
+    const wo = await apiFetch<{ days?: unknown[]; pending?: boolean }>(
+      '/workout?cached=1'
+    );
+    if (wo.pending !== true && Array.isArray(wo.days)) {
+      workoutDays = wo.days as WorkoutDay[];
+    }
+  } catch {
+    // endpoint missing or plan not generated yet — non-fatal
+  }
+
   const { first, last } = splitName(me.name);
   const programText = me.program_raw_text || me.workout_program || '';
 
@@ -203,7 +230,7 @@ export async function fetchClientMe(): Promise<ClientMeResponse> {
     current_peds: [],
     current_peptides: [],
     meal_plan: mealPlanDays,
-    workout_program: parseProgramText(programText),
+    workout_program: workoutDays ?? parseProgramText(programText),
     cardio_protocol: null,
     medical_protocol: null,
     last_weight: rawCheckins.length

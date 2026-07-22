@@ -92,7 +92,7 @@ export default function LoginScreen() {
           />
 
           <TouchableOpacity
-            onPress={() => Linking.openURL('https://forgedbyfreedom.net/pricing/')}
+            onPress={() => Linking.openURL('https://forgedbyfreedom.net/programs/')}
             style={styles.createAccountLink}
           >
             <Text style={styles.createAccountText}>New client? <Text style={styles.createAccountHighlight}>Join here</Text></Text>

@@ -20,7 +20,7 @@ import { PRAlert } from '../../components/workouts/PRAlert';
 import { BJJLogger } from '../../components/workouts/BJJLogger';
 import { Loading } from '../../components/ui/Loading';
 import { WorkoutDay } from '../../types';
-import { getTodaysWorkout } from '../../lib/workout-utils';
+import { getTodaysWorkout, formatDayName } from '../../lib/workout-utils';
 import { normalizeWorkoutProgram } from '../../lib/normalize-plan';
 import { colors, fontSize, spacing, borderRadius } from '../../lib/theme';
 
@@ -71,7 +71,21 @@ export default function WorkoutsScreen() {
     return !(name.includes('bjj') && !name.includes('upper') && !name.includes('lower') && !name.includes('push') && !name.includes('pull'));
   });
 
-  const todayWorkout = getTodaysWorkout(workoutProgram.length > 0 ? workoutProgram : null);
+  // Weekday match first (programs that pin days to weekdays), otherwise
+  // suggest the next day in the rotation after the last workout logged —
+  // FBF programs are rotating splits (Day 1-4 repeating), not weekday-bound.
+  const scheduledWorkout = getTodaysWorkout(workoutProgram.length > 0 ? workoutProgram : null);
+  let rotationWorkout: WorkoutDay | null = null;
+  if (!scheduledWorkout && workoutProgram.length > 0) {
+    if (workoutLogs.length > 0) {
+      const lastName = workoutLogs[0]?.day_name || '';
+      const idx = workoutProgram.findIndex((d) => formatDayName(d) === lastName);
+      rotationWorkout = workoutProgram[idx >= 0 ? (idx + 1) % workoutProgram.length : 0];
+    } else {
+      rotationWorkout = workoutProgram[0];
+    }
+  }
+  const todayWorkout = scheduledWorkout ?? rotationWorkout;
 
   return (
     <View style={styles.wrapper}>

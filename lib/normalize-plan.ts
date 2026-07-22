@@ -47,11 +47,12 @@ export function normalizeWorkoutProgram(input: Json): WorkoutDay[] {
       .map((d) => {
         if (!isObject(d)) return null;
         const day = asString(d.day) || asString(d.name);
+        const name = asString(d.day) ? asString(d.name) : '';
         const exercises = Array.isArray(d.exercises)
           ? d.exercises.map(normalizeExercise).filter((x): x is WorkoutExercise => x !== null)
           : [];
         if (!day && exercises.length === 0) return null;
-        return { day: day || 'Workout', exercises };
+        return { day: day || 'Workout', ...(name ? { name } : {}), exercises };
       })
       .filter((d): d is WorkoutDay => d !== null);
   }

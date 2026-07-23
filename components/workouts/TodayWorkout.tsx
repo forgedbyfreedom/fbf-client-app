@@ -305,20 +305,51 @@ export function TodayWorkout({
   }
 
   // Today's workout preview (not started)
+  const visibleDays = allDays.filter((d) => {
+    const name = (d.day || d.name || '').toLowerCase();
+    return !name.includes('bjj') || name.includes('upper') || name.includes('lower') || name.includes('push') || name.includes('pull');
+  });
+  const shown = selectedDay ?? todayWorkout!;
+
   return (
     <View style={styles.container}>
+      {/* Pick ANY workout, any day — the rotation only suggests a default. */}
+      {visibleDays.length > 1 && (
+        <>
+          <Text style={styles.chooseLabel}>CHOOSE YOUR WORKOUT</Text>
+          <View style={styles.chooseRow}>
+            {visibleDays.map((day, i) => {
+              const isSel = formatDayName(day) === formatDayName(shown);
+              return (
+                <TouchableOpacity
+                  key={`${day.day}-${i}`}
+                  style={[styles.chooseChip, isSel && styles.chooseChipSel]}
+                  onPress={() => setSelectedDay(day)}
+                >
+                  <Text style={[styles.chooseChipText, isSel && styles.chooseChipTextSel]}>
+                    {formatDayName(day)}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </>
+      )}
+
       <Card style={styles.todayCard}>
         <View style={styles.todayHeader}>
           <View>
-            <Text style={styles.todayLabel}>TODAY'S WORKOUT</Text>
-            <Text style={styles.todayName}>{formatDayName(todayWorkout!)}</Text>
+            <Text style={styles.todayLabel}>
+              {selectedDay ? 'SELECTED WORKOUT' : "TODAY'S WORKOUT"}
+            </Text>
+            <Text style={styles.todayName}>{formatDayName(shown)}</Text>
           </View>
           <Text style={styles.todayExCount}>
-            {todayWorkout!.exercises.length} exercises
+            {shown.exercises.length} exercises
           </Text>
         </View>
 
-        {todayWorkout!.exercises.map((ex, i) => (
+        {shown.exercises.map((ex, i) => (
           <View key={i} style={styles.exercisePreview}>
             <Text style={styles.exercisePreviewName}>{ex.name}</Text>
             <Text style={styles.exercisePreviewSets}>
@@ -333,22 +364,17 @@ export function TodayWorkout({
 
         <Button
           title="Start Workout"
-          onPress={() => onStartWorkout(todayWorkout!)}
+          onPress={() => onStartWorkout(shown)}
           style={styles.startWorkoutBtn}
         />
       </Card>
 
       {/* Other days */}
-      {allDays.length > 1 && (
+      {visibleDays.length > 1 && (
         <>
           <Text style={styles.altTitle}>Other Workouts</Text>
-          {allDays
-            .filter((d) => {
-              if (d === todayWorkout) return false;
-              const name = (d.day || d.name || '').toLowerCase();
-              // Filter out BJJ-only days — BJJ is handled by the dedicated BJJ Logger
-              return !name.includes('bjj') || name.includes('upper') || name.includes('lower') || name.includes('push') || name.includes('pull');
-            })
+          {visibleDays
+            .filter((d) => formatDayName(d) !== formatDayName(shown))
             .map((day, i) => (
               <Card key={i} style={styles.dayCard}>
                 <View style={styles.dayRow}>
@@ -377,6 +403,38 @@ export function TodayWorkout({
 const styles = StyleSheet.create({
   container: {
     gap: spacing.md,
+  },
+  chooseLabel: {
+    fontSize: fontSize.xs,
+    color: colors.textTertiary,
+    fontWeight: '700',
+    letterSpacing: 1,
+  },
+  chooseRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  chooseChip: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: borderRadius.sm,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+  },
+  chooseChipSel: {
+    borderColor: colors.accent,
+    backgroundColor: colors.accentMuted,
+  },
+  chooseChipText: {
+    color: colors.textSecondary,
+    fontSize: fontSize.sm,
+    fontWeight: '500',
+  },
+  chooseChipTextSel: {
+    color: colors.accent,
+    fontWeight: '700',
   },
   progressContainer: {
     marginBottom: spacing.sm,

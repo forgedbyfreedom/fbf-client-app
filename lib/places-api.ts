@@ -1,4 +1,6 @@
-const GOOGLE_PLACES_KEY = process.env.EXPO_PUBLIC_GOOGLE_PLACES_KEY || '';
+// Nearby-gym search backed by OpenStreetMap's Overpass API — free, no API key
+// required. Replaces the old Google Places dependency (which needed a paid,
+// key-gated endpoint and was returning dead results in the app).
 
 export interface GymPlace {
   place_id: string;
@@ -40,62 +42,108 @@ function toRad(deg: number): number {
 }
 
 /**
- * Returns true if a Google Places API key is configured.
+ * No API key is required for the OpenStreetMap backend, so this is always true.
+ * Kept for backwards compatibility with callers that gate on it.
  */
 export function hasApiKey(): boolean {
-  return GOOGLE_PLACES_KEY.length > 0;
+  return true;
 }
 
+const OVERPASS_ENDPOINTS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+];
+
 /**
- * Search for nearby gyms using Google Places Nearby Search API.
+ * Search for nearby gyms/fitness centres using the OpenStreetMap Overpass API.
+ * Searches within `radiusMeters` (default ~8 km / 5 mi) of the given point.
  */
 export async function searchNearbyGyms(
   latitude: number,
   longitude: number,
-  keyword?: string
+  keyword?: string,
+  radiusMeters = 8000
 ): Promise<GymPlace[]> {
-  if (!GOOGLE_PLACES_KEY) {
+  // leisure=fitness_centre and leisure=sports_centre cover commercial gyms;
+  // amenity=gym is an older tag some regions still use.
+  const query = `
+    [out:json][timeout:25];
+    (
+      node["leisure"="fitness_centre"](around:${radiusMeters},${latitude},${longitude});
+      way["leisure"="fitness_centre"](around:${radiusMeters},${latitude},${longitude});
+      node["leisure"="sports_centre"](around:${radiusMeters},${latitude},${longitude});
+      way["leisure"="sports_centre"](around:${radiusMeters},${latitude},${longitude});
+      node["amenity"="gym"](around:${radiusMeters},${latitude},${longitude});
+    );
+    out center tags 60;
+  `.trim();
+
+  let data: any = null;
+  let lastErr: unknown = null;
+  for (const endpoint of OVERPASS_ENDPOINTS) {
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: query,
+      });
+      if (!res.ok) {
+        lastErr = new Error(`Overpass ${res.status}`);
+        continue;
+      }
+      data = await res.json();
+      break;
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  if (!data) {
     throw new Error(
-      'Google Places API key needed. Add EXPO_PUBLIC_GOOGLE_PLACES_KEY to your .env'
+      `Could not reach the gym directory right now. ${
+        lastErr instanceof Error ? lastErr.message : ''
+      }`.trim()
     );
   }
 
-  const params = new URLSearchParams({
-    location: `${latitude},${longitude}`,
-    radius: '8000', // ~5 miles
-    type: 'gym',
-    key: GOOGLE_PLACES_KEY,
-  });
+  const elements: any[] = data.elements || [];
+  const kw = keyword?.toLowerCase().trim();
 
-  if (keyword) {
-    params.set('keyword', keyword);
-  }
+  const gyms: GymPlace[] = elements
+    .map((el) => {
+      const tags = el.tags || {};
+      const lat = el.lat ?? el.center?.lat;
+      const lng = el.lon ?? el.center?.lon;
+      if (lat == null || lng == null) return null;
 
-  const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?${params.toString()}`;
-  const response = await fetch(url);
-  const data = await response.json();
+      const name: string = tags.name || 'Unnamed gym';
+      const addressParts = [
+        tags['addr:housenumber'],
+        tags['addr:street'],
+        tags['addr:city'],
+      ].filter(Boolean);
+      const vicinity = addressParts.join(' ') || tags['addr:full'] || '';
 
-  if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
-    throw new Error(`Places API error: ${data.status} - ${data.error_message || ''}`);
-  }
+      const types: string[] = [];
+      if (tags.leisure) types.push(String(tags.leisure));
+      if (tags.amenity) types.push(String(tags.amenity));
+      if (tags.sport) types.push(String(tags.sport));
 
-  const results: any[] = data.results || [];
+      return {
+        place_id: `osm-${el.type}-${el.id}`,
+        name,
+        rating: 0, // OSM has no ratings
+        user_ratings_total: 0,
+        vicinity,
+        lat,
+        lng,
+        open_now: null, // opening_hours parsing is out of scope
+        types: types.length ? types : ['gym'],
+        distance: haversineDistance(latitude, longitude, lat, lng),
+      } as GymPlace;
+    })
+    .filter((g): g is GymPlace => g !== null)
+    .filter((g) => (kw ? g.name.toLowerCase().includes(kw) : true))
+    .sort((a, b) => a.distance - b.distance);
 
-  return results.map((place) => ({
-    place_id: place.place_id,
-    name: place.name,
-    rating: place.rating ?? 0,
-    user_ratings_total: place.user_ratings_total ?? 0,
-    vicinity: place.vicinity ?? '',
-    lat: place.geometry?.location?.lat ?? 0,
-    lng: place.geometry?.location?.lng ?? 0,
-    open_now: place.opening_hours?.open_now ?? null,
-    types: place.types ?? [],
-    distance: haversineDistance(
-      latitude,
-      longitude,
-      place.geometry?.location?.lat ?? 0,
-      place.geometry?.location?.lng ?? 0
-    ),
-  }));
+  return gyms;
 }

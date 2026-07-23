@@ -1,13 +1,27 @@
 import React, { createContext, useEffect, useState, useCallback } from 'react';
-import { Session, User } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
-import { api } from '../lib/api';
+import {
+  login as wpLogin,
+  logout as wpLogout,
+  getCachedUser,
+  isLoggedIn,
+  WPUser,
+} from '../lib/wp-auth';
+import { fetchClientMe } from '../lib/wp-adapter';
 import { Client, ClientMetrics, Checkin, StreakData, EarnedBadge, BadgeDefinition, UserRole } from '../types';
 import { demoClientMeResponse } from '../lib/demo-data';
 
+/**
+ * Minimal session object kept for API-compatibility with the old
+ * Supabase-based context — screens rely on its truthiness, not its shape.
+ */
+interface WPSession {
+  authenticated: true;
+  user?: WPUser | null;
+}
+
 interface AuthContextType {
-  session: Session | null;
-  user: User | null;
+  session: WPSession | null;
+  user: WPUser | null;
   client: Client | null;
   userRole: UserRole;
   isAdmin: boolean;
@@ -48,8 +62,8 @@ export const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<WPSession | null>(null);
+  const [user, setUser] = useState<WPUser | null>(null);
   const [client, setClient] = useState<Client | null>(null);
   const [userRole, setUserRole] = useState<UserRole>(null);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
@@ -92,16 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (isDemoMode) return;
     try {
       setClientError(null);
-      const data = await api.get<{
-        client: Client | null;
-        userRole: UserRole;
-        organizationId: string | null;
-        metrics: ClientMetrics | null;
-        recentCheckins: Checkin[];
-        streak: StreakData;
-        earnedBadges: EarnedBadge[];
-        allBadges: BadgeDefinition[];
-      }>('/api/client/me');
+      const data = await fetchClientMe();
       setClient(data.client ?? null);
       setUserRole(data.userRole ?? null);
       setOrganizationId(data.organizationId ?? null);
@@ -124,29 +129,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loadDemoData();
       } else {
         clearAllData();
-        // Re-fetch real data if there is an active session
+        // Re-fetch real data if there is an active session.
         if (session) {
-          // Use a microtask so isDemoMode state has updated before fetchClientData reads it
+          // Microtask so isDemoMode state has updated before fetch reads it.
           setTimeout(() => {
-            api.get<{
-              client: Client | null;
-              userRole: UserRole;
-              organizationId: string | null;
-              metrics: ClientMetrics | null;
-              recentCheckins: Checkin[];
-              streak: StreakData;
-              earnedBadges: EarnedBadge[];
-              allBadges: BadgeDefinition[];
-            }>('/api/client/me').then((data) => {
-              setClient(data.client ?? null);
-              setUserRole(data.userRole ?? null);
-              setOrganizationId(data.organizationId ?? null);
-              setMetrics(data.metrics);
-              setRecentCheckins(data.recentCheckins);
-              setStreak(data.streak ?? null);
-              setEarnedBadges(data.earnedBadges ?? []);
-              setAllBadges(data.allBadges ?? []);
-            }).catch(() => {});
+            fetchClientMe()
+              .then((data) => {
+                setClient(data.client ?? null);
+                setUserRole(data.userRole ?? null);
+                setOrganizationId(data.organizationId ?? null);
+                setMetrics(data.metrics);
+                setRecentCheckins(data.recentCheckins);
+                setStreak(data.streak ?? null);
+                setEarnedBadges(data.earnedBadges ?? []);
+                setAllBadges(data.allBadges ?? []);
+              })
+              .catch(() => {});
           }, 0);
         }
       }
@@ -154,36 +152,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   }, [loadDemoData, clearAllData, session]);
 
+  // Bootstrap: restore the WordPress token session from SecureStore.
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(s);
-      setUser(s?.user ?? null);
-      if (s) fetchClientData();
-      setLoading(false);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, s) => {
-        setSession(s);
-        setUser(s?.user ?? null);
-        if (s) fetchClientData();
-        else if (!isDemoMode) {
-          clearAllData();
+    let cancelled = false;
+    (async () => {
+      try {
+        if (await isLoggedIn()) {
+          const u = await getCachedUser();
+          if (cancelled) return;
+          setUser(u);
+          setSession({ authenticated: true, user: u });
+          fetchClientData();
         }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-    );
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchClientData]);
 
-    return () => subscription.unsubscribe();
-  }, [fetchClientData, isDemoMode, clearAllData]);
-
-  const signIn = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error?.message ?? null };
-  }, []);
+  const signIn = useCallback(
+    async (email: string, password: string) => {
+      try {
+        const u = await wpLogin(email, password);
+        setUser(u);
+        setSession({ authenticated: true, user: u });
+        fetchClientData();
+        return { error: null };
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : 'Login failed — try again.';
+        return { error: message };
+      }
+    },
+    [fetchClientData]
+  );
 
   const signOut = useCallback(async () => {
     setIsDemoMode(false);
-    await supabase.auth.signOut();
+    await wpLogout();
+    setSession(null);
+    setUser(null);
     clearAllData();
   }, [clearAllData]);
 

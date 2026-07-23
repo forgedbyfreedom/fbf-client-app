@@ -69,7 +69,8 @@ export function StepRecommendations() {
 
   const bookConsult = (rec: Recommendation) => {
     const clientName = client ? `${client.first_name} ${client.last_name}` : '';
-    const url = `https://fbf-dashboard.vercel.app/book-consult?peptide=${encodeURIComponent(rec.name)}&name=${encodeURIComponent(clientName)}`;
+    // Peptide consultation checkout on the FBF site (Stripe)
+    const url = `https://buy.stripe.com/6oU6oIdr8dVaby72LmcjS04?client_reference_id=${encodeURIComponent(clientName)}`;
     Linking.openURL(url);
   };
 

@@ -65,7 +65,8 @@ export default function BookConsultScreen() {
 
     // Open web booking page
     const clientName = client ? `${client.first_name} ${client.last_name}` : '';
-    const url = `https://fbf-dashboard.vercel.app/book-consult?tier=${tier}&peptides=${encodeURIComponent(selectedNames)}&name=${encodeURIComponent(clientName)}`;
+    // Peptide consultation checkout on the FBF site (Stripe)
+    const url = `https://buy.stripe.com/6oU6oIdr8dVaby72LmcjS04?client_reference_id=${encodeURIComponent(clientName)}`;
 
     try {
       await Linking.openURL(url);

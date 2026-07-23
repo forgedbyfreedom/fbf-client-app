@@ -205,11 +205,22 @@ export default function MealsScreen() {
 
   const activeMealPlan = localMealPlan;
 
-  // Generate shopping list on mount and when meal plan changes
+  // Generate the WEEKLY shopping list: tally every food across the meal plan,
+  // scale a single example day up to 7 days, and fold in OTC supplements.
   useEffect(() => {
-    const items = generateShoppingList(activeMealPlan);
+    const supplements = Array.isArray(client?.current_supplements)
+      ? client!.current_supplements.map((s: any) => ({
+          name: s?.name ?? '',
+          dose: s?.dose ?? '',
+          frequency: s?.frequency ?? '',
+        }))
+      : [];
+    // A coach "example day" is one day → multiply by 7 for the week. A plan
+    // that already spans multiple days is used as-is.
+    const weekMultiplier = activeMealPlan.length <= 1 ? 7 : 1;
+    const items = generateShoppingList(activeMealPlan, { weekMultiplier, supplements });
     setShoppingItems(items);
-  }, [activeMealPlan]);
+  }, [activeMealPlan, client?.current_supplements]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

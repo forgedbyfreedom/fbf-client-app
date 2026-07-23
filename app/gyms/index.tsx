@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocation } from '../../hooks/useLocation';
-import { searchNearbyGyms, hasApiKey, GymPlace } from '../../lib/places-api';
+import { searchNearbyGyms, GymPlace } from '../../lib/places-api';
 import { GymCard } from '../../components/gyms/GymCard';
 import { BrandHeader } from '../../components/ui/BrandHeader';
 import { colors, fontSize, spacing, borderRadius } from '../../lib/theme';
@@ -40,10 +40,6 @@ export default function GymsScreen() {
 
   const fetchGyms = useCallback(async () => {
     if (!latitude || !longitude) return;
-    if (!hasApiKey()) {
-      setError('Google Places API key needed. Add EXPO_PUBLIC_GOOGLE_PLACES_KEY to your .env');
-      return;
-    }
 
     try {
       setLoading(true);

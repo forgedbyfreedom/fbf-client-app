@@ -117,27 +117,53 @@ export async function lookupBarcode(barcode: string): Promise<NutritionInfo | nu
   }
 }
 
-// Aggregate ingredients from a meal plan into a deduplicated shopping list
-export function generateShoppingList(mealPlan: MealPlanDay[]): ShoppingListItem[] {
+export interface ShoppingListSupplement {
+  name: string;
+  dose?: string;
+  frequency?: string;
+}
+
+export interface ShoppingListOptions {
+  // Multiply per-day quantities to cover a full week. When the meal plan is a
+  // single example day (the FBF program norm), pass 7 to build a weekly list.
+  // If the plan already spans multiple days, leave at 1.
+  weekMultiplier?: number;
+  // OTC supplements from the client's protocol, added under the "supplements"
+  // category so the weekly list covers food AND supplements in one place.
+  supplements?: ShoppingListSupplement[];
+}
+
+// Aggregate ingredients from a meal plan into a deduplicated weekly shopping
+// list. Tallies every food across all meals/days, scales to a week, and folds
+// in the client's OTC supplements.
+export function generateShoppingList(
+  mealPlan: MealPlanDay[],
+  options: ShoppingListOptions = {},
+): ShoppingListItem[] {
+  const weekMultiplier = options.weekMultiplier && options.weekMultiplier > 0
+    ? options.weekMultiplier
+    : 1;
   const itemMap = new Map<string, ShoppingListItem>();
 
   for (const day of mealPlan) {
     for (const meal of day.meals) {
       for (const ingredient of meal.ingredients) {
         const key = ingredient.name.toLowerCase().trim();
+        const addQty = (parseFloat(ingredient.quantity) || 0) * weekMultiplier;
         const existing = itemMap.get(key);
         if (existing) {
           // Combine quantities if same unit, otherwise keep as-is
           if (existing.unit === ingredient.unit) {
             const existingQty = parseFloat(existing.quantity) || 0;
-            const newQty = parseFloat(ingredient.quantity) || 0;
-            existing.quantity = String(existingQty + newQty);
+            existing.quantity = String(existingQty + addQty);
           }
-          existing.fromMeals.push(meal.name);
+          if (!existing.fromMeals.includes(meal.name)) {
+            existing.fromMeals.push(meal.name);
+          }
         } else {
           itemMap.set(key, {
             name: ingredient.name,
-            quantity: ingredient.quantity,
+            quantity: addQty > 0 ? String(addQty) : ingredient.quantity,
             unit: ingredient.unit,
             category: ingredient.category,
             checked: false,
@@ -145,6 +171,23 @@ export function generateShoppingList(mealPlan: MealPlanDay[]): ShoppingListItem[
           });
         }
       }
+    }
+  }
+
+  // Fold in OTC supplements from the client's protocol.
+  for (const supp of options.supplements || []) {
+    if (!supp?.name) continue;
+    const key = supp.name.toLowerCase().trim();
+    const detail = [supp.dose, supp.frequency].filter(Boolean).join(' · ');
+    if (!itemMap.has(key)) {
+      itemMap.set(key, {
+        name: supp.name,
+        quantity: '1',
+        unit: detail || 'as directed',
+        category: 'supplements',
+        checked: false,
+        fromMeals: ['Supplement protocol'],
+      });
     }
   }
 

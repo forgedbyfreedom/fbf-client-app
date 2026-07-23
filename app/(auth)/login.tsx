@@ -51,7 +51,7 @@ export default function LoginScreen() {
       >
         <View style={styles.header}>
           <Image
-            source={require('../../assets/fbf-logo.png')}
+            source={require('../../assets/fbf-logo.jpg')}
             style={styles.logo}
             resizeMode="contain"
           />

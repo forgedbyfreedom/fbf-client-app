@@ -11,7 +11,7 @@ export function BrandHeader({ title, compact }: BrandHeaderProps) {
   return (
     <View style={[styles.container, compact && styles.containerCompact]}>
       <Image
-        source={require('../../assets/fbf-logo.png')}
+        source={require('../../assets/fbf-logo.jpg')}
         style={compact ? styles.logoCompact : styles.logo}
         resizeMode="contain"
       />

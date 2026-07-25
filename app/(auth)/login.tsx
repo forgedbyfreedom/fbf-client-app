@@ -51,7 +51,7 @@ export default function LoginScreen() {
       >
         <View style={styles.header}>
           <Image
-            source={require('../../assets/fbf-logo.png')}
+            source={require('../../assets/fbf-logo.jpg')}
             style={styles.logo}
             resizeMode="contain"
           />
@@ -90,6 +90,13 @@ export default function LoginScreen() {
             loading={loading}
             style={styles.button}
           />
+
+          <TouchableOpacity
+            onPress={() => Linking.openURL('https://forgedbyfreedom.net/wp-login.php?action=lostpassword')}
+            style={styles.forgotLink}
+          >
+            <Text style={styles.forgotText}>Forgot your password?</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             onPress={() => Linking.openURL('https://forgedbyfreedom.net/programs/')}
@@ -140,6 +147,15 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: spacing.md,
+  },
+  forgotLink: {
+    marginTop: spacing.sm,
+    alignItems: 'center',
+  },
+  forgotText: {
+    fontSize: fontSize.sm,
+    color: colors.accent,
+    fontWeight: '600',
   },
   createAccountLink: {
     marginTop: spacing.md,

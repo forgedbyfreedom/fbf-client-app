@@ -75,19 +75,35 @@ export function normalizeWorkoutProgram(input: Json): WorkoutDay[] {
   return [];
 }
 
-const normalizeIngredient = (food: Json): IngredientItem => ({
-  name: asString(food),
-  quantity: '',
-  unit: '',
-  category: 'other',
-  checked: false,
-});
+const normalizeIngredient = (food: Json): IngredientItem => {
+  // Coach-generated meals carry structured ingredient objects
+  // ({name, quantity, unit, category}); older/simple plans use plain strings.
+  if (isObject(food)) {
+    return {
+      name: asString(food.name),
+      quantity: asString(food.quantity),
+      unit: asString(food.unit),
+      category: (asString(food.category) || 'other') as IngredientItem['category'],
+      checked: false,
+    };
+  }
+  return {
+    name: asString(food),
+    quantity: '',
+    unit: '',
+    category: 'other',
+    checked: false,
+  };
+};
 
 const normalizeMealEntry = (raw: Json, idx: number): MealEntry | null => {
   if (!isObject(raw)) return null;
   const label = asString(raw.meal) || asString(raw.type) || '';
   const name = asString(raw.name) || label || `Meal ${idx + 1}`;
-  const foods = Array.isArray(raw.foods) ? raw.foods : [];
+  // The coach meal-plan JSON uses "ingredients"; "foods" kept as a legacy fallback.
+  const foods = Array.isArray(raw.ingredients)
+    ? raw.ingredients
+    : (Array.isArray(raw.foods) ? raw.foods : []);
   return {
     id: `daily-${idx}`,
     type: mealTypeFromLabel(label || name),

@@ -8,9 +8,11 @@ import { ImageMessage } from './ImageMessage';
 interface MessageBubbleProps {
   message: ChatMessage;
   isOwnMessage: boolean;
+  /** Optional: called with the message id when a member confirms a report. */
+  onReport?: (messageId: string) => void;
 }
 
-export function MessageBubble({ message, isOwnMessage }: MessageBubbleProps) {
+export function MessageBubble({ message, isOwnMessage, onReport }: MessageBubbleProps) {
   const [showActions, setShowActions] = useState(false);
   const time = new Date(message.created_at).toLocaleTimeString('en-US', {
     hour: 'numeric',
@@ -29,6 +31,7 @@ export function MessageBubble({ message, isOwnMessage }: MessageBubbleProps) {
           text: 'Report',
           style: 'destructive',
           onPress: () => {
+            onReport?.(message.id);
             Alert.alert('Reported', 'This message has been flagged for review. Thank you.');
             setShowActions(false);
           },

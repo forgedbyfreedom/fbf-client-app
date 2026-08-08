@@ -3,288 +3,172 @@ import {
   View,
   FlatList,
   Text,
+  TextInput,
   TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { supabase } from '../../lib/supabase';
 import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/useAuth';
-import { Loading } from '../../components/ui/Loading';
 import { MessageBubble } from '../../components/chat/MessageBubble';
-import { ChatInput } from '../../components/chat/ChatInput';
-import { ChannelPills } from '../../components/chat/ChannelPills';
-import { NewChatModal } from '../../components/chat/NewChatModal';
-import { BrandHeader } from '../../components/ui/BrandHeader';
 import { colors, fontSize, spacing } from '../../lib/theme';
-import { ChatChannel, ChatMessage } from '../../types';
-import type { SelectedAttachment } from '../../components/chat/AttachmentPicker';
+import { ChatMessage } from '../../types';
 
-const CHAT_ATTACHMENT_BUCKET = 'chat-attachments';
-const MESSAGE_SELECT_FIELDS = 'id, content, created_at, user_id, attachment_url, attachment_type, attachment_name';
+/**
+ * FBF Member Community chat.
+ *
+ * Backed entirely by the WordPress App Bridge (fbf/v1/community/*) — the old
+ * Supabase group chat is retired. Plain text, members-only, no AI cost. New
+ * messages arrive by short-interval polling (cheap; WordPress serves text at
+ * near-zero marginal cost). Auth rides the same bearer token as the rest of
+ * the app, so no separate login.
+ */
+
+const ROOM = 'general';
+const POLL_MS = 4000;
+
+interface WPCommunityMessage {
+  id: number;
+  room: string;
+  user_id: number;
+  name: string;
+  body: string;
+  created_at: string;
+}
+
+function toChatMessage(m: WPCommunityMessage): ChatMessage {
+  return {
+    id: String(m.id),
+    content: m.body,
+    created_at: m.created_at,
+    user_id: String(m.user_id),
+    attachment_url: null,
+    attachment_type: null,
+    attachment_name: null,
+    profiles: { full_name: m.name, avatar_url: null },
+  };
+}
 
 export default function ChatScreen() {
   const insets = useSafeAreaInsets();
-  const { user, client, organizationId, clientError } = useAuth();
+  const { user } = useAuth();
+  const myId = user?.id != null ? String(user.id) : '';
 
-  useEffect(() => {
-    console.log('[Chat] user:', user?.id, 'orgId:', organizationId, 'clientError:', clientError);
-  }, [user, organizationId, clientError]);
-  const [channels, setChannels] = useState<ChatChannel[]>([]);
-  const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showNewChat, setShowNewChat] = useState(false);
-  const flatListRef = useRef<FlatList>(null);
-  const supabaseRef = useRef(supabase);
-  const subscriptionRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [text, setText] = useState('');
+  const [sending, setSending] = useState(false);
 
-  // Fetch ALL channels for this user
-  const fetchChannels = useCallback(async () => {
-    if (!user) return [];
+  const listRef = useRef<FlatList>(null);
+  const lastIdRef = useRef(0);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-    try {
-      const { data, error } = await supabaseRef.current
-        .from('chat_members')
-        .select('channel_id, chat_channels(id, name, type, organization_id)')
-        .eq('user_id', user.id);
-
-      console.log('[Chat] fetchChannels result:', { dataLen: data?.length, error: error?.message });
-
-      if (error) {
-        console.warn('Chat not available:', error.message);
-        return [];
-      }
-
-      if (data && data.length > 0) {
-        const chs = data.map((d: any) => d.chat_channels as ChatChannel);
-        // Sort: group channels first, then DMs
-        chs.sort((a: ChatChannel, b: ChatChannel) => {
-          if (a.type === 'group' && b.type !== 'group') return -1;
-          if (a.type !== 'group' && b.type === 'group') return 1;
-          return a.name.localeCompare(b.name);
-        });
-        setChannels(chs);
-        return chs;
-      }
-    } catch (err) {
-      console.warn('Chat fetch failed:', err);
-    }
-
-    return [];
-  }, [user]);
-
-  // Fetch messages for a specific channel
-  const fetchMessages = useCallback(async (channelId: string) => {
-    const { data, error } = await supabaseRef.current
-      .from('chat_messages')
-      .select(MESSAGE_SELECT_FIELDS)
-      .eq('channel_id', channelId)
-      .order('created_at', { ascending: true })
-      .limit(100);
-
-    console.log('[Chat] fetchMessages:', { channelId, count: data?.length, error: error?.message });
-    if (data) setMessages(data as unknown as ChatMessage[]);
-  }, []);
-
-  // Subscribe to real-time messages for a channel
-  const subscribeTo = useCallback((channelId: string) => {
-    // Clean up previous subscription
-    if (subscriptionRef.current) {
-      subscriptionRef.current.unsubscribe();
-      subscriptionRef.current = null;
-    }
-
-    subscriptionRef.current = supabaseRef.current
-      .channel(`chat-${channelId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'chat_messages',
-          filter: `channel_id=eq.${channelId}`,
-        },
-        async (payload) => {
-          const { data: msg } = await supabaseRef.current
-            .from('chat_messages')
-            .select(MESSAGE_SELECT_FIELDS)
-            .eq('id', payload.new.id)
-            .single();
-          if (msg) {
-            setMessages((prev) => [...prev, msg as unknown as ChatMessage]);
-          }
-        }
-      )
-      .subscribe();
-  }, []);
-
-  // Initialize: fetch channels, pick default, load messages
-  useEffect(() => {
-    const init = async () => {
-      const chs = await fetchChannels();
-      console.log('[Chat] init: channels=', chs.length, 'first=', chs[0]);
-      if (chs.length > 0) {
-        const defaultCh = chs.find((c: ChatChannel) => c.type === 'group') || chs[0];
-        console.log('[Chat] init: defaultCh=', defaultCh?.id, defaultCh?.name, defaultCh?.type);
-        if (defaultCh?.id) {
-          setActiveChannelId(defaultCh.id);
-          await fetchMessages(defaultCh.id);
-          subscribeTo(defaultCh.id);
-        }
-      }
-      setLoading(false);
-    };
-
-    init();
-
-    return () => {
-      if (subscriptionRef.current) subscriptionRef.current.unsubscribe();
-    };
-  }, [fetchChannels, fetchMessages, subscribeTo]);
-
-  // Switch channel
-  const handleChannelSwitch = useCallback(async (channelId: string) => {
-    if (channelId === activeChannelId) return;
-    setActiveChannelId(channelId);
-    setMessages([]);
-    await fetchMessages(channelId);
-    subscribeTo(channelId);
-  }, [activeChannelId, fetchMessages, subscribeTo]);
-
-  // Upload attachment to Supabase Storage
-  const uploadAttachment = useCallback(async (attachment: SelectedAttachment): Promise<{ url: string } | null> => {
-    if (!activeChannelId) return null;
-
-    const timestamp = Date.now();
-    const safeName = attachment.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const storagePath = `${activeChannelId}/${timestamp}_${safeName}`;
-
-    console.log('[Chat] Uploading attachment:', storagePath);
-
-    try {
-      // Read file as ArrayBuffer — fetch().blob() produces 0-byte blobs on local file:// URIs in React Native
-      const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', attachment.uri);
-        xhr.responseType = 'arraybuffer';
-        xhr.onload = () => resolve(xhr.response);
-        xhr.onerror = () => reject(new Error('Failed to read file'));
-        xhr.send();
-      });
-
-      const { data, error } = await supabaseRef.current.storage
-        .from(CHAT_ATTACHMENT_BUCKET)
-        .upload(storagePath, arrayBuffer, {
-          contentType: attachment.mimeType || 'application/octet-stream',
-          upsert: false,
-        });
-
-      if (error) {
-        console.error('[Chat] Storage upload error:', error);
-        Alert.alert('Upload Failed', 'Could not upload the attachment. Please try again.');
-        return null;
-      }
-
-      // Get the public URL
-      const { data: urlData } = supabaseRef.current.storage
-        .from(CHAT_ATTACHMENT_BUCKET)
-        .getPublicUrl(data.path);
-
-      console.log('[Chat] Upload success, URL:', urlData.publicUrl);
-      return { url: urlData.publicUrl };
-    } catch (err) {
-      console.error('[Chat] Upload exception:', err);
-      Alert.alert('Upload Failed', 'Could not upload the attachment. Please try again.');
-      return null;
-    }
-  }, [activeChannelId]);
-
-  const sendMessage = async (
-    content: string,
-    attachment?: { url: string; type: 'image' | 'file'; name: string }
-  ) => {
-    if (!activeChannelId || !user) return;
-
-    const insertPayload: Record<string, any> = {
-      channel_id: activeChannelId,
-      user_id: user.id,
-      content: content || '',
-    };
-
-    if (attachment) {
-      insertPayload.attachment_url = attachment.url;
-      insertPayload.attachment_type = attachment.type;
-      insertPayload.attachment_name = attachment.name;
-    }
-
-    console.log('[Chat] sendMessage:', insertPayload);
-    const { data, error } = await supabaseRef.current.from('chat_messages').insert(insertPayload).select();
-    console.log('[Chat] sendMessage result:', { data, error });
-
-    // Send push notification to other members
-    if (data && !error) {
-      try {
-        const senderName = client?.first_name
-          ? `${client.first_name} ${client.last_name || ''}`.trim()
-          : 'Someone';
-        api.post('/api/webhooks/chat-message', {
-          channel_id: activeChannelId,
-          sender_id: user.id,
-          content: content || (attachment ? 'Sent an attachment' : ''),
-          sender_name: senderName,
-        }).catch(() => {});
-      } catch { /* best effort */ }
-    }
-  };
-
-  const handleNewChatCreated = async (channelId: string) => {
-    // Delay to let Supabase propagate, then retry a few times
-    let chs: ChatChannel[] = [];
-    for (let attempt = 0; attempt < 3; attempt++) {
-      await new Promise(r => setTimeout(r, 800));
-      chs = await fetchChannels();
-      if (chs.find(c => c.id === channelId)) break;
-    }
-    setActiveChannelId(channelId);
-    setMessages([]);
-    await fetchMessages(channelId);
-    subscribeTo(channelId);
-  };
-
-  const activeChannel = channels.find(c => c.id === activeChannelId);
-  const headerTitle = activeChannel
-    ? activeChannel.type === 'group'
-      ? `# ${activeChannel.name}`
-      : activeChannel.name
-    : 'Chat';
-
-  if (loading) return <Loading />;
-
-  if (channels.length === 0) {
-    return (
-      <View style={[styles.empty, { paddingTop: insets.top }]}>
-        <BrandHeader />
-        <Text style={styles.emptyTitle}>No Conversations Yet</Text>
-        <Text style={styles.emptyText}>
-          Start a conversation with your coach or team.
-        </Text>
-        <TouchableOpacity style={styles.newChatBtn} onPress={() => setShowNewChat(true)}>
-          <Ionicons name="add-circle" size={24} color="#fff" />
-          <Text style={styles.newChatBtnText}>New Chat</Text>
-        </TouchableOpacity>
-        <NewChatModal
-          visible={showNewChat}
-          onClose={() => setShowNewChat(false)}
-          onCreated={handleNewChatCreated}
-        />
-      </View>
+  const applyIncoming = useCallback((incoming: WPCommunityMessage[]) => {
+    if (!incoming || incoming.length === 0) return;
+    setMessages((prev) => {
+      const seen = new Set(prev.map((m) => m.id));
+      const add = incoming
+        .filter((m) => !seen.has(String(m.id)))
+        .map(toChatMessage);
+      if (add.length === 0) return prev;
+      return [...prev, ...add];
+    });
+    lastIdRef.current = incoming.reduce(
+      (mx, m) => Math.max(mx, m.id),
+      lastIdRef.current
     );
-  }
+  }, []);
+
+  const loadInitial = useCallback(async () => {
+    try {
+      setError(null);
+      const res = (await api.get(
+        `/community/messages?room=${ROOM}&since=0&limit=100`
+      )) as { messages?: WPCommunityMessage[] };
+      const list = res?.messages ?? [];
+      setMessages(list.map(toChatMessage));
+      lastIdRef.current = list.reduce((mx, m) => Math.max(mx, m.id), 0);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '';
+      setError(
+        msg.includes('401')
+          ? 'Please sign in again to use the community.'
+          : 'Could not load messages. Pull to retry.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const poll = useCallback(async () => {
+    try {
+      const res = (await api.get(
+        `/community/messages?room=${ROOM}&since=${lastIdRef.current}&limit=100`
+      )) as { messages?: WPCommunityMessage[] };
+      applyIncoming(res?.messages ?? []);
+    } catch {
+      // transient network error — keep polling
+    }
+  }, [applyIncoming]);
+
+  useEffect(() => {
+    loadInitial();
+    pollRef.current = setInterval(poll, POLL_MS);
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, [loadInitial, poll]);
+
+  const send = useCallback(async () => {
+    const body = text.trim();
+    if (!body || sending) return;
+    setSending(true);
+    setText('');
+    try {
+      const res = (await api.post('/community/messages', { room: ROOM, body })) as {
+        message?: WPCommunityMessage;
+      };
+      if (res?.message) applyIncoming([res.message]);
+    } catch (e) {
+      setText(body); // restore the text so nothing is lost
+      const msg = e instanceof Error ? e.message : '';
+      Alert.alert(
+        'Not sent',
+        msg.includes('429')
+          ? "You're sending messages too quickly — give it a second."
+          : 'Your message could not be sent. Please try again.'
+      );
+    } finally {
+      setSending(false);
+    }
+  }, [text, sending, applyIncoming]);
+
+  const report = useCallback(async (messageId: string) => {
+    try {
+      await api.post('/community/report', { message_id: Number(messageId) });
+    } catch {
+      // best effort — the confirmation alert already reassured the member
+    }
+  }, []);
+
+  const renderItem = useCallback(
+    ({ item }: { item: ChatMessage }) => (
+      <MessageBubble
+        message={item}
+        isOwnMessage={item.user_id === myId}
+        onReport={report}
+      />
+    ),
+    [myId, report]
+  );
+
+  const canSend = text.trim().length > 0 && !sending;
 
   return (
     <KeyboardAvoidingView
@@ -293,55 +177,65 @@ export default function ChatScreen() {
       keyboardVerticalOffset={0}
     >
       <View style={[styles.header, { paddingTop: insets.top + spacing.sm }]}>
-        <View style={styles.headerRow}>
-          <BrandHeader title={headerTitle} compact />
-          <TouchableOpacity onPress={() => setShowNewChat(true)} style={styles.newBtn}>
-            <Ionicons name="create-outline" size={22} color={colors.accent} />
-          </TouchableOpacity>
-        </View>
-        <ChannelPills
-          channels={channels}
-          activeId={activeChannelId!}
-          onSelect={handleChannelSwitch}
-        />
+        <Text style={styles.headerTitle}># Community</Text>
+        <Text style={styles.disclaimer}>
+          Members-only space. Peer support — not medical advice. Talk to your
+          physician before acting on anything shared here.
+        </Text>
       </View>
-      <NewChatModal
-        visible={showNewChat}
-        onClose={() => setShowNewChat(false)}
-        onCreated={handleNewChatCreated}
-      />
 
-      <FlatList
-        ref={flatListRef}
-        data={messages}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <MessageBubble
-            message={item}
-            isOwnMessage={item.user_id === user?.id}
-          />
-        )}
-        contentContainerStyle={styles.messageList}
-        onContentSizeChange={() =>
-          flatListRef.current?.scrollToEnd({ animated: true })
-        }
-        onLayout={() =>
-          flatListRef.current?.scrollToEnd({ animated: false })
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyMessages}>
-            <Text style={styles.emptyMessagesText}>
-              No messages yet. Say hello!
-            </Text>
-          </View>
-        }
-      />
-
-      <View style={{ paddingBottom: insets.bottom }}>
-        <ChatInput
-          onSend={sendMessage}
-          onUploadAttachment={uploadAttachment}
+      {loading ? (
+        <View style={styles.center}>
+          <ActivityIndicator color={colors.accent} />
+        </View>
+      ) : (
+        <FlatList
+          ref={listRef}
+          data={messages}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={styles.messageList}
+          onContentSizeChange={() =>
+            listRef.current?.scrollToEnd({ animated: true })
+          }
+          onLayout={() => listRef.current?.scrollToEnd({ animated: false })}
+          ListEmptyComponent={
+            <View style={styles.center}>
+              <Text style={styles.emptyText}>
+                {error ?? 'No messages yet. Say hello to the community!'}
+              </Text>
+            </View>
+          }
         />
+      )}
+
+      <View style={[styles.composer, { paddingBottom: insets.bottom || spacing.sm }]}>
+        <TextInput
+          style={styles.input}
+          value={text}
+          onChangeText={setText}
+          placeholder="Message the community..."
+          placeholderTextColor={colors.textTertiary}
+          multiline
+          maxLength={2000}
+          editable={!sending}
+        />
+        <TouchableOpacity
+          style={[styles.sendBtn, !canSend && styles.sendBtnDisabled]}
+          onPress={send}
+          disabled={!canSend}
+          activeOpacity={0.7}
+        >
+          {sending ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <Ionicons
+              name="send"
+              size={20}
+              color={canSend ? '#fff' : colors.textTertiary}
+            />
+          )}
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
@@ -354,69 +248,69 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xs,
+    paddingBottom: spacing.sm,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
     backgroundColor: colors.surface,
   },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
   headerTitle: {
     fontSize: fontSize.lg,
-    fontWeight: '600',
+    fontWeight: '700',
     color: colors.textPrimary,
   },
-  newBtn: {
-    padding: spacing.sm,
+  disclaimer: {
+    fontSize: fontSize.xs,
+    color: colors.textTertiary,
+    marginTop: 4,
+    lineHeight: 15,
   },
-  newChatBtn: {
-    flexDirection: 'row',
+  center: {
+    flex: 1,
     alignItems: 'center',
-    gap: spacing.sm,
-    backgroundColor: colors.accent,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    marginTop: spacing.xl,
+    justifyContent: 'center',
+    padding: spacing.xl,
   },
-  newChatBtnText: {
+  emptyText: {
     fontSize: fontSize.md,
-    fontWeight: '700',
-    color: '#fff',
+    color: colors.textTertiary,
+    textAlign: 'center',
   },
   messageList: {
     padding: spacing.md,
     flexGrow: 1,
   },
-  empty: {
-    flex: 1,
+  composer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
     backgroundColor: colors.background,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.xxl,
   },
-  emptyTitle: {
-    fontSize: fontSize.xl,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: spacing.sm,
-  },
-  emptyText: {
-    fontSize: fontSize.md,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  emptyMessages: {
+  input: {
     flex: 1,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 20,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    color: colors.textPrimary,
+    fontSize: fontSize.md,
+    maxHeight: 100,
+    minHeight: 40,
+  },
+  sendBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: spacing.xxxl * 2,
   },
-  emptyMessagesText: {
-    fontSize: fontSize.md,
-    color: colors.textTertiary,
+  sendBtnDisabled: {
+    backgroundColor: colors.border,
   },
 });

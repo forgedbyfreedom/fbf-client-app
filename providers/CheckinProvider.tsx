@@ -5,6 +5,8 @@ const INITIAL_FORM: CheckinFormData = {
   weight_lbs: '',
   body_temp: '',
   blood_glucose: '',
+  glucose_min: '',
+  glucose_max: '',
   resting_heart_rate: '',
   blood_pressure_systolic: '',
   blood_pressure_diastolic: '',

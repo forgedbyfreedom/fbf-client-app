@@ -12,20 +12,26 @@ import { DAYS_OF_WEEK } from '../../lib/constants';
 export function StepBodyWellness() {
   const { form, updateForm } = useContext(CheckinContext);
   const { client } = useAuth();
-  const { available, authorized, requestPermission, getTodayBodyTemp, getTodayHeartRate } = useHealthKit();
+  const { available, authorized, requestPermission, getTodayBodyTemp, getTodayHeartRate, getGlucoseSummary } = useHealthKit();
 
   const today = DAYS_OF_WEEK[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1];
   const isWeighInDay = client?.weigh_in_day?.toLowerCase() === today;
 
   const handleHealthImport = async () => {
     await requestPermission();
-    const [bodyTemp, heartRate] = await Promise.all([
+    const [bodyTemp, heartRate, glucose] = await Promise.all([
       getTodayBodyTemp(),
       getTodayHeartRate(),
+      getGlucoseSummary(),
     ]);
     const updates: Record<string, any> = {};
     if (bodyTemp > 0) updates.body_temp = String(bodyTemp);
     if (heartRate.resting > 0) updates.resting_heart_rate = String(heartRate.resting);
+    if (glucose.count > 0) {
+      updates.blood_glucose = String(glucose.average);
+      updates.glucose_min = String(glucose.min);
+      updates.glucose_max = String(glucose.max);
+    }
     if (Object.keys(updates).length > 0) updateForm(updates);
   };
 
@@ -34,7 +40,7 @@ export function StepBodyWellness() {
       <HealthKitImportButton
         onImport={handleHealthImport}
         label="Auto-fill from Apple Health"
-        dataTypes="body temperature, resting heart rate"
+        dataTypes="body temperature, resting heart rate, blood glucose (CGM)"
         available={available}
         authorized={authorized}
         onRequestPermission={requestPermission}

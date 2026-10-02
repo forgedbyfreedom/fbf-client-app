@@ -169,6 +169,8 @@ export interface CheckinFormData {
   weight_lbs: string;
   body_temp: string;
   blood_glucose: string;
+  glucose_min: string;
+  glucose_max: string;
   resting_heart_rate: string;
   blood_pressure_systolic: string;
   blood_pressure_diastolic: string;

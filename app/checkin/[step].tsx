@@ -75,6 +75,7 @@ function CheckinFormContent() {
       const numericFields = [
         'weight_lbs', 'body_temp', 'calories', 'protein_g', 'carbs_g', 'fat_g',
         'steps', 'rpe', 'performance_rating', 'cardio_minutes', 'estimated_calories_burned',
+        'blood_glucose', 'glucose_min', 'glucose_max',
       ];
 
       for (const key of numericFields) {

@@ -19,7 +19,7 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "Allow Forged by Freedom to access your camera to scan food barcodes for nutrition tracking.",
-        "NSHealthShareUsageDescription": "Forged by Freedom reads your health data (steps, sleep, heart rate, body temperature, workouts) to auto-fill your daily check-in.",
+        "NSHealthShareUsageDescription": "Forged by Freedom reads your health data (steps, sleep, heart rate, body temperature, blood glucose, workouts) to auto-fill your daily check-in.",
         "NSHealthUpdateUsageDescription": "Forged by Freedom does not write any data to Apple Health.",
         "NSLocationWhenInUseUsageDescription": "Forged by Freedom uses your location to find nearby gyms and fitness facilities."
       },

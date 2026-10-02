@@ -20,6 +20,8 @@ if (Platform.OS === 'ios') {
           RNHealth.HealthKitPermission?.ActiveEnergyBurned ?? 'ActiveEnergyBurned',
           RNHealth.HealthKitPermission?.Workout ?? 'Workout',
           RNHealth.HealthKitPermission?.Weight ?? 'Weight',
+          // CGM readings (e.g. Abbott Lingo) written to Apple Health
+          RNHealth.HealthKitPermission?.BloodGlucose ?? 'BloodGlucose',
         ],
         write: [],
       },
@@ -45,10 +47,23 @@ interface WorkoutData {
   calories: number;
 }
 
+export interface GlucoseSummary {
+  average: number; // mg/dL
+  min: number;
+  max: number;
+  latest: number;
+  count: number;
+}
+
+const EMPTY_GLUCOSE: GlucoseSummary = { average: 0, min: 0, max: 0, latest: 0, count: 0 };
+
 interface AutoPopulateResult {
   // Body wellness fields
   weight_lbs?: string;
   body_temp?: string;
+  blood_glucose?: string;
+  glucose_min?: string;
+  glucose_max?: string;
   resting_heart_rate?: string;
   // Activity fields
   steps?: string;
@@ -292,22 +307,74 @@ export function useHealthKit() {
     });
   }, [authorized]);
 
+  // Blood glucose from a CGM (Lingo, Libre, Dexcom) via Apple Health.
+  // Uses today's readings; falls back to the last 24h if today has none yet.
+  // Unit MUST be mgPerdL — react-native-health defaults to mmol/L.
+  const getGlucoseSummary = useCallback(async (): Promise<GlucoseSummary> => {
+    if (!AppleHealthKit || !authorized) return EMPTY_GLUCOSE;
+
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+    const fetchSamples = (start: Date): Promise<any[]> =>
+      new Promise((resolve) => {
+        AppleHealthKit.getBloodGlucoseSamples(
+          {
+            startDate: start.toISOString(),
+            endDate: now.toISOString(),
+            unit: 'mgPerdL',
+            ascending: false,
+            limit: 1000,
+          },
+          (err: any, results: any[]) => {
+            if (err || !results?.length) resolve([]);
+            else resolve(results);
+          }
+        );
+      });
+
+    let samples = await fetchSamples(startOfDay);
+    if (samples.length === 0) samples = await fetchSamples(last24h);
+
+    const values = samples
+      .map((s) => Number(s.value))
+      .filter((v) => Number.isFinite(v) && v > 20 && v < 600); // drop sensor noise
+    if (values.length === 0) return EMPTY_GLUCOSE;
+
+    const sum = values.reduce((a, v) => a + v, 0);
+    return {
+      average: Math.round(sum / values.length),
+      min: Math.round(Math.min(...values)),
+      max: Math.round(Math.max(...values)),
+      latest: Math.round(values[0]), // samples are newest-first
+      count: values.length,
+    };
+  }, [authorized]);
+
   const autoPopulateCheckin = useCallback(async (): Promise<AutoPopulateResult> => {
     if (!authorized) {
       const granted = await requestPermission();
       if (!granted) return {};
     }
 
-    const [steps, sleep, heartRate, bodyTemp, caloriesBurned, workouts] = await Promise.all([
+    const [steps, sleep, heartRate, bodyTemp, caloriesBurned, workouts, glucose] = await Promise.all([
       getTodaySteps(),
       getTodaySleep(),
       getTodayHeartRate(),
       getTodayBodyTemp(),
       getTodayCaloriesBurned(),
       getTodayWorkouts(),
+      getGlucoseSummary(),
     ]);
 
     const result: AutoPopulateResult = {};
+
+    if (glucose.count > 0) {
+      result.blood_glucose = String(glucose.average);
+      result.glucose_min = String(glucose.min);
+      result.glucose_max = String(glucose.max);
+    }
 
     if (steps > 0) result.steps = String(steps);
     if (sleep.hours > 0) {
@@ -339,6 +406,7 @@ export function useHealthKit() {
     getTodayBodyTemp,
     getTodayCaloriesBurned,
     getTodayWorkouts,
+    getGlucoseSummary,
   ]);
 
   // For non-iOS platforms, return a stub
@@ -353,6 +421,7 @@ export function useHealthKit() {
       getTodayBodyTemp: async () => 0,
       getTodayCaloriesBurned: async () => 0,
       getTodayWorkouts: async () => [] as WorkoutData[],
+      getGlucoseSummary: async () => EMPTY_GLUCOSE,
       autoPopulateCheckin: async () => ({} as AutoPopulateResult),
     };
   }
@@ -367,6 +436,7 @@ export function useHealthKit() {
     getTodayBodyTemp,
     getTodayCaloriesBurned,
     getTodayWorkouts,
+    getGlucoseSummary,
     autoPopulateCheckin,
   };
 }

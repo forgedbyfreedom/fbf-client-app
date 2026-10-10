@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Platform, StyleSheet } from 'react-native';
+import { View, Platform, StyleSheet, AppState } from 'react-native';
 import { Stack, Redirect, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as Linking from 'expo-linking';
@@ -9,6 +9,8 @@ import { useAuth } from '../hooks/useAuth';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { Loading } from '../components/ui/Loading';
 import { colors } from '../lib/theme';
+import { syncHealth } from '../lib/health-sync';
+import { flush as flushFoodLog } from '../lib/food-log-store';
 
 function RootNavigation() {
   const { session, loading } = useAuth();
@@ -22,6 +24,28 @@ function RootNavigation() {
 
 function PushNotificationHandler() {
   usePushNotifications();
+  return null;
+}
+
+/**
+ * While signed in: push Apple Health to the site and drain any food-log
+ * changes saved offline — on launch and every time the app comes back to
+ * the foreground. Both are throttled/idempotent, so this is cheap.
+ */
+function BackgroundSyncHandler() {
+  const { session } = useAuth();
+  useEffect(() => {
+    if (!session) return;
+    const run = () => {
+      syncHealth().catch(() => undefined);
+      flushFoodLog().catch(() => undefined);
+    };
+    run();
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') run();
+    });
+    return () => sub.remove();
+  }, [session]);
   return null;
 }
 
@@ -125,6 +149,7 @@ export default function RootLayout() {
       </Stack>
       <RootNavigation />
       {Platform.OS !== 'web' && <PushNotificationHandler />}
+      <BackgroundSyncHandler />
       <DeepLinkHandler />
     </AuthProvider>
   );

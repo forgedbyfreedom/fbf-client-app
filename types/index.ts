@@ -365,7 +365,11 @@ export interface FoodLogEntry {
   quantity: number;
   meal_label: string;
   timestamp: string;
-  source: 'manual' | 'meal_plan' | 'barcode';
+  source: 'manual' | 'meal_plan' | 'barcode' | 'voice';
+  /** Set on dictated items: how sure the macro estimate is. */
+  confidence?: 'high' | 'medium' | 'low';
+  /** True while saved on the phone but not yet on forgedbyfreedom.net. */
+  pending?: boolean;
 }
 
 export interface DailyFoodLog {

@@ -1,19 +1,18 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
 import { FoodLogEntry, DailyFoodLog } from '../types';
 import { useAuth } from './useAuth';
 import { MealPlanDay } from '../lib/nutrition-api';
-
-const STORAGE_PREFIX = 'fbf_food_log_';
-
-function getDateKey(date?: Date): string {
-  const d = date || new Date();
-  return d.toISOString().split('T')[0]; // YYYY-MM-DD
-}
-
-function generateId(): string {
-  return `${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-}
+import { localDateKey } from '../lib/fbf-sync';
+import {
+  addByVoice,
+  addEntry,
+  flush,
+  getSnapshot,
+  loadDay,
+  removeEntry,
+  subscribe,
+  updateEntry,
+} from '../lib/food-log-store';
 
 function calculateTotals(entries: FoodLogEntry[]) {
   return entries.reduce(
@@ -27,126 +26,67 @@ function calculateTotals(entries: FoodLogEntry[]) {
   );
 }
 
+/**
+ * Food log for one day, stored on forgedbyfreedom.net and shared across every
+ * screen. See lib/food-log-store.ts for the sync and offline behaviour.
+ */
 export function useFoodLog(date?: Date) {
-  const dateKey = getDateKey(date);
-  const storageKey = `${STORAGE_PREFIX}${dateKey}`;
+  const dateKey = localDateKey(date);
   const { client } = useAuth();
 
-  const [entries, setEntries] = useState<FoodLogEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // Load entries from AsyncStorage
-  const loadEntries = useCallback(async () => {
-    try {
-      const raw = await AsyncStorage.getItem(storageKey);
-      if (raw) {
-        const parsed: FoodLogEntry[] = JSON.parse(raw);
-        setEntries(parsed);
-      } else {
-        setEntries([]);
-      }
-    } catch {
-      setEntries([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [storageKey]);
+  const snap = useSyncExternalStore(
+    subscribe,
+    () => getSnapshot(dateKey),
+    () => getSnapshot(dateKey)
+  );
 
   useEffect(() => {
-    loadEntries();
-  }, [loadEntries]);
+    loadDay(dateKey).catch(() => undefined);
+  }, [dateKey]);
 
-  // Persist entries whenever they change
-  const persistEntries = useCallback(
-    async (newEntries: FoodLogEntry[]) => {
-      try {
-        await AsyncStorage.setItem(storageKey, JSON.stringify(newEntries));
-      } catch (err) {
-        console.error('Failed to persist food log:', err);
-      }
-    },
-    [storageKey]
-  );
+  const entries = snap.entries;
 
   const addFood = useCallback(
-    async (entry: Omit<FoodLogEntry, 'id' | 'timestamp'>) => {
-      const newEntry: FoodLogEntry = {
-        ...entry,
-        id: generateId(),
-        timestamp: new Date().toISOString(),
-      };
-      const updated = [...entries, newEntry];
-      setEntries(updated);
-      await persistEntries(updated);
-      return newEntry;
-    },
-    [entries, persistEntries]
+    (entry: Omit<FoodLogEntry, 'id' | 'timestamp'>) => addEntry(dateKey, entry),
+    [dateKey]
   );
 
-  const removeFood = useCallback(
-    async (id: string) => {
-      const updated = entries.filter((e) => e.id !== id);
-      setEntries(updated);
-      await persistEntries(updated);
-    },
-    [entries, persistEntries]
-  );
+  const removeFood = useCallback((id: string) => removeEntry(dateKey, id), [dateKey]);
 
   const updateFood = useCallback(
-    async (id: string, updates: Partial<FoodLogEntry>) => {
-      const updated = entries.map((e) => (e.id === id ? { ...e, ...updates } : e));
-      setEntries(updated);
-      await persistEntries(updated);
-    },
-    [entries, persistEntries]
+    (id: string, updates: Partial<FoodLogEntry>) => updateEntry(dateKey, id, updates),
+    [dateKey]
   );
 
   const clearLog = useCallback(async () => {
-    setEntries([]);
-    await AsyncStorage.removeItem(storageKey);
-  }, [storageKey]);
+    for (const e of getSnapshot(dateKey).entries) {
+      await removeEntry(dateKey, e.id);
+    }
+  }, [dateKey]);
 
-  // Get today's day name for meal plan matching
+  /** Dictated or typed description → itemized macros (server-side, needs a connection). */
+  const logByVoice = useCallback(
+    (text: string, mealLabel?: string) => addByVoice(dateKey, text, mealLabel),
+    [dateKey]
+  );
+
+  const refresh = useCallback(() => loadDay(dateKey), [dateKey]);
+
   const getDayName = useCallback((): string => {
     const d = date || new Date();
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     return days[d.getDay()];
   }, [date]);
 
-  // Pre-populate from meal plan
   const populateFromMealPlan = useCallback(async () => {
     if (!client?.meal_plan || !Array.isArray(client.meal_plan) || client.meal_plan.length === 0) {
       return;
     }
-
     const mealPlan = client.meal_plan as MealPlanDay[];
-    const dayName = getDayName();
-    const todayPlan = mealPlan.find((d) => d.day === dayName);
+    const todayPlan = mealPlan.find((d) => d.day === getDayName());
     if (!todayPlan) return;
-
-    const mealEntries: FoodLogEntry[] = todayPlan.meals.map((meal) => ({
-      id: generateId(),
-      name: meal.name,
-      calories: meal.calories || 0,
-      protein_g: meal.protein_g || 0,
-      carbs_g: meal.carbs_g || 0,
-      fat_g: meal.fat_g || 0,
-      serving_size: '1 serving',
-      quantity: 1,
-      meal_label: meal.type.charAt(0).toUpperCase() + meal.type.slice(1),
-      timestamp: new Date().toISOString(),
-      source: 'meal_plan' as const,
-    }));
-
-    const updated = [...entries, ...mealEntries];
-    setEntries(updated);
-    await persistEntries(updated);
-  }, [client?.meal_plan, getDayName, entries, persistEntries]);
-
-  // Log a single meal from meal plan
-  const logMeal = useCallback(
-    async (meal: { name: string; type: string; calories: number | null; protein_g: number | null; carbs_g: number | null; fat_g: number | null }) => {
-      const entry: Omit<FoodLogEntry, 'id' | 'timestamp'> = {
+    for (const meal of todayPlan.meals) {
+      await addEntry(dateKey, {
         name: meal.name,
         calories: meal.calories || 0,
         protein_g: meal.protein_g || 0,
@@ -156,17 +96,36 @@ export function useFoodLog(date?: Date) {
         quantity: 1,
         meal_label: meal.type.charAt(0).toUpperCase() + meal.type.slice(1),
         source: 'meal_plan',
-      };
-      return addFood(entry);
-    },
-    [addFood]
+      });
+    }
+  }, [client?.meal_plan, getDayName, dateKey]);
+
+  const logMeal = useCallback(
+    async (meal: {
+      name: string;
+      type: string;
+      calories: number | null;
+      protein_g: number | null;
+      carbs_g: number | null;
+      fat_g: number | null;
+    }) =>
+      addEntry(dateKey, {
+        name: meal.name,
+        calories: meal.calories || 0,
+        protein_g: meal.protein_g || 0,
+        carbs_g: meal.carbs_g || 0,
+        fat_g: meal.fat_g || 0,
+        serving_size: '1 serving',
+        quantity: 1,
+        meal_label: meal.type.charAt(0).toUpperCase() + meal.type.slice(1),
+        source: 'meal_plan',
+      }),
+    [dateKey]
   );
 
-  // Check if a meal has been logged
   const isMealLogged = useCallback(
-    (mealName: string): boolean => {
-      return entries.some((e) => e.name === mealName && e.source === 'meal_plan');
-    },
+    (mealName: string): boolean =>
+      entries.some((e) => e.name === mealName && e.source === 'meal_plan'),
     [entries]
   );
 
@@ -183,11 +142,7 @@ export function useFoodLog(date?: Date) {
   }, [entries]);
 
   const foodLog: DailyFoodLog = useMemo(
-    () => ({
-      date: dateKey,
-      entries,
-      totals,
-    }),
+    () => ({ date: dateKey, entries, totals }),
     [dateKey, entries, totals]
   );
 
@@ -196,13 +151,18 @@ export function useFoodLog(date?: Date) {
     totals,
     entriesByMeal,
     foodLog,
-    loading,
+    loading: snap.loading,
+    syncError: snap.error,
+    pendingCount: snap.pendingCount,
     addFood,
     removeFood,
     updateFood,
     clearLog,
     populateFromMealPlan,
     logMeal,
+    logByVoice,
+    refresh,
+    retrySync: flush,
     isMealLogged,
     hasEntries: entries.length > 0,
   };

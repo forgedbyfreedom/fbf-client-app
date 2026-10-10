@@ -221,7 +221,7 @@ export function BodyScanTracker({ clientId }: BodyScanTrackerProps) {
           {/* Metric pills */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.pillRow}>
             {metrics.map((m) => {
-              const hasData = scans.some((s) => (s as Record<string, unknown>)[m.key] != null);
+              const hasData = scans.some((s) => (s as unknown as Record<string, unknown>)[m.key] != null);
               if (!hasData) return null;
               return (
                 <TouchableOpacity
@@ -244,11 +244,11 @@ export function BodyScanTracker({ clientId }: BodyScanTrackerProps) {
                 const metric = metrics.find((m) => m.key === expandedMetric);
                 if (!metric) return null;
                 const dataPoints = scans
-                  .filter((s) => (s as Record<string, unknown>)[metric.key] != null)
+                  .filter((s) => (s as unknown as Record<string, unknown>)[metric.key] != null)
                   .reverse()
                   .map((s) => ({
                     date: s.scan_date,
-                    value: (s as Record<string, unknown>)[metric.key] as number,
+                    value: (s as unknown as Record<string, unknown>)[metric.key] as number,
                   }));
 
                 if (dataPoints.length < 2) {

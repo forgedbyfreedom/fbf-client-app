@@ -137,6 +137,7 @@ export const demoClient: Client = {
     { phase: 'LISS walk', duration: '30 min on rest days' },
   ],
   medical_protocol: null,
+  meal_plan: null,
   last_weight: 192.4,
   created_at: '2025-12-14T08:00:00Z',
 };

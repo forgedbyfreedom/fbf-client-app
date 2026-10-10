@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from './useAuth';
-import { api } from '../lib/api';
+import { fetchWorkouts, pushWorkout } from '../lib/fbf-sync';
 import {
   WorkoutDay,
   ExerciseLog,
@@ -134,21 +134,28 @@ export function useWorkoutLog(): UseWorkoutLogReturn {
     if (!logsKey || !prsKey) return;
     setLoading(true);
     try {
-      // Try API first
+      // Local copy first so history shows instantly / offline.
+      const localRaw = await AsyncStorage.getItem(logsKey);
+      const localLogs: WorkoutLog[] = localRaw ? JSON.parse(localRaw) : [];
+      if (localLogs.length) setWorkoutLogs(localLogs);
+
+      // Then reconcile with forgedbyfreedom.net: upload anything that never
+      // made it (finished offline, or logged before sync existed), and pull
+      // anything saved from another device.
       try {
-        const apiLogs = await api.get<{ logs: WorkoutLog[] }>('/api/client/workout-logs');
-        if (apiLogs?.logs?.length) {
-          setWorkoutLogs(apiLogs.logs);
-          await AsyncStorage.setItem(logsKey, JSON.stringify(apiLogs.logs));
-        } else {
-          throw new Error('No API data');
+        const serverLogs = await fetchWorkouts(200);
+        const onServer = new Set(serverLogs.map((l) => l.id));
+        const unsynced = localLogs.filter((l) => !onServer.has(l.id));
+        for (const log of unsynced) {
+          await pushWorkout(log);
         }
+        const merged = [...serverLogs, ...unsynced].sort((a, b) =>
+          (b.completed_at || b.started_at || b.date).localeCompare(a.completed_at || a.started_at || a.date)
+        );
+        setWorkoutLogs(merged);
+        await AsyncStorage.setItem(logsKey, JSON.stringify(merged));
       } catch {
-        // Fall back to local storage
-        const localLogs = await AsyncStorage.getItem(logsKey);
-        if (localLogs) {
-          setWorkoutLogs(JSON.parse(localLogs));
-        }
+        // Offline or site unreachable — local history stays; retried next load.
       }
 
       // Load PRs from local storage (always local as source of truth)
@@ -270,11 +277,12 @@ export function useWorkoutLog(): UseWorkoutLogReturn {
     // Clear draft
     await AsyncStorage.removeItem(draftKey);
 
-    // Try to sync to API
+    // Save to forgedbyfreedom.net. If offline, it's already in local history
+    // and loadHistory() uploads it next time (the server de-duplicates by id).
     try {
-      await api.post('/api/client/workout-logs', log);
+      await pushWorkout(log);
     } catch {
-      // Offline - already saved locally
+      // retried on next history load
     }
 
     // Reset state

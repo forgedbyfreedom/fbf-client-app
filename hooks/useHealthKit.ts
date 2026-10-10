@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Platform } from 'react-native';
+import { HEALTH_PERMISSIONS } from '../lib/health-sync';
 
 // react-native-health is iOS-only; we dynamically require it to avoid crashes on Android/web
 let AppleHealthKit: any = null;
@@ -9,21 +10,8 @@ if (Platform.OS === 'ios') {
   try {
     const RNHealth = require('react-native-health');
     AppleHealthKit = RNHealth.default;
-    HealthKitPermissions = {
-      permissions: {
-        read: [
-          RNHealth.HealthKitPermission?.StepCount ?? 'StepCount',
-          RNHealth.HealthKitPermission?.SleepAnalysis ?? 'SleepAnalysis',
-          RNHealth.HealthKitPermission?.HeartRate ?? 'HeartRate',
-          RNHealth.HealthKitPermission?.RestingHeartRate ?? 'RestingHeartRate',
-          RNHealth.HealthKitPermission?.BodyTemperature ?? 'BodyTemperature',
-          RNHealth.HealthKitPermission?.ActiveEnergyBurned ?? 'ActiveEnergyBurned',
-          RNHealth.HealthKitPermission?.Workout ?? 'Workout',
-          RNHealth.HealthKitPermission?.Weight ?? 'Weight',
-        ],
-        write: [],
-      },
-    };
+    // One shared read list with the background sync so iOS asks once.
+    HealthKitPermissions = HEALTH_PERMISSIONS;
   } catch {
     // react-native-health not installed or not linked
   }

@@ -19,7 +19,7 @@ export class SyncError extends Error {
   }
 }
 
-async function call<T>(path: string, init: RequestInit = {}, timeoutMs = 20000): Promise<T> {
+export async function call<T>(path: string, init: RequestInit = {}, timeoutMs = 20000): Promise<T> {
   const token = await getToken();
   if (!token) throw new SyncError('Not signed in', 401);
   const controller = new AbortController();

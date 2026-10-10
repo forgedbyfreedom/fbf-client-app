@@ -34,6 +34,8 @@ export interface PreviewChange {
   client_name?: string;
   edits?: { before: string; after: string }[];
   note?: string;
+  /** Resulting daily totals after a nutrition change, for the coach to sanity-check. */
+  totals?: string;
 }
 
 export interface AskResult {

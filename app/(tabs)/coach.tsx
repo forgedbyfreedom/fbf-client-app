@@ -210,6 +210,7 @@ export default function CoachScreen() {
                     <Text style={styles.after}>+ {e.after}</Text>
                   </View>
                 ))}
+                {!!c.totals && <Text style={styles.totals}>New daily totals: {c.totals}</Text>}
                 {!!c.note && <Text style={styles.note}>{c.note}</Text>}
               </View>
             ))}
@@ -312,6 +313,7 @@ const styles = StyleSheet.create({
   before: { color: colors.red, fontSize: fontSize.xs, fontFamily: 'Menlo', textDecorationLine: 'line-through' },
   after: { color: colors.green, fontSize: fontSize.xs, fontFamily: 'Menlo' },
   note: { color: colors.yellow, fontSize: fontSize.xs, lineHeight: 16 },
+  totals: { color: colors.textPrimary, fontSize: fontSize.sm, fontWeight: '600' },
   muted: { color: colors.textSecondary, fontSize: fontSize.sm, textAlign: 'center' },
   client: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: borderRadius.md, borderWidth: 1, borderColor: colors.border, padding: spacing.md, marginBottom: spacing.sm },
   clientName: { color: colors.textPrimary, fontWeight: '600', fontSize: fontSize.md },

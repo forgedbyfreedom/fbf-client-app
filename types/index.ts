@@ -115,6 +115,8 @@ export interface Client {
   current_peds: PedItem[];
   current_peptides: PeptideItem[];
   meal_plan: any[] | null;
+  /** Coach-written program text (WordPress App Bridge). */
+  program_raw_text?: string | null;
   workout_program: WorkoutDay[] | null;
   cardio_protocol: CardioProtocol[] | null;
   medical_protocol: MedicalProtocol[] | null;

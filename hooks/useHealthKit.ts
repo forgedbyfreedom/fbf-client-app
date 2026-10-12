@@ -9,7 +9,9 @@ let HealthKitPermissions: any = null;
 if (Platform.OS === 'ios') {
   try {
     const RNHealth = require('react-native-health');
-    AppleHealthKit = RNHealth.default;
+    // module.exports = HealthKit (no default export): `.default` alone is undefined.
+    AppleHealthKit = RNHealth?.default ?? RNHealth;
+    if (!AppleHealthKit || typeof AppleHealthKit.initHealthKit !== 'function') AppleHealthKit = null;
     // One shared read list with the background sync so iOS asks once.
     HealthKitPermissions = HEALTH_PERMISSIONS;
   } catch {

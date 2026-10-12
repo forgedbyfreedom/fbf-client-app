@@ -14,8 +14,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { Ionicons } from '@expo/vector-icons';
-import { api } from '../../lib/api';
-import { supabase } from '../../lib/supabase';
+import { scansApi, uploadAndReadScan, ScanValues } from '../../lib/scans';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { BodyScan } from '../../types';
@@ -46,11 +45,15 @@ export function BodyScanTracker({ clientId }: BodyScanTrackerProps) {
   const [visceralFat, setVisceralFat] = useState('');
   const [scanFileUri, setScanFileUri] = useState<string | null>(null);
   const [notes, setNotes] = useState('');
+  // Reading the attached report on forgedbyfreedom.net
+  const [uploadId, setUploadId] = useState<string | null>(null);
+  const [extracted, setExtracted] = useState<ScanValues | null>(null);
+  const [reading, setReading] = useState<string | null>(null);
+  const [readMsg, setReadMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const fetchScans = useCallback(async () => {
     try {
-      const res = await api.get<{ scans: BodyScan[] }>(`/api/clients/${clientId}/scans`);
-      setScans(res.scans);
+      setScans(await scansApi.list());
     } catch {
       setScans([]);
     } finally {
@@ -69,8 +72,8 @@ export function BodyScanTracker({ clientId }: BodyScanTrackerProps) {
         onPress: async () => {
           const perm = await ImagePicker.requestCameraPermissionsAsync();
           if (!perm.granted) return;
-          const result = await ImagePicker.launchCameraAsync({ quality: 0.8 });
-          if (!result.canceled && result.assets[0]) setScanFileUri(result.assets[0].uri);
+          const result = await ImagePicker.launchCameraAsync({ quality: 0.6 });
+          if (!result.canceled && result.assets[0]) readScan(result.assets[0].uri);
         },
       },
       {
@@ -78,8 +81,8 @@ export function BodyScanTracker({ clientId }: BodyScanTrackerProps) {
         onPress: async () => {
           const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
           if (!perm.granted) return;
-          const result = await ImagePicker.launchImageLibraryAsync({ quality: 0.8 });
-          if (!result.canceled && result.assets[0]) setScanFileUri(result.assets[0].uri);
+          const result = await ImagePicker.launchImageLibraryAsync({ quality: 0.6 });
+          if (!result.canceled && result.assets[0]) readScan(result.assets[0].uri);
         },
       },
       {
@@ -88,56 +91,79 @@ export function BodyScanTracker({ clientId }: BodyScanTrackerProps) {
           const result = await DocumentPicker.getDocumentAsync({
             type: ['application/pdf', 'image/*'],
           });
-          if (!result.canceled && result.assets?.[0]) setScanFileUri(result.assets[0].uri);
+          if (!result.canceled && result.assets?.[0]) readScan(result.assets[0].uri);
         },
       },
       { text: 'Cancel', style: 'cancel' },
     ]);
   };
 
+  const num = (v: number | null | undefined) => (v == null ? '' : String(v));
+
+  /** Upload the report, let the site read it, and fill the form in. */
+  const readScan = async (uri: string) => {
+    setScanFileUri(uri);
+    setUploadId(null);
+    setExtracted(null);
+    setReadMsg(null);
+    setReading('Uploading your scan…');
+    try {
+      const r = await uploadAndReadScan(uri, (stage, pct) =>
+        setReading(stage === 'upload' ? `Uploading your scan…${pct ? ` ${pct}%` : ''}` : 'Reading your scan…')
+      );
+      const v = r.values;
+      setUploadId(r.upload_id);
+      setExtracted(v);
+      if (v.scan_type) setScanType(v.scan_type);
+      if (v.scan_date) setScanDate(v.scan_date);
+      setBodyFat(num(v.body_fat_pct));
+      setTotalWeight(num(v.total_weight_lbs));
+      setLeanMass(num(v.lean_mass_lbs));
+      setFatMass(num(v.fat_mass_lbs));
+      setSmm(num(v.skeletal_muscle_mass_lbs));
+      setBmr(num(v.basal_metabolic_rate));
+      setVisceralFat(num(v.visceral_fat_level));
+      if (v.notes && !notes) setNotes(v.notes);
+      setReadMsg({ ok: r.found > 0, text: r.summary });
+    } catch (e) {
+      setReadMsg({
+        ok: false,
+        text: e instanceof Error ? e.message : 'Could not read that scan. You can still enter the numbers below.',
+      });
+    } finally {
+      setReading(null);
+    }
+  };
+
   const handleSubmit = async () => {
-    if (!bodyFat && !leanMass && !totalWeight) {
-      Alert.alert('Missing Data', 'Enter at least body fat %, lean mass, or total weight.');
+    const f = (s: string) => (s.trim() === '' || isNaN(parseFloat(s)) ? null : parseFloat(s));
+    const edited = {
+      body_fat_pct: f(bodyFat),
+      lean_mass_lbs: f(leanMass),
+      fat_mass_lbs: f(fatMass),
+      total_weight_lbs: f(totalWeight),
+      skeletal_muscle_mass_lbs: f(smm),
+      basal_metabolic_rate: f(bmr),
+      visceral_fat_level: f(visceralFat),
+    };
+    const hasAny = Object.values(edited).some((v) => v != null) || !!extracted;
+    if (!hasAny) {
+      Alert.alert('Missing Data', 'Attach your scan so it can be read, or enter at least one number.');
       return;
     }
 
     setSubmitting(true);
     try {
-      let fileUrl = null;
-      if (scanFileUri) {
-        const filename = scanFileUri.split('/').pop() || 'scan.jpg';
-        const ext = filename.split('.').pop()?.toLowerCase() || 'jpg';
-        const mimeType = ext === 'pdf' ? 'application/pdf' : `image/${ext === 'jpg' ? 'jpeg' : ext}`;
-        const filePath = `body-scans/${clientId}/${scanDate}_${filename}`;
-
-        const response = await fetch(scanFileUri);
-        const blob = await response.blob();
-        const arrayBuffer = await new Response(blob).arrayBuffer();
-
-        const { error: uploadError } = await supabase.storage
-          .from('avatars')
-          .upload(filePath, arrayBuffer, { contentType: mimeType, upsert: true });
-
-        if (uploadError) {
-          throw new Error('File upload failed: ' + uploadError.message);
-        }
-
-        const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
-        fileUrl = urlData.publicUrl;
-      }
-
-      await api.post(`/api/clients/${clientId}/scans`, {
-        scan_date: scanDate,
-        scan_type: scanType,
-        body_fat_pct: bodyFat ? parseFloat(bodyFat) : null,
-        lean_mass_lbs: leanMass ? parseFloat(leanMass) : null,
-        fat_mass_lbs: fatMass ? parseFloat(fatMass) : null,
-        total_weight_lbs: totalWeight ? parseFloat(totalWeight) : null,
-        skeletal_muscle_mass_lbs: smm ? parseFloat(smm) : null,
-        basal_metabolic_rate: bmr ? parseInt(bmr) : null,
-        visceral_fat_level: visceralFat ? parseFloat(visceralFat) : null,
-        file_url: fileUrl,
+      await scansApi.save({
+        // Everything read from the report (segmentals, body water, BMC, …),
+        // with the member's edits to the visible fields on top.
+        ...(extracted || {}),
+        ...edited,
+        scan_date: /^\d{4}-\d{2}-\d{2}$/.test(scanDate) ? scanDate : null,
+        scan_type: scanType as ScanValues['scan_type'],
         notes: notes || null,
+        upload_id: uploadId,
+        read_by_ai: !!extracted,
       });
 
       Alert.alert('Saved', 'Body scan recorded.');
@@ -145,7 +171,7 @@ export function BodyScanTracker({ clientId }: BodyScanTrackerProps) {
       resetForm();
       fetchScans();
     } catch (err) {
-      Alert.alert('Error', 'Failed to save scan.');
+      Alert.alert('Error', err instanceof Error ? err.message : 'Failed to save scan.');
     } finally {
       setSubmitting(false);
     }
@@ -163,6 +189,28 @@ export function BodyScanTracker({ clientId }: BodyScanTrackerProps) {
     setVisceralFat('');
     setScanFileUri(null);
     setNotes('');
+    setUploadId(null);
+    setExtracted(null);
+    setReading(null);
+    setReadMsg(null);
+  };
+
+  const removeScan = (scan: BodyScan) => {
+    Alert.alert('Delete scan', `Delete the ${scan.scan_type.toUpperCase()} scan from ${scan.scan_date}?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await scansApi.remove(String(scan.id));
+            fetchScans();
+          } catch (e) {
+            Alert.alert('Error', e instanceof Error ? e.message : 'Could not delete that scan.');
+          }
+        },
+      },
+    ]);
   };
 
   const metrics = [
@@ -311,7 +359,7 @@ export function BodyScanTracker({ clientId }: BodyScanTrackerProps) {
           <Card>
             <Text style={styles.recentTitle}>Recent Scans</Text>
             {scans.slice(0, 5).map((scan) => (
-              <View key={scan.id} style={styles.scanRow}>
+              <TouchableOpacity key={scan.id} style={styles.scanRow} onLongPress={() => removeScan(scan)} delayLongPress={400}>
                 <View>
                   <Text style={styles.scanDate}>
                     {new Date(scan.scan_date).toLocaleDateString('en-US', {
@@ -335,8 +383,9 @@ export function BodyScanTracker({ clientId }: BodyScanTrackerProps) {
                     <Text style={styles.scanValue}>{scan.total_weight_lbs} lbs</Text>
                   )}
                 </View>
-              </View>
+              </TouchableOpacity>
             ))}
+            <Text style={styles.hintText}>Press and hold a scan to delete it.</Text>
           </Card>
         </>
       )}
@@ -350,6 +399,29 @@ export function BodyScanTracker({ clientId }: BodyScanTrackerProps) {
               <Ionicons name="close" size={28} color={colors.textPrimary} />
             </TouchableOpacity>
           </View>
+
+          <Text style={styles.fieldLabel}>Attach your scan report</Text>
+          <TouchableOpacity style={styles.uploadBtn} onPress={pickScanFile} disabled={!!reading}>
+            {reading ? (
+              <ActivityIndicator color={colors.accent} />
+            ) : (
+              <Ionicons
+                name={extracted ? 'checkmark-circle' : 'cloud-upload-outline'}
+                size={24}
+                color={extracted ? colors.green : colors.accent}
+              />
+            )}
+            <Text style={[styles.uploadText, !!extracted && { color: colors.green }]}>
+              {reading || (scanFileUri ? 'Attach a different file' : 'PDF or photo of your InBody, DEXA or other scan')}
+            </Text>
+          </TouchableOpacity>
+          {readMsg ? (
+            <Text style={[styles.readMsg, { color: readMsg.ok ? colors.green : colors.yellow }]}>{readMsg.text}</Text>
+          ) : (
+            !scanFileUri && (
+              <Text style={styles.hintText}>The numbers are read off the report and filled in below for you to check.</Text>
+            )
+          )}
 
           <Text style={styles.fieldLabel}>Scan Type</Text>
           <View style={styles.typeRow}>
@@ -460,17 +532,6 @@ export function BodyScanTracker({ clientId }: BodyScanTrackerProps) {
             placeholderTextColor={colors.textTertiary}
           />
 
-          <Text style={styles.fieldLabel}>Upload Scan (photo or PDF)</Text>
-          <TouchableOpacity style={styles.uploadBtn} onPress={pickScanFile}>
-            <Ionicons
-              name={scanFileUri ? 'checkmark-circle' : 'cloud-upload-outline'}
-              size={24}
-              color={scanFileUri ? colors.green : colors.accent}
-            />
-            <Text style={[styles.uploadText, scanFileUri && { color: colors.green }]}>
-              {scanFileUri ? 'File selected' : 'Tap to upload scan image or PDF'}
-            </Text>
-          </TouchableOpacity>
 
           <Text style={styles.fieldLabel}>Notes</Text>
           <TextInput
@@ -709,6 +770,8 @@ const styles = StyleSheet.create({
     color: colors.accent,
     fontWeight: '700',
   },
+  readMsg: { fontSize: fontSize.sm, lineHeight: 19, marginTop: spacing.sm },
+  hintText: { color: colors.textSecondary, fontSize: fontSize.xs, marginTop: spacing.sm, lineHeight: 16 },
   uploadBtn: {
     flexDirection: 'row',
     alignItems: 'center',

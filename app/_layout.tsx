@@ -10,6 +10,7 @@ import { usePushNotifications } from '../hooks/usePushNotifications';
 import { Loading } from '../components/ui/Loading';
 import { colors } from '../lib/theme';
 import { syncHealth } from '../lib/health-sync';
+import { refreshInbox, resetInbox } from '../lib/coach-inbox';
 import { flush as flushFoodLog } from '../lib/food-log-store';
 
 function RootNavigation() {
@@ -35,10 +36,14 @@ function PushNotificationHandler() {
 function BackgroundSyncHandler() {
   const { session } = useAuth();
   useEffect(() => {
-    if (!session) return;
+    if (!session) {
+      resetInbox(); // never show the previous account's coach updates
+      return;
+    }
     const run = () => {
       syncHealth().catch(() => undefined);
       flushFoodLog().catch(() => undefined);
+      refreshInbox().catch(() => undefined);
     };
     run();
     const sub = AppState.addEventListener('change', (state) => {
@@ -144,6 +149,10 @@ export default function RootLayout() {
         />
         <Stack.Screen
           name="challenges/[id]"
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="coach-updates"
           options={{ animation: 'slide_from_right' }}
         />
       </Stack>

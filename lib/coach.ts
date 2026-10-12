@@ -21,6 +21,8 @@ export interface CoachInfo {
 }
 
 export interface CoachMe {
+  /** The signed-in coach's own user id. */
+  self_id?: number;
   is_coach: boolean;
   is_head: boolean;
   clients: CoachClient[];
@@ -28,12 +30,14 @@ export interface CoachMe {
 }
 
 export interface PreviewChange {
-  type: 'program_change' | 'add_coach' | 'remove_coach' | 'assign' | 'unassign';
+  type: 'program_change' | 'send_note' | 'add_coach' | 'remove_coach' | 'assign' | 'unassign';
   title: string;
   client_id?: number;
   client_name?: string;
   edits?: { before: string; after: string }[];
   note?: string;
+  /** send_note: the message the client will receive. */
+  message?: string;
   /** Resulting daily totals after a nutrition change, for the coach to sanity-check. */
   totals?: string;
 }

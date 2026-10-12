@@ -19,9 +19,11 @@ import { coachApi, AskResult, CoachMe } from '../../lib/coach';
 import { colors, borderRadius, fontSize, spacing } from '../../lib/theme';
 
 /**
- * Coach console. Coaches change their assigned clients' programs by asking;
+ * Coach console. Coaches change their assigned clients' programs — diet,
+ * training, cardio, supplements, cycle — or send them a note, by asking;
  * Bryan (head coach) can also add/remove coaches and assign clients.
- * Every request shows exactly what will change and waits for Confirm.
+ * Every request shows exactly what will change and waits for Confirm. On
+ * Confirm the client gets an app alert and an email.
  */
 export default function CoachScreen() {
   const insets = useSafeAreaInsets();
@@ -142,8 +144,18 @@ export default function CoachScreen() {
   }
 
   const examples = me?.is_head
-    ? ['Set Jim Weldon\'s protein to 220 g and calories to 2,600', 'Make jane@example.com a coach', 'Assign Jim and Terri Weldon to Jane']
-    : ['Set Jim\'s protein to 220 g', 'Swap leg press for hack squat on Jim\'s leg day', 'Add 10 minutes of incline walking after every lift for Jim'];
+    ? [
+        'Set Jim Weldon\'s protein to 220 g and calories to 2,600',
+        'Tell Jim great week, keep water at a gallon and a half',
+        'Make jane@example.com a coach',
+        'Assign Jim and Terri Weldon to Jane',
+      ]
+    : [
+        'Set Jim\'s protein to 220 g',
+        'Swap leg press for hack squat on Jim\'s leg day',
+        'Add 5 g creatine every morning to Jim\'s supplements',
+        'Tell Jim great week, keep pushing the steps',
+      ];
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -158,7 +170,8 @@ export default function CoachScreen() {
 
         {/* Ask */}
         <View style={styles.card}>
-          <Text style={styles.label}>What do you want to change?</Text>
+          <Text style={styles.label}>What do you want to change, or tell a client?</Text>
+          <Text style={styles.hint}>Diet, training, cardio, supplements, cycle, or a note. Your client gets an app alert and an email when you confirm.</Text>
           <TextInput
             style={styles.input}
             value={text}
@@ -210,6 +223,11 @@ export default function CoachScreen() {
                     <Text style={styles.after}>+ {e.after}</Text>
                   </View>
                 ))}
+                {!!c.message && (
+                  <View style={styles.edit}>
+                    <Text style={styles.noteMsg}>{c.message}</Text>
+                  </View>
+                )}
                 {!!c.totals && <Text style={styles.totals}>New daily totals: {c.totals}</Text>}
                 {!!c.note && <Text style={styles.note}>{c.note}</Text>}
               </View>
@@ -244,6 +262,12 @@ export default function CoachScreen() {
                 {me.is_head && c.coach ? ` · Coach: ${c.coach}` : ''}
               </Text>
             </View>
+            {c.id !== me.self_id && (
+              <TouchableOpacity onPress={() => setText(`Send ${c.name} a note: `)} style={styles.undo}>
+                <Ionicons name="chatbubble-ellipses-outline" size={16} color={colors.accent} />
+                <Text style={styles.undoText}>Note</Text>
+              </TouchableOpacity>
+            )}
             {c.can_undo && (
               <TouchableOpacity onPress={() => undo(c.id, c.name)} style={styles.undo}>
                 <Ionicons name="arrow-undo-outline" size={16} color={colors.accent} />
@@ -305,6 +329,8 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   examples: { gap: 6, marginTop: spacing.xs },
   example: { color: colors.textSecondary, fontSize: fontSize.sm },
+  hint: { color: colors.textSecondary, fontSize: fontSize.xs, lineHeight: 16 },
+  noteMsg: { color: colors.textPrimary, fontSize: fontSize.sm, lineHeight: 19 },
   message: { marginTop: spacing.md, fontSize: fontSize.sm, lineHeight: 19 },
   error: { color: colors.red, fontSize: fontSize.sm, marginBottom: spacing.sm },
   change: { gap: 4, paddingVertical: spacing.sm, borderTopWidth: 1, borderTopColor: colors.border },

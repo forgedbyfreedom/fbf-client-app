@@ -30,6 +30,7 @@ import { DailyScoreCard } from '../../components/dashboard/DailyScoreCard';
 import { AIInsightsCard } from '../../components/dashboard/AIInsightsCard';
 import { ProgressProjection } from '../../components/dashboard/ProgressProjection';
 import { ActiveChallengesCard } from '../../components/challenges/ActiveChallengesCard';
+import { CoachUpdatesCard } from '../../components/dashboard/CoachUpdatesCard';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform } from 'react-native';
 import { useHealthKit } from '../../hooks/useHealthKit';
@@ -126,6 +127,7 @@ export default function DashboardScreen() {
       }
     >
       <BrandHeader />
+      <CoachUpdatesCard />
       <OverviewCard client={client} latestCheckin={latestCheckin} />
 
       <DailyScoreCard clientId={client.id} />

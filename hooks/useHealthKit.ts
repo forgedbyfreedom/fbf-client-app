@@ -70,7 +70,7 @@ export function useHealthKit() {
     setAvailable(true);
 
     // Check if already authorized on mount (and when app returns from Settings)
-    AppleHealthKit.initHealthKit(HealthKitPermissions.permissions, (err: any) => {
+    AppleHealthKit.initHealthKit(HealthKitPermissions, (err: any) => {
       if (!err) {
         setAuthorized(true);
       }
@@ -81,7 +81,7 @@ export function useHealthKit() {
     if (!AppleHealthKit || !HealthKitPermissions) return false;
 
     return new Promise((resolve) => {
-      AppleHealthKit.initHealthKit(HealthKitPermissions.permissions, (err: any) => {
+      AppleHealthKit.initHealthKit(HealthKitPermissions, (err: any) => {
         if (err) {
           console.warn('[HealthKit] Permission denied or error:', err);
           setAuthorized(false);

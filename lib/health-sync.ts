@@ -116,7 +116,7 @@ let initError: string | null = null;
 function init(): Promise<boolean> {
   return new Promise((resolve) => {
     if (!HK || !PERMS) return resolve(false);
-    HK.initHealthKit(PERMS.permissions, (err: any) => {
+    HK.initHealthKit(PERMS, (err: any) => {
       initError = err ? String(err?.message || err) : null;
       resolve(!err);
     });

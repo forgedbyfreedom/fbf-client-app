@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Platform } from 'react-native';
+import { NativeModules, Platform } from 'react-native';
 import { HEALTH_PERMISSIONS } from '../lib/health-sync';
 
 // react-native-health is iOS-only; we dynamically require it to avoid crashes on Android/web
@@ -10,8 +10,12 @@ if (Platform.OS === 'ios') {
   try {
     const RNHealth = require('react-native-health');
     // module.exports = HealthKit (no default export): `.default` alone is undefined.
-    AppleHealthKit = RNHealth?.default ?? RNHealth;
-    if (!AppleHealthKit || typeof AppleHealthKit.initHealthKit !== 'function') AppleHealthKit = null;
+    // Library export may be an empty copy of the native module (new architecture);
+    // fall back to the native module itself. See lib/health-sync.ts.
+    const lib = RNHealth?.default ?? RNHealth;
+    const native = (NativeModules as any).AppleHealthKit;
+    AppleHealthKit =
+      lib && typeof lib.initHealthKit === 'function' ? lib : native && typeof native.initHealthKit === 'function' ? native : null;
     // One shared read list with the background sync so iOS asks once.
     HealthKitPermissions = HEALTH_PERMISSIONS;
   } catch {

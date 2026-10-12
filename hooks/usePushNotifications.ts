@@ -4,7 +4,8 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
-import { api } from '../lib/api';
+import { useAuth } from './useAuth';
+import { refreshInbox, registerPushToken } from '../lib/coach-inbox';
 
 if (Platform.OS !== 'web') {
   Notifications.setNotificationHandler({
@@ -60,30 +61,32 @@ export function usePushNotifications() {
   const notificationListener = useRef<ReturnType<typeof Notifications.addNotificationReceivedListener> | null>(null);
   const responseListener = useRef<ReturnType<typeof Notifications.addNotificationResponseReceivedListener> | null>(null);
   const router = useRouter();
+  const { session, user } = useAuth();
+  const userId = session ? (user as any)?.id ?? 'signed-in' : null;
+
+  // Register this device with forgedbyfreedom.net for the signed-in account
+  // (again after every sign-in, so alerts follow whoever is using the phone).
+  useEffect(() => {
+    if (Platform.OS === 'web' || !userId) return;
+    registerForPushNotifications()
+      .then(async (token) => {
+        if (!token) return;
+        setExpoPushToken(token);
+        await registerPushToken(token, Platform.OS);
+      })
+      .catch((err) => console.warn('[push] register failed', err?.message || err));
+  }, [userId]);
 
   useEffect(() => {
     // Skip push notification setup on web
     if (Platform.OS === 'web') return;
 
-    // Register and send token to backend
-    registerForPushNotifications().then(async (token) => {
-      if (token) {
-        setExpoPushToken(token);
-        try {
-          await api.post('/api/push/register', {
-            token,
-            platform: Platform.OS,
-          });
-        } catch (err) {
-          console.error('Failed to register push token:', err);
-        }
-      }
-    });
-
     // Listen for incoming notifications while app is foregrounded
     notificationListener.current =
       Notifications.addNotificationReceivedListener((n) => {
         setNotification(n);
+        const t = String(n.request.content.data?.type || '');
+        if (t.startsWith('coach_')) refreshInbox().catch(() => undefined);
       });
 
     // Handle notification tap (opens app)
@@ -91,7 +94,9 @@ export function usePushNotifications() {
       Notifications.addNotificationResponseReceivedListener((response) => {
         const data = response.notification.request.content.data;
 
-        if (data?.type === 'checkin_reminder') {
+        if (typeof data?.type === 'string' && data.type.startsWith('coach_')) {
+          router.push('/coach-updates');
+        } else if (data?.type === 'checkin_reminder') {
           router.push('/(tabs)/checkin');
         } else if (data?.type === 'chat_message') {
           router.push('/(tabs)/chat');

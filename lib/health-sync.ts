@@ -288,9 +288,15 @@ export function syncHealth(force = false): Promise<boolean> {
     let sent = 0;
     let todayKeys: string[] = [];
     let yCounts = { sleep: 0, workouts: 0 };
+    let totalSleepRecords = 0;
+    let totalWorkouts = 0;
+    let lastNightHours: number | null = null;
     for (const day of days) {
       const key = localDateKey(day);
       const values = { ...(await collectDay(day)), ...(body[key] || {}) };
+      totalSleepRecords += lastCounts.sleep;
+      totalWorkouts += lastCounts.workouts;
+      if (key === localDateKey(today) && typeof values.sleep_hours === 'number') lastNightHours = values.sleep_hours;
       if (key === localDateKey(yesterday)) yCounts = { ...lastCounts };
       if (key === localDateKey(today)) todayKeys = Object.keys(values);
       if (!Object.keys(values).length) continue;
@@ -298,15 +304,20 @@ export function syncHealth(force = false): Promise<boolean> {
       pushed = true;
       sent++;
     }
+    // Say what came across, so a missing category is obvious on the card.
+    const detail =
+      ` Sleep last night: ${lastNightHours != null ? `${lastNightHours} h` : 'none in Apple Health'}.` +
+      ` Workouts: ${totalWorkouts ? totalWorkouts : 'none in Apple Health'}${days.length > 1 ? ` (last ${days.length} days)` : ''}.`;
     setStatus({
       at: Date.now(),
       ok: sent > 0,
       message: sent
-        ? `Synced ${sent} day${sent === 1 ? '' : 's'} from Apple Health.`
+        ? `Synced ${sent} day${sent === 1 ? '' : 's'} from Apple Health.${detail}`
         : 'Apple Health returned no data. In the Health app → Sharing → Apps → Forged by Freedom, turn on all categories, then tap Sync now.',
       daysSent: sent,
     });
-    report({ stage: 'done', hk: true, init: true, days_checked: days.length, days_sent: sent, today_keys: todayKeys.join(','), yesterday_sleep_samples: yCounts.sleep, yesterday_workouts: yCounts.workouts });
+    // Counts first: the site's admin view only shows the start of this record.
+    report({ stage: 'done', sleep_records: totalSleepRecords, workouts_found: totalWorkouts, last_night_h: lastNightHours, yesterday_sleep_samples: yCounts.sleep, yesterday_workouts: yCounts.workouts, days_checked: days.length, days_sent: sent, hk: true, init: true, today_keys: todayKeys.join(',') });
     // Yesterday is complete once today has started; today is redone next pass.
     await AsyncStorage.setItem(LAST_DAY_KEY, localDateKey(yesterday));
     await AsyncStorage.setItem(LAST_SYNC_KEY, String(Date.now()));

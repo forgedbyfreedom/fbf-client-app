@@ -46,6 +46,7 @@ function report(diag: Record<string, unknown>) {
       platform: Platform.OS,
       update_id: (Updates as any).updateId ?? null,
       native_module: !!(NativeModules as any).AppleHealthKit,
+      via: HK ? (HK === (NativeModules as any).AppleHealthKit ? 'native' : 'library') : 'none',
     }),
   }).catch(() => undefined);
 }
@@ -63,8 +64,13 @@ if (Platform.OS === 'ios') {
     const RNHealth = require('react-native-health');
     // The library does `module.exports = HealthKit` (no default export), so
     // `.default` is undefined — reading it left Apple Health sync silently off.
-    HK = RNHealth?.default ?? RNHealth;
-    if (!HK || typeof HK.initHealthKit !== 'function') HK = null;
+    // The library builds its export with Object.assign({}, NativeModules.AppleHealthKit),
+    // which copies nothing under React Native's new architecture (native modules
+    // are host objects with no own enumerable methods). Call the native module
+    // directly when the library's copy has no methods.
+    const lib = RNHealth?.default ?? RNHealth;
+    const native = (NativeModules as any).AppleHealthKit;
+    HK = lib && typeof lib.initHealthKit === 'function' ? lib : native && typeof native.initHealthKit === 'function' ? native : null;
     const P = RNHealth?.Constants?.Permissions || RNHealth?.HealthKitPermission || {};
     const p = (name: string) => P[name] ?? name;
     PERMS = {

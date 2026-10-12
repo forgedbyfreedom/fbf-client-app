@@ -34,6 +34,7 @@ import { CoachUpdatesCard } from '../../components/dashboard/CoachUpdatesCard';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform } from 'react-native';
 import { useHealthKit } from '../../hooks/useHealthKit';
+import { syncHealth, useHealthSyncStatus } from '../../lib/health-sync';
 import { colors, fontSize, spacing } from '../../lib/theme';
 
 export default function DashboardScreen() {
@@ -44,6 +45,16 @@ export default function DashboardScreen() {
   const router = useRouter();
   const [refreshing, setRefreshing] = React.useState(false);
   const [settingUpCoach, setSettingUpCoach] = React.useState(false);
+  const hkStatus = useHealthSyncStatus();
+  const [hkSyncing, setHkSyncing] = React.useState(false);
+  const syncNow = async () => {
+    setHkSyncing(true);
+    try {
+      await syncHealth(true);
+    } finally {
+      setHkSyncing(false);
+    }
+  };
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -167,9 +178,22 @@ export default function DashboardScreen() {
           {hkAvailable && !hkAuthorized && (
             <TouchableOpacity
               style={styles.healthConnectBtn}
-              onPress={async () => { await hkRequestPermission(); }}
+              onPress={async () => {
+                if (await hkRequestPermission()) syncNow();
+              }}
             >
               <Text style={styles.healthConnectBtnText}>Connect Apple Health</Text>
+            </TouchableOpacity>
+          )}
+          {!!hkStatus && (
+            <Text style={[styles.healthPrivacy, { color: hkStatus.ok ? colors.green : colors.yellow, marginTop: spacing.sm }]}>
+              {hkStatus.message}{' '}
+              {new Date(hkStatus.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+            </Text>
+          )}
+          {hkAvailable && (
+            <TouchableOpacity style={styles.healthConnectBtn} onPress={syncNow} disabled={hkSyncing}>
+              <Text style={styles.healthConnectBtnText}>{hkSyncing ? 'Syncing…' : 'Sync now'}</Text>
             </TouchableOpacity>
           )}
           <Text style={styles.healthPrivacy}>

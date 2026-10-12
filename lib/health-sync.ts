@@ -7,9 +7,48 @@
 //
 // The server keeps one row per member per day and merges each push, so
 // repeated syncs only refine the numbers.
-import { Platform } from 'react-native';
+import { NativeModules, Platform } from 'react-native';
+import { useSyncExternalStore } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { localDateKey, pushHealth } from './fbf-sync';
+import * as Updates from 'expo-updates';
+import { call, localDateKey, pushHealth } from './fbf-sync';
+
+/** What the last sync did, for the home-screen card. */
+export interface HealthSyncStatus {
+  at: number;
+  ok: boolean;
+  message: string;
+  daysSent: number;
+}
+let status: HealthSyncStatus | null = null;
+const statusListeners = new Set<() => void>();
+function setStatus(s: HealthSyncStatus) {
+  status = s;
+  statusListeners.forEach((l) => l());
+}
+export function useHealthSyncStatus(): HealthSyncStatus | null {
+  return useSyncExternalStore(
+    (l) => {
+      statusListeners.add(l);
+      return () => statusListeners.delete(l);
+    },
+    () => status,
+    () => status
+  );
+}
+
+/** Best-effort report to forgedbyfreedom.net so a silent failure is visible there. */
+function report(diag: Record<string, unknown>) {
+  call('/health/diag', {
+    method: 'POST',
+    body: JSON.stringify({
+      ...diag,
+      platform: Platform.OS,
+      update_id: (Updates as any).updateId ?? null,
+      native_module: !!(NativeModules as any).AppleHealthKit,
+    }),
+  }).catch(() => undefined);
+}
 
 const LAST_SYNC_KEY = 'fbf_health_last_sync';
 const LAST_DAY_KEY = 'fbf_health_last_day';
@@ -67,10 +106,14 @@ function q<T>(fn: (opts: any, cb: (err: any, res: T) => void) => void, opts: any
   });
 }
 
+let initError: string | null = null;
 function init(): Promise<boolean> {
   return new Promise((resolve) => {
     if (!HK || !PERMS) return resolve(false);
-    HK.initHealthKit(PERMS.permissions, (err: any) => resolve(!err));
+    HK.initHealthKit(PERMS.permissions, (err: any) => {
+      initError = err ? String(err?.message || err) : null;
+      resolve(!err);
+    });
   });
 }
 
@@ -191,12 +234,22 @@ let running: Promise<boolean> | null = null;
 export function syncHealth(force = false): Promise<boolean> {
   if (running) return running;
   running = (async () => {
-    if (!HK || !PERMS) return false;
+    if (!HK || !PERMS) {
+      const msg = 'Apple Health is not available in this version of the app.';
+      setStatus({ at: Date.now(), ok: false, message: msg, daysSent: 0 });
+      report({ stage: 'module', hk: false, error: msg });
+      return false;
+    }
     if (!force) {
       const last = Number(await AsyncStorage.getItem(LAST_SYNC_KEY)) || 0;
       if (Date.now() - last < MIN_INTERVAL_MS) return false;
     }
-    if (!(await init())) return false;
+    if (!(await init())) {
+      const msg = 'Apple Health access was not granted. Open the Health app → Sharing → Apps → Forged by Freedom and turn on all categories.';
+      setStatus({ at: Date.now(), ok: false, message: msg, daysSent: 0 });
+      report({ stage: 'init', hk: true, init: false, error: initError });
+      return false;
+    }
 
     const today = new Date();
     const yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
@@ -220,13 +273,26 @@ export function syncHealth(force = false): Promise<boolean> {
       days.push(d);
     }
     let pushed = false;
+    let sent = 0;
+    let todayKeys: string[] = [];
     for (const day of days) {
       const key = localDateKey(day);
       const values = { ...(await collectDay(day)), ...(body[key] || {}) };
+      if (key === localDateKey(today)) todayKeys = Object.keys(values);
       if (!Object.keys(values).length) continue;
       await pushHealth(key, values); // throws on failure → no progress saved, retried next open
       pushed = true;
+      sent++;
     }
+    setStatus({
+      at: Date.now(),
+      ok: sent > 0,
+      message: sent
+        ? `Synced ${sent} day${sent === 1 ? '' : 's'} from Apple Health.`
+        : 'Apple Health returned no data. In the Health app → Sharing → Apps → Forged by Freedom, turn on all categories, then tap Sync now.',
+      daysSent: sent,
+    });
+    report({ stage: 'done', hk: true, init: true, days_checked: days.length, days_sent: sent, today_keys: todayKeys.join(',') });
     // Yesterday is complete once today has started; today is redone next pass.
     await AsyncStorage.setItem(LAST_DAY_KEY, localDateKey(yesterday));
     await AsyncStorage.setItem(LAST_SYNC_KEY, String(Date.now()));
@@ -234,6 +300,9 @@ export function syncHealth(force = false): Promise<boolean> {
   })()
     .catch((e) => {
       console.warn('[health-sync] failed', e?.message || e);
+      const msg = e?.message || String(e);
+      setStatus({ at: Date.now(), ok: false, message: `Sync failed: ${msg}`, daysSent: 0 });
+      report({ stage: 'error', error: msg });
       return false;
     })
     .finally(() => {

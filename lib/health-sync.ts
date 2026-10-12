@@ -1,7 +1,9 @@
 // Pushes Apple Health data to forgedbyfreedom.net so coaches see it without the
-// member typing anything. Runs when the app comes to the foreground (throttled)
-// and syncs today plus yesterday, because yesterday's steps/energy keep
-// growing after midnight-adjacent opens and sleep lands the next morning.
+// member typing anything. Runs when the app opens or comes to the foreground
+// (throttled). Each pass sends today, yesterday (whose steps/energy keep
+// growing late and whose sleep lands the next morning) and every day since the
+// last successful sync — up to two weeks — so days the app wasn't opened are
+// still filled in.
 //
 // The server keeps one row per member per day and merges each push, so
 // repeated syncs only refine the numbers.
@@ -10,7 +12,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { localDateKey, pushHealth } from './fbf-sync';
 
 const LAST_SYNC_KEY = 'fbf_health_last_sync';
+const LAST_DAY_KEY = 'fbf_health_last_day';
 const MIN_INTERVAL_MS = 15 * 60 * 1000;
+const MAX_BACKFILL_DAYS = 14;
 
 let HK: any = null;
 let PERMS: { permissions: { read: string[]; write: string[] } } | null = null;
@@ -18,8 +22,11 @@ let PERMS: { permissions: { read: string[]; write: string[] } } | null = null;
 if (Platform.OS === 'ios') {
   try {
     const RNHealth = require('react-native-health');
-    HK = RNHealth.default;
-    const P = RNHealth.HealthKitPermission || {};
+    // The library does `module.exports = HealthKit` (no default export), so
+    // `.default` is undefined — reading it left Apple Health sync silently off.
+    HK = RNHealth?.default ?? RNHealth;
+    if (!HK || typeof HK.initHealthKit !== 'function') HK = null;
+    const P = RNHealth?.Constants?.Permissions || RNHealth?.HealthKitPermission || {};
     const p = (name: string) => P[name] ?? name;
     PERMS = {
       permissions: {
@@ -193,18 +200,35 @@ export function syncHealth(force = false): Promise<boolean> {
 
     const today = new Date();
     const yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
-    const [t, y, body] = await Promise.all([collectDay(today), collectDay(yesterday), latestBody(today, yesterday)]);
+    const body = await latestBody(today, yesterday);
 
-    const payloads: Array<[string, Record<string, unknown>]> = [
-      [localDateKey(yesterday), { ...y, ...(body[localDateKey(yesterday)] || {}) }],
-      [localDateKey(today), { ...t, ...(body[localDateKey(today)] || {}) }],
-    ];
+    // Oldest day to send: the day after the last fully synced day (it may have
+    // been partial), never more than two weeks back, never later than yesterday.
+    const lastDay = await AsyncStorage.getItem(LAST_DAY_KEY);
+    const oldest = new Date(today.getFullYear(), today.getMonth(), today.getDate() - MAX_BACKFILL_DAYS);
+    let start = yesterday;
+    if (!lastDay) {
+      start = oldest; // first run after this update: backfill two weeks
+    } else {
+      const [y, m, d] = lastDay.split('-').map(Number);
+      const ld = new Date(y, (m || 1) - 1, d || 1);
+      if (ld < start) start = ld < oldest ? oldest : ld;
+    }
+
+    const days: Date[] = [];
+    for (let d = new Date(start); d <= today; d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1)) {
+      days.push(d);
+    }
     let pushed = false;
-    for (const [date, values] of payloads) {
+    for (const day of days) {
+      const key = localDateKey(day);
+      const values = { ...(await collectDay(day)), ...(body[key] || {}) };
       if (!Object.keys(values).length) continue;
-      await pushHealth(date, values); // throws on failure → no timestamp update, retried next open
+      await pushHealth(key, values); // throws on failure → no progress saved, retried next open
       pushed = true;
     }
+    // Yesterday is complete once today has started; today is redone next pass.
+    await AsyncStorage.setItem(LAST_DAY_KEY, localDateKey(yesterday));
     await AsyncStorage.setItem(LAST_SYNC_KEY, String(Date.now()));
     return pushed;
   })()

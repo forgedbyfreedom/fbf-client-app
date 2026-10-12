@@ -52,7 +52,8 @@ function report(diag: Record<string, unknown>) {
 }
 
 const LAST_SYNC_KEY = 'fbf_health_last_sync';
-const LAST_DAY_KEY = 'fbf_health_last_day';
+// v2: re-send the last two weeks once so workouts (read correctly from this build) backfill.
+const LAST_DAY_KEY = 'fbf_health_last_day_v2';
 const MIN_INTERVAL_MS = 15 * 60 * 1000;
 const MAX_BACKFILL_DAYS = 14;
 
@@ -130,6 +131,8 @@ function dayBounds(day: Date) {
   return { start, end: end > now ? now : end };
 }
 
+let lastCounts = { sleep: 0, workouts: 0 };
+
 const sumValues = (rows: Array<{ value: number }> | null) =>
   (rows || []).reduce((a, r) => a + (Number(r.value) || 0), 0);
 
@@ -154,7 +157,8 @@ async function collectDay(day: Date): Promise<Record<string, unknown>> {
         endDate: new Date(start.getTime() + 12 * 3600 * 1000).toISOString(),
         limit: 200,
       }),
-      q<Array<any>>(HK.getSamples, { ...range, type: 'Workout' }),
+      // getSamples only handles quantity types; workouts need the anchored query.
+      q<{ data?: Array<any> }>(HK.getAnchoredWorkouts, range),
       // CGM (e.g. Lingo) writes many readings a day; we send the daily average + range.
       q<Array<{ value: number }>>(HK.getBloodGlucoseSamples, { ...range, unit: 'mgPerdL', limit: 2000 }),
     ]);
@@ -203,8 +207,10 @@ async function collectDay(day: Date): Promise<Record<string, unknown>> {
     if (total > 0) out.sleep_hours = Math.round((total / 3600000) * 100) / 100;
   }
 
-  if (workouts?.length) {
-    out.workouts = workouts.slice(0, 20).map((w) => ({
+  const wk = workouts?.data || [];
+  lastCounts = { sleep: sleepRows?.length || 0, workouts: wk.length };
+  if (wk.length) {
+    out.workouts = wk.slice(0, 20).map((w) => ({
       type: String(w.activityName || w.activityId || 'Workout'),
       minutes: Math.round((Number(w.duration) || 0) / 60),
       kcal: Math.round(Number(w.calories) || 0),
@@ -281,9 +287,11 @@ export function syncHealth(force = false): Promise<boolean> {
     let pushed = false;
     let sent = 0;
     let todayKeys: string[] = [];
+    let yCounts = { sleep: 0, workouts: 0 };
     for (const day of days) {
       const key = localDateKey(day);
       const values = { ...(await collectDay(day)), ...(body[key] || {}) };
+      if (key === localDateKey(yesterday)) yCounts = { ...lastCounts };
       if (key === localDateKey(today)) todayKeys = Object.keys(values);
       if (!Object.keys(values).length) continue;
       await pushHealth(key, values); // throws on failure → no progress saved, retried next open
@@ -298,7 +306,7 @@ export function syncHealth(force = false): Promise<boolean> {
         : 'Apple Health returned no data. In the Health app → Sharing → Apps → Forged by Freedom, turn on all categories, then tap Sync now.',
       daysSent: sent,
     });
-    report({ stage: 'done', hk: true, init: true, days_checked: days.length, days_sent: sent, today_keys: todayKeys.join(',') });
+    report({ stage: 'done', hk: true, init: true, days_checked: days.length, days_sent: sent, today_keys: todayKeys.join(','), yesterday_sleep_samples: yCounts.sleep, yesterday_workouts: yCounts.workouts });
     // Yesterday is complete once today has started; today is redone next pass.
     await AsyncStorage.setItem(LAST_DAY_KEY, localDateKey(yesterday));
     await AsyncStorage.setItem(LAST_SYNC_KEY, String(Date.now()));

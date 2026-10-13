@@ -307,12 +307,12 @@ export function syncHealth(force = false): Promise<boolean> {
     // Say what came across, so a missing category is obvious on the card.
     const detail =
       ` Sleep last night: ${lastNightHours != null ? `${lastNightHours} h` : 'none in Apple Health'}.` +
-      ` Workouts: ${totalWorkouts ? totalWorkouts : 'none in Apple Health'}${days.length > 1 ? ` (last ${days.length} days)` : ''}.`;
+      ` Workouts yesterday + today: ${totalWorkouts ? totalWorkouts : 'none in Apple Health'}.`;
     setStatus({
       at: Date.now(),
       ok: sent > 0,
       message: sent
-        ? `Synced ${sent} day${sent === 1 ? '' : 's'} from Apple Health.${detail}`
+        ? `Apple Health is up to date.${detail}`
         : 'Apple Health returned no data. In the Health app → Sharing → Apps → Forged by Freedom, turn on all categories, then tap Sync now.',
       daysSent: sent,
     });

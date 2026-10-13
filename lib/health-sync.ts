@@ -113,6 +113,46 @@ function q<T>(fn: (opts: any, cb: (err: any, res: T) => void) => void, opts: any
   });
 }
 
+/** Like q(), but keeps the error text so a refused query is told apart from an empty one. */
+function qe<T>(fn: any, opts: any): Promise<{ res: T | null; err: string | null }> {
+  return new Promise((resolve) => {
+    if (typeof fn !== 'function') return resolve({ res: null, err: 'method missing' });
+    try {
+      fn.call(HK, opts, (err: any, res: T) =>
+        resolve(err ? { res: null, err: String(err?.message || JSON.stringify(err)).slice(0, 120) } : { res, err: null })
+      );
+    } catch (e: any) {
+      resolve({ res: null, err: String(e?.message || e).slice(0, 120) });
+    }
+  });
+}
+
+/** Wide look at sleep and workouts (30 days) to see whether Apple Health holds any. */
+async function probeSleepWorkouts() {
+  const end = new Date();
+  const start = new Date(end.getTime() - 30 * 24 * 3600 * 1000);
+  const range = { startDate: start.toISOString(), endDate: end.toISOString() };
+  const [sl, wk] = await Promise.all([
+    qe<Array<{ value: string; endDate: string }>>(HK.getSleepSamples, { ...range, limit: 2000 }),
+    qe<{ data?: Array<any> }>(HK.getAnchoredWorkouts, range),
+  ]);
+  const sleepRows = sl.res || [];
+  const kinds = Array.from(new Set(sleepRows.map((r) => String(r.value)))).join('/');
+  const lastSleep = sleepRows.map((r) => r.endDate).sort().pop() || null;
+  const wRows = wk.res?.data || [];
+  const lastWorkout = wRows.map((w) => String(w.start || '')).sort().pop() || null;
+  return {
+    sleep30: sleepRows.length,
+    sleep_kinds: kinds,
+    sleep_last: lastSleep,
+    sleep_err: sl.err,
+    workouts30: wRows.length,
+    workout_last: lastWorkout,
+    workout_err: wk.err,
+    wk_raw_keys: wk.res ? Object.keys(wk.res as any).join(',') : null,
+  };
+}
+
 let initError: string | null = null;
 function init(): Promise<boolean> {
   return new Promise((resolve) => {
@@ -304,10 +344,13 @@ export function syncHealth(force = false): Promise<boolean> {
       pushed = true;
       sent++;
     }
+    const probe = await probeSleepWorkouts();
     // Say what came across, so a missing category is obvious on the card.
     const detail =
       ` Sleep last night: ${lastNightHours != null ? `${lastNightHours} h` : 'none in Apple Health'}.` +
-      ` Workouts yesterday + today: ${totalWorkouts ? totalWorkouts : 'none in Apple Health'}.`;
+      ` Workouts yesterday + today: ${totalWorkouts ? totalWorkouts : 'none in Apple Health'}.` +
+      ` (30-day check: ${probe.sleep_err ? `sleep error: ${probe.sleep_err}` : `${probe.sleep30} sleep records`}, ` +
+      `${probe.workout_err ? `workout error: ${probe.workout_err}` : `${probe.workouts30} workouts`}.)`;
     setStatus({
       at: Date.now(),
       ok: sent > 0,
@@ -317,7 +360,7 @@ export function syncHealth(force = false): Promise<boolean> {
       daysSent: sent,
     });
     // Counts first: the site's admin view only shows the start of this record.
-    report({ stage: 'done', sleep_records: totalSleepRecords, workouts_found: totalWorkouts, last_night_h: lastNightHours, yesterday_sleep_samples: yCounts.sleep, yesterday_workouts: yCounts.workouts, days_checked: days.length, days_sent: sent, hk: true, init: true, today_keys: todayKeys.join(',') });
+    report({ stage: 'done', ...probe, sleep_records: totalSleepRecords, workouts_found: totalWorkouts, last_night_h: lastNightHours, yesterday_sleep_samples: yCounts.sleep, yesterday_workouts: yCounts.workouts, days_checked: days.length, days_sent: sent, hk: true, init: true, today_keys: todayKeys.join(',') });
     // Yesterday is complete once today has started; today is redone next pass.
     await AsyncStorage.setItem(LAST_DAY_KEY, localDateKey(yesterday));
     await AsyncStorage.setItem(LAST_SYNC_KEY, String(Date.now()));

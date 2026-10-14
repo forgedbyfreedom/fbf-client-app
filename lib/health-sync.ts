@@ -12,6 +12,7 @@ import { useSyncExternalStore } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Updates from 'expo-updates';
 import { call, localDateKey, pushHealth } from './fbf-sync';
+import type { WorkoutLog } from '../types';
 
 /** What the last sync did, for the home-screen card. */
 export interface HealthSyncStatus {
@@ -92,7 +93,8 @@ if (Platform.OS === 'ios') {
           p('BodyFatPercentage'),
           p('BloodGlucose'),
         ],
-        write: [],
+        // Workouts logged in this app are saved to Apple Health too.
+        write: [p('Workout')],
       },
     };
   } catch {
@@ -277,6 +279,58 @@ async function latestBody(today: Date, yesterday: Date) {
   return byDay;
 }
 
+/** Sensible start/end for a logged session: a draft reopened days later must not read as an 8,000-minute workout. */
+export function sessionWindow(log: WorkoutLog): { start: Date; end: Date; minutes: number } {
+  const end = new Date(log.completed_at || log.started_at);
+  let start = new Date(log.started_at || end.toISOString());
+  let minutes = Math.round((end.getTime() - start.getTime()) / 60000);
+  if (!(minutes > 0) || minutes > 240) {
+    const sets = log.exercises.reduce((n, e) => n + e.sets.filter((x) => x.completed).length, 0);
+    minutes = Math.min(150, Math.max(20, sets * 3));
+    start = new Date(end.getTime() - minutes * 60000);
+  }
+  return { start, end, minutes };
+}
+
+const SAVED_KEY = 'fbf_health_saved_workouts_v1';
+
+/** Save logged FBF workouts to Apple Health once each (Health → Workouts, Fitness rings). */
+async function saveLogsToHealth(logs: WorkoutLog[]): Promise<number> {
+  if (!HK || typeof HK.saveWorkout !== 'function') return 0;
+  let saved: string[] = [];
+  try {
+    saved = JSON.parse((await AsyncStorage.getItem(SAVED_KEY)) || '[]');
+  } catch {
+    saved = [];
+  }
+  const cutoff = Date.now() - MAX_BACKFILL_DAYS * 24 * 3600 * 1000;
+  let n = 0;
+  for (const log of logs) {
+    if (saved.includes(log.id)) continue;
+    const { start, end } = sessionWindow(log);
+    if (end.getTime() < cutoff) continue;
+    const r = await qe<string>(HK.saveWorkout, {
+      type: 'TraditionalStrengthTraining',
+      startDate: start.toISOString(),
+      endDate: end.toISOString(),
+    });
+    if (r.err) {
+      report({ stage: 'save_workout', error: r.err });
+      break; // write access off: don't hammer it
+    }
+    saved.push(log.id);
+    n++;
+  }
+  if (n) await AsyncStorage.setItem(SAVED_KEY, JSON.stringify(saved.slice(-500)));
+  return n;
+}
+
+/** Called right after a workout is finished in the app. */
+export async function saveWorkoutToHealth(log: WorkoutLog): Promise<void> {
+  if (!HK || !PERMS || !(await init())) return;
+  await saveLogsToHealth([log]);
+}
+
 let running: Promise<boolean> | null = null;
 
 /**
@@ -344,13 +398,26 @@ export function syncHealth(force = false): Promise<boolean> {
       pushed = true;
       sent++;
     }
+    // Workouts logged in this app (they live on forgedbyfreedom.net).
+    let fbfLogs: WorkoutLog[] = [];
+    try {
+      fbfLogs = (await call<{ logs: WorkoutLog[] }>('/workouts')).logs || [];
+    } catch {
+      fbfLogs = [];
+    }
+    const recentKeys = new Set([localDateKey(today), localDateKey(yesterday)]);
+    const weekAgo = localDateKey(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6));
+    const fbfRecent = fbfLogs.filter((l) => recentKeys.has(l.date)).length;
+    const fbfWeek = fbfLogs.filter((l) => l.date >= weekAgo).length;
+    const savedToHealth = await saveLogsToHealth(fbfLogs);
     const probe = await probeSleepWorkouts();
     // Say what came across, so a missing category is obvious on the card.
     const detail =
       ` Sleep last night: ${lastNightHours != null ? `${lastNightHours} h` : 'none in Apple Health'}.` +
-      ` Workouts yesterday + today: ${totalWorkouts ? totalWorkouts : 'none in Apple Health'}.` +
-      ` (30-day check: ${probe.sleep_err ? `sleep error: ${probe.sleep_err}` : `${probe.sleep30} sleep records`}, ` +
-      `${probe.workout_err ? `workout error: ${probe.workout_err}` : `${probe.workouts30} workouts`}.)`;
+      ` Workouts logged: ${fbfRecent} yesterday + today, ${fbfWeek} this week` +
+      `${totalWorkouts ? ` (+${totalWorkouts} from Apple Health)` : ''}.` +
+      `${savedToHealth ? ` Saved ${savedToHealth} to Apple Health.` : ''}` +
+      `${probe.sleep_err ? ` Sleep read error: ${probe.sleep_err}.` : lastNightHours == null ? ` (Apple Health has ${probe.sleep30} sleep records in 30 days.)` : ''}`;
     setStatus({
       at: Date.now(),
       ok: sent > 0,
@@ -360,7 +427,7 @@ export function syncHealth(force = false): Promise<boolean> {
       daysSent: sent,
     });
     // Counts first: the site's admin view only shows the start of this record.
-    report({ stage: 'done', ...probe, sleep_records: totalSleepRecords, workouts_found: totalWorkouts, last_night_h: lastNightHours, yesterday_sleep_samples: yCounts.sleep, yesterday_workouts: yCounts.workouts, days_checked: days.length, days_sent: sent, hk: true, init: true, today_keys: todayKeys.join(',') });
+    report({ stage: 'done', fbf_recent: fbfRecent, fbf_week: fbfWeek, saved_to_health: savedToHealth, ...probe, sleep_records: totalSleepRecords, workouts_found: totalWorkouts, last_night_h: lastNightHours, yesterday_sleep_samples: yCounts.sleep, yesterday_workouts: yCounts.workouts, days_checked: days.length, days_sent: sent, hk: true, init: true, today_keys: todayKeys.join(',') });
     // Yesterday is complete once today has started; today is redone next pass.
     await AsyncStorage.setItem(LAST_DAY_KEY, localDateKey(yesterday));
     await AsyncStorage.setItem(LAST_SYNC_KEY, String(Date.now()));

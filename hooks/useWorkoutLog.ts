@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from './useAuth';
 import { fetchWorkouts, pushWorkout } from '../lib/fbf-sync';
+import { saveWorkoutToHealth, sessionWindow } from '../lib/health-sync';
 import {
   WorkoutDay,
   ExerciseLog,
@@ -250,6 +251,11 @@ export function useWorkoutLog(): UseWorkoutLogReturn {
       prs_hit: newPRs,
     };
 
+    // A draft left open for days must not log as a multi-day session.
+    const win = sessionWindow(log);
+    log.started_at = win.start.toISOString();
+    log.duration_min = win.minutes;
+
     // Update local logs
     const updatedLogs = [log, ...workoutLogs];
     setWorkoutLogs(updatedLogs);
@@ -284,6 +290,9 @@ export function useWorkoutLog(): UseWorkoutLogReturn {
     } catch {
       // retried on next history load
     }
+
+    // Also into Apple Health (Health → Workouts, Fitness rings); best effort.
+    saveWorkoutToHealth(log).catch(() => undefined);
 
     // Reset state
     setExercises([]);

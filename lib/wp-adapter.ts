@@ -41,7 +41,12 @@ interface WPCheckin {
   cardio_min?: number | null;
   trained?: boolean;
   notes?: string;
+  // Extended check-in fields (App Bridge + FBF Health Sync 1.3.3+).
+  [key: string]: unknown;
 }
+
+const n = (v: unknown): number | null => (typeof v === 'number' && isFinite(v) ? v : v != null && v !== '' && isFinite(Number(v)) ? Number(v) : null);
+const t = (v: unknown): string | null => (typeof v === 'string' && v.trim() ? v : null);
 
 /**
  * Best-effort parse of a coach-written plain-text program into WorkoutDay[].
@@ -121,11 +126,38 @@ export function mapCheckin(c: WPCheckin, i: number): Checkin {
     id: `${c.date || 'chk'}-${i}`,
     client_id: '',
     date: c.date || (c.time || '').slice(0, 10),
-    weight_lbs: c.weight ?? null,
-    water_oz: c.water_oz ?? null,
-    cardio_minutes: c.cardio_min ?? null,
+    weight_lbs: n(c.weight),
+    body_temp: n(c.body_temp),
+    blood_pressure_systolic: n(c.blood_pressure_systolic),
+    blood_pressure_diastolic: n(c.blood_pressure_diastolic),
+    blood_glucose: n(c.blood_glucose),
+    resting_heart_rate: n(c.resting_heart_rate),
+    avg_heart_rate: n(c.avg_heart_rate),
+    mood_rating: n(c.mood_rating),
+    mood_notes: t(c.mood_notes),
+    stress_level: n(c.stress_level),
+    calories: n(c.calories),
+    protein_g: n(c.protein_g),
+    carbs_g: n(c.carbs_g),
+    fat_g: n(c.fat_g),
+    water_oz: n(c.water_oz),
+    steps: n(c.steps),
+    sleep_hours: n(c.sleep_hours),
+    sleep_quality: n(c.sleep_quality),
+    sleep_time: t(c.sleep_time),
+    wake_time: t(c.wake_time),
+    rpe: n(c.rpe),
+    performance_rating: n(c.performance_rating),
+    cardio_minutes: n(c.cardio_min),
+    workout_duration_min: n(c.workout_duration_min),
+    estimated_calories_burned: n(c.estimated_calories_burned),
     training_done: !!c.trained,
-    general_notes: c.notes || null,
+    training_type: t(c.training_type),
+    workout_notes: t(c.workout_notes),
+    workout_description: t(c.workout_description),
+    side_effects_notes: t(c.side_effects_notes),
+    supplement_compliance: !!c.supplement_compliance,
+    general_notes: t(c.notes),
     created_at: c.time || '',
   } as unknown as Checkin;
 }
@@ -233,9 +265,8 @@ export async function fetchClientMe(): Promise<ClientMeResponse> {
     workout_program: workoutDays ?? parseProgramText(programText),
     cardio_protocol: null,
     medical_protocol: null,
-    last_weight: rawCheckins.length
-      ? rawCheckins[rawCheckins.length - 1].weight ?? null
-      : null,
+    // Most recent check-in that actually has a weight.
+    last_weight: [...rawCheckins].reverse().map((c) => n(c.weight)).find((w) => w != null) ?? null,
     created_at: '',
     // Extra fields carried through for screens that want the raw text.
     program_name: me.program_name,

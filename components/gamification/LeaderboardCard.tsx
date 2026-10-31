@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   pillTextActive: {
-    color: '#fff',
+    color: colors.onAccent,
   },
   loader: {
     paddingVertical: spacing.xl,

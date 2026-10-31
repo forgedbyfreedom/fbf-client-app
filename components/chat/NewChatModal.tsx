@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   modeBtnTextActive: {
-    color: '#fff',
+    color: colors.onAccent,
   },
   searchInput: {
     backgroundColor: colors.surface,

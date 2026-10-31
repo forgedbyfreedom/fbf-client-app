@@ -45,7 +45,7 @@ export function Button({
       activeOpacity={0.7}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? '#fff' : colors.accent} />
+        <ActivityIndicator color={variant === 'primary' ? colors.onAccent : colors.accent} />
       ) : (
         <Text
           style={[
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   primaryText: {
-    color: '#ffffff',
+    color: colors.onAccent,
   },
   secondaryText: {
     color: colors.accent,

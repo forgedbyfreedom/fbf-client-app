@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
   newChatBtnText: {
     fontSize: fontSize.md,
     fontWeight: '700',
-    color: '#fff',
+    color: colors.onAccent,
   },
   messageList: {
     padding: spacing.md,

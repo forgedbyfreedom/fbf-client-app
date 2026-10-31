@@ -36,7 +36,8 @@ export function SectionCard({ eyebrow, title, subtitle, right, children, style, 
 }
 
 export function Eyebrow({ children, style }: { children: React.ReactNode; style?: object }) {
-  return <Text style={[styles.eyebrow, style]}>{String(children).toUpperCase()}</Text>;
+  const text = React.Children.toArray(children).join('');
+  return <Text style={[styles.eyebrow, style]}>{text.toUpperCase()}</Text>;
 }
 
 export function DisplayText({ children, size = 34, style }: { children: React.ReactNode; size?: number; style?: object }) {

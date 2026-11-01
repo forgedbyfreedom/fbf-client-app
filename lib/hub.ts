@@ -273,3 +273,13 @@ export async function uploadAvatar(photo: PickedPhoto): Promise<string | null> {
 export async function deleteAvatar(): Promise<void> {
   await apiFetch('/profile/avatar', { method: 'DELETE' });
 }
+
+/* ---------------- voice (speech-to-text on the server) ---------------- */
+
+export async function transcribeAudio(clip: { uri: string; file?: Blob; name: string; type: string }, context: 'meal' = 'meal'): Promise<string> {
+  const form = new FormData();
+  form.append('context', context);
+  await appendFile(form, 'audio', clip, clip.name, clip.type);
+  const r = await multipart<{ text: string }>('/voice/transcribe', form);
+  return r.text;
+}

@@ -201,6 +201,9 @@ export default function TodayScreen() {
           }
           onPress={() => router.push('/(tabs)/meals')}
         />
+        <TouchableOpacity onPress={() => router.push('/(tabs)/meals')} style={styles.skipBtn} accessibilityRole="button">
+          <Text style={styles.skipText}><Ionicons name="mic-outline" size={13} color={colors.accentText} /> Ate something else? Say it</Text>
+        </TouchableOpacity>
         <PlanRow
           n={3}
           title={plan?.supplements ? `${plan.supplements} supplements` : 'Supplements & protocol'}

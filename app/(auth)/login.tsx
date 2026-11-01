@@ -43,7 +43,8 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : Platform.OS === 'android' ? 'height' : undefined}
+      enabled={Platform.OS !== 'web'}
     >
       <ScrollView
         contentContainerStyle={styles.scroll}
@@ -51,16 +52,8 @@ export default function LoginScreen() {
       >
         <View style={styles.header}>
           {Platform.OS === 'web' ? (
-            // Web: the 3D shield intro plays once (muted) and rests on the finished shield, which is also the poster.
-            React.createElement('video', {
-              src: '/fbf-shield-intro.mp4',
-              poster: '/fbf-shield-intro.jpg',
-              autoPlay: true,
-              muted: true,
-              playsInline: true,
-              'aria-label': 'Forged by Freedom',
-              style: { width: '100%', maxWidth: 440, aspectRatio: '16 / 9', borderRadius: 16, objectFit: 'cover', display: 'block', marginBottom: 8, background: '#000' },
-            })
+            // Web: the still gold shield (no video).
+            <Image source={{ uri: '/fbf-shield-intro.jpg' }} style={styles.webPoster} resizeMode="cover" accessibilityLabel="Forged by Freedom" />
           ) : (
             <Image source={require('../../assets/fbf-shield.png')} style={styles.logo} resizeMode="contain" />
           )}
@@ -133,6 +126,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing.xxl,
   },
+  webPoster: { width: '100%', maxWidth: 440, aspectRatio: 16 / 9, borderRadius: 16, marginBottom: spacing.sm },
   logo: {
     width: 230,
     height: 216,

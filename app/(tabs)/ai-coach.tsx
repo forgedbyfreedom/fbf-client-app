@@ -288,7 +288,7 @@ export default function AICoachScreen() {
           127M+ words analyzed across 14K+ expert transcripts, 100+ sources — and growing
         </Text>
 
-        <View style={{ backgroundColor: 'rgba(255,106,0,0.08)', borderWidth: 1, borderColor: 'rgba(255,106,0,0.2)', borderRadius: 8, padding: 10, marginTop: -4 }}>
+        <View style={{ backgroundColor: 'rgba(212, 169, 58, 0.08)', borderWidth: 1, borderColor: 'rgba(212, 169, 58, 0.2)', borderRadius: 8, padding: 10, marginTop: -4 }}>
           <Text style={{ fontSize: 11, color: '#888', lineHeight: 16, textAlign: 'center' }}>
             Educational & research purposes only. Not medical advice. No recommendations for human consumption are made or implied. Consult a physician before making health changes.
           </Text>
@@ -533,7 +533,7 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   tabTextActive: {
-    color: '#fff',
+    color: colors.onAccent,
   },
   chipsScroll: {
     marginHorizontal: -spacing.lg,

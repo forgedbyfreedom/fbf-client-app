@@ -44,7 +44,17 @@
     },
     "web": {
       "favicon": "./assets/favicon.png",
-      "bundler": "metro"
+      "bundler": "metro",
+      "output": "single",
+      "name": "Forged by Freedom",
+      "shortName": "FBF",
+      "themeColor": "#0a0a0b",
+      "backgroundColor": "#0a0a0b",
+      "display": "standalone",
+      "orientation": "portrait",
+      "startUrl": "/",
+      "lang": "en",
+      "description": "Forged by Freedom coaching \u2014 your plan, check-ins and progress."
     },
     "plugins": [
       "expo-router",

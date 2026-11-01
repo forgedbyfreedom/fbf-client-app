@@ -189,7 +189,7 @@ export default function CoachScreen() {
             >
               {busy === 'ask' ? (
                 <>
-                  <ActivityIndicator color="#fff" />
+                  <ActivityIndicator color={colors.onAccent} />
                   <Text style={styles.primaryText}>Working it out…</Text>
                 </>
               ) : (
@@ -242,7 +242,7 @@ export default function CoachScreen() {
                 <Text style={styles.secondaryText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.primary, styles.flex, !!busy && styles.off]} disabled={!!busy} onPress={confirm}>
-                {busy === 'confirm' ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryText}>Confirm</Text>}
+                {busy === 'confirm' ? <ActivityIndicator color={colors.onAccent} /> : <Text style={styles.primaryText}>Confirm</Text>}
               </TouchableOpacity>
             </View>
           </View>
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   primary: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accent, borderRadius: borderRadius.md, paddingVertical: spacing.md, paddingHorizontal: spacing.lg },
-  primaryText: { color: '#fff', fontWeight: '700', fontSize: fontSize.md },
+  primaryText: { color: colors.onAccent, fontWeight: '700', fontSize: fontSize.md },
   secondary: { alignItems: 'center', justifyContent: 'center', borderRadius: borderRadius.md, borderWidth: 1, borderColor: colors.border, paddingVertical: spacing.md, paddingHorizontal: spacing.lg },
   secondaryText: { color: colors.textSecondary, fontWeight: '600', fontSize: fontSize.md },
   off: { opacity: 0.5 },

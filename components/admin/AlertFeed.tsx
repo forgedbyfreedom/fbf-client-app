@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
   },
   alertUnread: {
     borderColor: colors.accent,
-    backgroundColor: 'rgba(255, 106, 0, 0.05)',
+    backgroundColor: 'rgba(212, 169, 58, 0.05)',
   },
   tierBadge: {
     width: 36,

@@ -237,6 +237,6 @@ export const CATEGORY_CONFIG: Record<GroceryCategory, { label: string; color: st
   pantry: { label: 'Pantry', color: '#f97316' },
   spices: { label: 'Spices & Seasonings', color: '#a855f7' },
   beverages: { label: 'Beverages', color: '#ec4899' },
-  supplements: { label: 'Supplements', color: '#FF6A00' },
+  supplements: { label: 'Supplements', color: '#D4A93A' },
   other: { label: 'Other', color: '#888888' },
 };

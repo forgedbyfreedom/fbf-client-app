@@ -149,6 +149,6 @@ const styles = StyleSheet.create({
   prText: {
     fontSize: 9,
     fontWeight: '800',
-    color: '#ffffff',
+    color: colors.onAccent,
   },
 });

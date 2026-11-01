@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
   saveBtnText: {
     fontSize: fontSize.md,
     fontWeight: '700',
-    color: '#fff',
+    color: colors.onAccent,
   },
   deleteActionBtn: {
     flexDirection: 'row',

@@ -1,6 +1,6 @@
 // WordPress token auth for the FBF App Bridge (forgedbyfreedom.net).
 // Replaces Supabase auth: same login/logout/session surface, one backend.
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from './secure-storage';
 
 const WP_URL = process.env.EXPO_PUBLIC_WP_URL || 'https://forgedbyfreedom.net';
 const API_ROOT = `${WP_URL}/wp-json/fbf/v1`;
@@ -17,11 +17,11 @@ export interface WPUser {
 }
 
 export async function getToken(): Promise<string | null> {
-  return SecureStore.getItemAsync(TOKEN_KEY);
+  return SecureStore.getItem(TOKEN_KEY);
 }
 
 export async function getCachedUser(): Promise<WPUser | null> {
-  const raw = await SecureStore.getItemAsync(USER_KEY);
+  const raw = await SecureStore.getItem(USER_KEY);
   return raw ? (JSON.parse(raw) as WPUser) : null;
 }
 
@@ -35,8 +35,8 @@ export async function login(email: string, password: string): Promise<WPUser> {
   if (!res.ok) {
     throw new Error(body?.message || `Login failed (${res.status})`);
   }
-  await SecureStore.setItemAsync(TOKEN_KEY, body.token);
-  await SecureStore.setItemAsync(USER_KEY, JSON.stringify(body.user));
+  await SecureStore.setItem(TOKEN_KEY, body.token);
+  await SecureStore.setItem(USER_KEY, JSON.stringify(body.user));
   return body.user as WPUser;
 }
 
@@ -52,8 +52,8 @@ export async function logout(): Promise<void> {
       // network failure on logout is non-fatal; token is discarded locally
     }
   }
-  await SecureStore.deleteItemAsync(TOKEN_KEY);
-  await SecureStore.deleteItemAsync(USER_KEY);
+  await SecureStore.deleteItem(TOKEN_KEY);
+  await SecureStore.deleteItem(USER_KEY);
 }
 
 export async function isLoggedIn(): Promise<boolean> {

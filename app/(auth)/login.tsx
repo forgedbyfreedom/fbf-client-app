@@ -6,6 +6,7 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  useWindowDimensions,
   ScrollView,
   TouchableOpacity,
   Linking,
@@ -16,6 +17,8 @@ import { Input } from '../../components/ui/Input';
 import { colors, fontSize, spacing } from '../../lib/theme';
 
 export default function LoginScreen() {
+  const { width: winW } = useWindowDimensions();
+  const wideWeb = winW >= 768;
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -43,24 +46,30 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : Platform.OS === 'android' ? 'height' : undefined}
+      enabled={Platform.OS !== 'web'}
     >
       <ScrollView
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          {Platform.OS === 'web' ? (
-            // Web: the 3D shield intro plays once (muted) and rests on the finished shield, which is also the poster.
+          {Platform.OS === 'web' && wideWeb ? (
+            // Desktop web: the 3D shield intro plays once (muted) and rests on the finished shield.
+            // pointerEvents none so the video layer can never take a tap meant for the form.
             React.createElement('video', {
               src: '/fbf-shield-intro.mp4',
               poster: '/fbf-shield-intro.jpg',
               autoPlay: true,
               muted: true,
               playsInline: true,
-              'aria-label': 'Forged by Freedom',
-              style: { width: '100%', maxWidth: 440, aspectRatio: '16 / 9', borderRadius: 16, objectFit: 'cover', display: 'block', marginBottom: 8, background: '#000' },
+              'aria-hidden': true,
+              tabIndex: -1,
+              style: { width: '100%', maxWidth: 440, aspectRatio: '16 / 9', borderRadius: 16, objectFit: 'cover', display: 'block', marginBottom: 8, background: '#000', pointerEvents: 'none' },
             })
+          ) : Platform.OS === 'web' ? (
+            // Phones (Safari): a still image — no video layer over the sign-in form.
+            <Image source={{ uri: '/fbf-shield-intro.jpg' }} style={styles.webPoster} resizeMode="cover" accessibilityLabel="Forged by Freedom" />
           ) : (
             <Image source={require('../../assets/fbf-shield.png')} style={styles.logo} resizeMode="contain" />
           )}
@@ -133,6 +142,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing.xxl,
   },
+  webPoster: { width: '100%', maxWidth: 440, aspectRatio: 16 / 9, borderRadius: 16, marginBottom: spacing.sm },
   logo: {
     width: 230,
     height: 216,

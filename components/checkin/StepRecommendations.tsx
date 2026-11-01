@@ -162,9 +162,9 @@ export function StepRecommendations() {
 
 const styles = StyleSheet.create({
   headerCard: {
-    backgroundColor: 'rgba(255,106,0,0.06)',
+    backgroundColor: 'rgba(212, 169, 58, 0.06)',
     borderWidth: 1,
-    borderColor: 'rgba(255,106,0,0.2)',
+    borderColor: 'rgba(212, 169, 58, 0.2)',
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
     marginBottom: spacing.xl,
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
   },
   recCardActive: {
     borderColor: colors.accent,
-    backgroundColor: 'rgba(255,106,0,0.04)',
+    backgroundColor: 'rgba(212, 169, 58, 0.04)',
   },
   recHeader: {
     flexDirection: 'row',
@@ -274,9 +274,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   infoBtn: {
-    backgroundColor: 'rgba(255,106,0,0.15)',
+    backgroundColor: 'rgba(212, 169, 58, 0.15)',
     borderWidth: 1,
-    borderColor: 'rgba(255,106,0,0.3)',
+    borderColor: 'rgba(212, 169, 58, 0.3)',
   },
   infoBtnText: {
     fontSize: fontSize.sm,

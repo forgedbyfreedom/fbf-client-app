@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
   },
   voiceOptionActive: {
     borderColor: colors.accent,
-    backgroundColor: 'rgba(255, 106, 0, 0.1)',
+    backgroundColor: 'rgba(212, 169, 58, 0.1)',
   },
   voiceOptionText: {
     fontSize: fontSize.md,

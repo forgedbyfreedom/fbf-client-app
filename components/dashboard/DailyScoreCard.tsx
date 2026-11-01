@@ -39,7 +39,7 @@ function getScoreColor(score: number): string {
   if (score >= 90) return '#22c55e';
   if (score >= 75) return '#22c55e';
   if (score >= 60) return '#eab308';
-  if (score >= 40) return '#ff6a00';
+  if (score >= 40) return '#D4A93A';
   return '#ef4444';
 }
 
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   streakBadge: {
-    backgroundColor: 'rgba(255,106,0,0.15)',
+    backgroundColor: 'rgba(212, 169, 58, 0.15)',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 10,

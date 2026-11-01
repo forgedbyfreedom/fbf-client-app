@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   categoryBadge: {
-    backgroundColor: 'rgba(255,106,0,0.15)',
+    backgroundColor: 'rgba(212, 169, 58, 0.15)',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     borderRadius: borderRadius.sm,
@@ -341,9 +341,9 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   wontFeelBox: {
-    backgroundColor: 'rgba(255,106,0,0.06)',
+    backgroundColor: 'rgba(212, 169, 58, 0.06)',
     borderWidth: 1,
-    borderColor: 'rgba(255,106,0,0.2)',
+    borderColor: 'rgba(212, 169, 58, 0.2)',
     borderRadius: borderRadius.md,
     padding: spacing.lg,
     marginTop: spacing.sm,
@@ -458,9 +458,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   infoBtn: {
-    backgroundColor: 'rgba(255,106,0,0.15)',
+    backgroundColor: 'rgba(212, 169, 58, 0.15)',
     borderWidth: 1,
-    borderColor: 'rgba(255,106,0,0.3)',
+    borderColor: 'rgba(212, 169, 58, 0.3)',
   },
   infoBtnText: {
     fontSize: fontSize.md,

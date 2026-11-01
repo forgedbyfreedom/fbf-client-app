@@ -120,6 +120,10 @@ export interface Client {
   medical_protocol: MedicalProtocol[] | null;
   last_weight?: number | null;
   created_at: string;
+  target_water_oz?: number | null;
+  program_name?: string | null;
+  program_raw_text?: string | null;
+  protocol_sections?: { title: string; kind: 'cycle' | 'peptides' | 'medical' | 'supplements'; body: string }[];
 }
 
 export interface Checkin {

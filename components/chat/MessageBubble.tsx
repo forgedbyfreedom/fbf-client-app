@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   ownContent: {
-    color: '#ffffff',
+    color: colors.onAccent,
   },
   otherContent: {
     color: colors.textPrimary,

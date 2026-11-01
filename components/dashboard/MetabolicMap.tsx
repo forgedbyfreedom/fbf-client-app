@@ -18,7 +18,7 @@ interface MetabolicMapData {
 }
 
 const SYSTEM_ICONS: Record<string, { icon: keyof typeof Ionicons.glyphMap; color: string }> = {
-  training: { icon: 'barbell', color: '#ff6a00' },
+  training: { icon: 'barbell', color: '#D4A93A' },
   nutrition: { icon: 'nutrition', color: '#22c55e' },
   recovery: { icon: 'moon', color: '#8b5cf6' },
   body_comp: { icon: 'body', color: '#3b82f6' },

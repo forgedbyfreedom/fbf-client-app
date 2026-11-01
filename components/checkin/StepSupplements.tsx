@@ -12,7 +12,7 @@ export function StepSupplements() {
 
   return (
     <View>
-      <View style={{ backgroundColor: 'rgba(255,106,0,0.08)', borderWidth: 1, borderColor: 'rgba(255,106,0,0.2)', borderRadius: 8, padding: 10, marginBottom: 16 }}>
+      <View style={{ backgroundColor: 'rgba(212, 169, 58, 0.08)', borderWidth: 1, borderColor: 'rgba(212, 169, 58, 0.2)', borderRadius: 8, padding: 10, marginBottom: 16 }}>
         <Text style={{ fontSize: 11, color: '#888', lineHeight: 16 }}>
           ⚠️ Compound and supplement logging is for personal tracking in an educational context only. Not a recommendation for human use. Consult a healthcare provider.
         </Text>

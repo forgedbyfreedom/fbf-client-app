@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
   dismissText: {
     fontSize: fontSize.md,
     fontWeight: '800',
-    color: '#ffffff',
+    color: colors.onAccent,
     letterSpacing: 1,
   },
 });

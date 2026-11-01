@@ -466,7 +466,7 @@ const styles = StyleSheet.create({
   },
   trendPillActive: {
     borderColor: colors.accent,
-    backgroundColor: 'rgba(255, 106, 0, 0.15)',
+    backgroundColor: 'rgba(212, 169, 58, 0.15)',
   },
   trendPillText: {
     fontSize: 11,

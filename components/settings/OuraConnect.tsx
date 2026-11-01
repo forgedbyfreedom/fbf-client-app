@@ -256,6 +256,6 @@ const styles = StyleSheet.create({
   saveText: {
     fontSize: fontSize.sm,
     fontWeight: '600',
-    color: '#fff',
+    color: colors.onAccent,
   },
 });

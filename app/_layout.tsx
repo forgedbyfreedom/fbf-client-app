@@ -9,6 +9,7 @@ import { useAuth } from '../hooks/useAuth';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { Loading } from '../components/ui/Loading';
 import { colors } from '../lib/theme';
+import { useFonts, Oswald_600SemiBold, Oswald_700Bold } from '@expo-google-fonts/oswald';
 
 function RootNavigation() {
   const { session, loading } = useAuth();
@@ -64,6 +65,9 @@ async function checkForUpdates() {
 
 export default function RootLayout() {
   useEffect(() => { checkForUpdates(); }, []);
+  // Display font for headings. Never blocks rendering: until it loads (or if
+  // it fails) text falls back to the system font.
+  useFonts({ Oswald_600SemiBold, Oswald_700Bold });
   const content = (
     <AuthProvider>
       <StatusBar style="light" />
@@ -104,6 +108,10 @@ export default function RootLayout() {
         />
         <Stack.Screen
           name="supplements/index"
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="progress"
           options={{ animation: 'slide_from_right' }}
         />
         <Stack.Screen

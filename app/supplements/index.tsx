@@ -161,7 +161,16 @@ export default function SupplementsScreen() {
     [supplements, peptides, peds, medical, complianceMap]
   );
 
-  const hasNoProtocols = totalItems === 0;
+  // Cycle / peptide / medical / supplement sections written into the coach's
+  // program text, shown verbatim (structured fields may be empty on WP).
+  const programSections = useMemo(() => {
+    const all = client?.protocol_sections ?? [];
+    // Supplements already arrive structured from /mealplan — only fall back to
+    // the written section when none came through.
+    return supplements.length > 0 ? all.filter((x) => x.kind !== 'supplements') : all;
+  }, [client, supplements.length]);
+
+  const hasNoProtocols = totalItems === 0 && programSections.length === 0;
 
   return (
     <ScrollView
@@ -179,7 +188,7 @@ export default function SupplementsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="chevron-back" size={24} color={colors.accent} />
         </TouchableOpacity>
-        <BrandHeader title="Supplements & Protocols" compact />
+        <BrandHeader title="Supplements & Protocol" compact />
       </View>
 
       {/* Compliance Summary */}
@@ -273,6 +282,21 @@ export default function SupplementsScreen() {
         </Card>
       ) : activeTab === 'protocols' ? (
         <>
+          {programSections.length > 0 && (
+            <Card style={styles.programCard}>
+              <View style={styles.programHeader}>
+                <Ionicons name="lock-closed-outline" size={14} color={colors.accent} />
+                <Text style={styles.programEyebrow}>FROM YOUR PROGRAM · PRIVATE</Text>
+              </View>
+              <Text style={styles.programNote}>Exactly as your coach wrote it. Only you and your coach see this.</Text>
+              {programSections.map((sec, i) => (
+                <View key={`${sec.kind}-${i}`} style={styles.programSection}>
+                  <Text style={styles.programTitle}>{sec.title}</Text>
+                  <Text style={styles.programBody} selectable>{sec.body}</Text>
+                </View>
+              ))}
+            </Card>
+          )}
           {/* Supplements Section */}
           {supplements.length > 0 && (
             <>
@@ -589,4 +613,11 @@ const styles = StyleSheet.create({
   markAllTextDone: {
     color: colors.red,
   },
+  programCard: { borderColor: colors.borderAccent, borderWidth: 1, gap: spacing.md },
+  programHeader: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  programEyebrow: { fontSize: 10, fontWeight: '700', letterSpacing: 2, color: colors.accent },
+  programNote: { fontSize: fontSize.xs, color: colors.textSecondary },
+  programSection: { gap: 6, backgroundColor: colors.surfaceSunken, borderRadius: 14, padding: spacing.md },
+  programTitle: { fontSize: fontSize.md, fontWeight: '700', color: colors.textPrimary },
+  programBody: { fontSize: fontSize.sm, color: colors.textPrimary, lineHeight: 20 },
 });

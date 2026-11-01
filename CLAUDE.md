@@ -62,6 +62,11 @@ When building a new client program, ALWAYS use the branded HTML/PDF template at 
 ## PATCH /api/admin/clients/[id] — Accepted Fields
 All client fields are updatable: first_name, last_name, email, phone, timezone, is_active, target_calories, target_protein, target_steps, target_carbs, target_fats, target_water_oz, weigh_in_day, current_supplements, current_peds, current_peptides, program_name, program_raw_text, workout_program, cardio_protocol, meal_plan, medical_protocol, sms_opt_in, instagram_handle, leaderboard_opt_in
 
+## App UI Theme (Oct 2026 redesign)
+- The app itself is black + gold: tokens in `lib/theme.ts` (`accent` #D4A93A). Text on gold uses `colors.onAccent` (near-black) — never white.
+- One card pattern: `components/ui/SectionCard.tsx` (gold eyebrow, Oswald display title, one idea per card).
+- The orange `#FF6A00` above applies to client program PDFs only, not the app.
+
 ## Check-In Flow
 7 steps: Body & Wellness → Nutrition → Activity → Sleep → Supplements → Recommendations → Notes & Photos
 

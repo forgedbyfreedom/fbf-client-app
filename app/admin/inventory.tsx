@@ -423,7 +423,7 @@ export default function InventoryScreen() {
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll} contentContainerStyle={styles.chipRow}>
               {STATUSES.map(s => (
                 <TouchableOpacity key={s} style={[styles.chip, form.status === s && { backgroundColor: STATUS_COLORS[s], borderColor: STATUS_COLORS[s] }]} onPress={() => setForm({ ...form, status: s })}>
-                  <Text style={[styles.chipText, form.status === s && { color: '#fff' }]}>{STATUS_LABELS[s]}</Text>
+                  <Text style={[styles.chipText, form.status === s && { color: colors.onAccent }]}>{STATUS_LABELS[s]}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -487,7 +487,7 @@ const styles = StyleSheet.create({
   detailRow: { fontSize: fontSize.sm, marginBottom: 3 },
   detailLabel: { color: colors.textTertiary },
   detailValue: { color: colors.textSecondary },
-  trackingRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, backgroundColor: 'rgba(255,106,0,0.08)', borderRadius: borderRadius.sm, padding: spacing.sm, marginBottom: spacing.sm },
+  trackingRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, backgroundColor: 'rgba(212, 169, 58, 0.08)', borderRadius: borderRadius.sm, padding: spacing.sm, marginBottom: spacing.sm },
   trackingText: { flex: 1, fontSize: fontSize.sm, color: colors.accent, fontWeight: '600' },
   cardNotes: { fontSize: fontSize.xs, color: colors.textTertiary, fontStyle: 'italic', marginBottom: spacing.sm },
   cardActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: spacing.lg },

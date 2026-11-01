@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
-import { View, Platform, StyleSheet, AppState } from 'react-native';
+import { useIsDesktop } from '../hooks/useBreakpoint';
+import { DesktopShell } from '../components/desktop/DesktopShell';
+import { View, Platform, StyleSheet, AppState, useWindowDimensions } from 'react-native';
 import { Stack, Redirect, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as Linking from 'expo-linking';
@@ -97,15 +99,26 @@ export default function RootLayout() {
   // Display font for headings. Never blocks rendering: until it loads (or if
   // it fails) text falls back to the system font.
   useFonts({ Oswald_600SemiBold, Oswald_700Bold });
+  const desktop = useIsDesktop();
+  const { width } = useWindowDimensions();
+  // Centre pages outside the tab shell in an 880px column (padding keeps the dark background edge to edge).
+  const sidePad = desktop ? Math.max(24, (width - 248 - 880) / 2) : 0;
   const content = (
     <AuthProvider>
       <StatusBar style="light" />
+      <DesktopShell>
       <Stack
-        screenOptions={{
+        screenOptions={({ route }) => ({
           headerShown: false,
-          contentStyle: { backgroundColor: colors.background },
+          // Desktop web: pages outside the tab shell get a centred, readable column.
+          contentStyle:
+            desktop && route.name === '(auth)'
+              ? { backgroundColor: colors.background, paddingHorizontal: Math.max(24, (width - 440) / 2) }
+              : desktop && route.name !== '(tabs)'
+                ? { backgroundColor: colors.background, paddingHorizontal: sidePad }
+                : { backgroundColor: colors.background },
           animation: 'fade',
-        }}
+        })}
       >
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
@@ -175,6 +188,7 @@ export default function RootLayout() {
           options={{ animation: 'slide_from_right' }}
         />
       </Stack>
+      </DesktopShell>
       <RootNavigation />
       {Platform.OS !== 'web' && <PushNotificationHandler />}
       <BackgroundSyncHandler />
@@ -182,29 +196,15 @@ export default function RootLayout() {
     </AuthProvider>
   );
 
-  // On web, constrain to phone-like width for preview
+  // Web: full window. Phones get the normal layout; desktop windows get the
+  // sidebar (tabs layout) and centred content columns.
   if (Platform.OS === 'web') {
-    return (
-      <View style={webStyles.outer}>
-        <View style={webStyles.phone}>{content}</View>
-      </View>
-    );
+    return <View style={webStyles.outer}>{content}</View>;
   }
 
   return content;
 }
 
 const webStyles = StyleSheet.create({
-  outer: {
-    flex: 1,
-    backgroundColor: '#000',
-    alignItems: 'center',
-  },
-  phone: {
-    width: 390,
-    maxWidth: '100%',
-    flex: 1,
-    backgroundColor: colors.background,
-    overflow: 'hidden',
-  },
+  outer: { flex: 1, backgroundColor: colors.background },
 });

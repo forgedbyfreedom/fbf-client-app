@@ -38,7 +38,8 @@ export function VitalStatsCard({ client, metrics, latestCheckin }: VitalStatsCar
     ? latestScan.lean_mass_lbs - firstScan.lean_mass_lbs
     : null;
 
-  const chartWidth = Dimensions.get('window').width - 80;
+  // Capped so the chart never outgrows its card on a wide desktop window.
+  const chartWidth = Math.min(Dimensions.get('window').width - 80, 560);
 
   // Build body comp chart data from scans
   const bfPoints = scans

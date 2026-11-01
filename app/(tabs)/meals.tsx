@@ -15,6 +15,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '../../hooks/useAuth';
 import { useFoodLog } from '../../hooks/useFoodLog';
 import { BrandHeader } from '../../components/ui/BrandHeader';
+import { VoiceMealLog } from '../../components/nutrition/VoiceMealLog';
 import { Card } from '../../components/ui/Card';
 import { MealCard } from '../../components/meals/MealCard';
 import { MealEntry } from '../../lib/nutrition-api';
@@ -181,7 +182,7 @@ export default function MealsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { client, refreshClientData, isDemoMode } = useAuth();
-  const { logMeal, isMealLogged } = useFoodLog();
+  const { logMeal, isMealLogged, logByVoice } = useFoodLog();
   const [refreshing, setRefreshing] = useState(false);
   const [selectedDay, setSelectedDay] = useState('Monday');
   const [activeTab, setActiveTab] = useState<TabView>('meals');
@@ -378,6 +379,11 @@ export default function MealsScreen() {
         <Text style={styles.foodLogBtnText}>Open Food Log</Text>
         <Ionicons name="chevron-forward" size={16} color={colors.accent} />
       </TouchableOpacity>
+
+      {/* Off plan? Say it */}
+      <View style={{ marginBottom: spacing.md }}>
+        <VoiceMealLog onSubmit={logByVoice} />
+      </View>
 
       {/* Tab Toggle */}
       <View style={styles.tabToggle}>

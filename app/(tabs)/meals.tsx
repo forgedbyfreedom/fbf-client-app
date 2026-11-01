@@ -30,6 +30,8 @@ import {
   generateShoppingList,
 } from '../../lib/nutrition-api';
 import { normalizeMealPlan } from '../../lib/normalize-plan';
+import { reportChange } from '../../lib/hub';
+import { describeMealChange } from '../../lib/plan-diff';
 import { generateMealPlanPDF, generateGroceryListPDF } from '../../lib/pdf-export';
 
 // Fallback meal plan for demo/new users without a coach-assigned plan
@@ -277,6 +279,11 @@ export default function MealsScreen() {
   }, [logMeal, isMealLogged]);
 
   const handleUpdateMeal = useCallback((dayName: string, updatedMeal: MealEntry) => {
+    const before = localMealPlan.find((d) => d.day === dayName)?.meals.find((m) => m.id === updatedMeal.id);
+    if (before) {
+      const { summary, details } = describeMealChange(before, updatedMeal);
+      if (details.length) reportChange('meal plan', `${dayName}: ${summary}`, details);
+    }
     setLocalMealPlan((prev) =>
       prev.map((day) =>
         day.day === dayName
@@ -284,9 +291,13 @@ export default function MealsScreen() {
           : day
       )
     );
-  }, []);
+  }, [localMealPlan]);
 
   const handleDeleteMealFromPlan = useCallback((dayName: string, mealId: string) => {
+    const removed = localMealPlan.find((d) => d.day === dayName)?.meals.find((m) => m.id === mealId);
+    if (removed) {
+      reportChange('meal plan', `${dayName}: removed ${removed.name} from the plan`, removed.ingredients.map((i) => `${i.quantity} ${i.unit} ${i.name}`.trim()));
+    }
     setLocalMealPlan((prev) =>
       prev.map((day) =>
         day.day === dayName
@@ -294,7 +305,7 @@ export default function MealsScreen() {
           : day
       ).filter((day) => day.meals.length > 0)
     );
-  }, []);
+  }, [localMealPlan]);
 
   const handleAddMealToDay = useCallback((dayName: string) => {
     // Navigate to food log where they can add foods freely

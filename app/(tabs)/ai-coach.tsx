@@ -4,8 +4,8 @@ import {
   Text,
   TextInput,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
+  TouchableOpacity,
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
@@ -15,17 +15,13 @@ import type { AudioPlayer } from 'expo-audio';
 import * as DocumentPicker from 'expo-document-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { Card } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
-import { colors, fontSize, spacing, borderRadius } from '../../lib/theme';
-import { generateSpeech, playAudio } from '../../lib/elevenlabs';
-import { apiUpload } from '../../lib/api';
-import { BrandHeader } from '../../components/ui/BrandHeader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAuth } from '../../hooks/useAuth';
+import { SectionCard, Eyebrow, DisplayText } from '../../components/ui/SectionCard';
+import { colors, fontSize, fonts, spacing } from '../../lib/theme';
+import { generateSpeech, playAudio } from '../../lib/elevenlabs';
 import { VOICE_IDS, type VoicePreference } from './profile';
-
 import { getToken, wpApiRoot } from '../../lib/wp-auth';
+import { extractBloodwork, getBloodworkHistory, getAiStats, AiStats, LabReport, LabMarker } from '../../lib/hub';
 
 const SAMPLE_QUESTIONS = [
   'How is my progress this week?',
@@ -33,643 +29,366 @@ const SAMPLE_QUESTIONS = [
   'Am I training enough?',
   'FBF Recomp Protocol',
   'What is Retatrutide?',
-  'Progressive Overload',
-  'Healing Peptides',
-  'PCT Protocol',
+  'Progressive overload',
+  'Healing peptides',
+  'PCT protocol',
 ];
 
 type Tab = 'ask' | 'bloodwork';
 
-async function askCoachStream(
-  question: string,
-  clientId: string | undefined,
-  onChunk: (text: string) => void,
-  onFirstChunk: () => void,
-): Promise<string> {
-  // Backed by the FBF WordPress App Bridge (single backend). The endpoint is
-  // non-streaming; the full reply is delivered through the existing chunk
-  // callbacks so the surrounding UI logic is unchanged.
+/** FBF AI Coach (WordPress App Bridge → fbf-rag). Non-streaming; returns the full reply. */
+async function askCoach(question: string): Promise<string> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 120000);
   try {
     const token = await getToken();
     const res = await fetch(`${wpApiRoot}/coach/chat`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       body: JSON.stringify({ message: question }),
       signal: controller.signal,
     });
     const data = await res.json().catch(() => ({} as any));
-    if (!res.ok) {
-      throw new Error(data?.message || `Coach unavailable (${res.status}). Try again in a minute.`);
-    }
-    const reply: string = data.reply || 'No answer returned.';
-    onFirstChunk();
-    onChunk(reply);
-    return reply;
+    if (!res.ok) throw new Error(data?.message || `Coach unavailable (${res.status}). Try again in a minute.`);
+    return data.reply || 'No answer returned.';
   } finally {
     clearTimeout(timeout);
   }
 }
 
+const markerLine = (m: LabMarker) =>
+  `${m.name}: ${m.value}${m.unit ? ' ' + m.unit : ''}` +
+  (m.ref_text ? ` (ref ${m.ref_text})` : m.ref_low != null || m.ref_high != null ? ` (ref ${m.ref_low ?? ''}–${m.ref_high ?? ''})` : '') +
+  (m.flag && m.flag !== 'normal' ? ` [${m.flag.toUpperCase()}]` : '');
+
+const formatPassages = (n: number) => (n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `${Math.round(n / 1000)}K` : `${n}`);
+
 export default function AICoachScreen() {
   const insets = useSafeAreaInsets();
-  const { client } = useAuth();
-  const [activeTab, setActiveTab] = useState<Tab>('ask');
+  const [tab, setTab] = useState<Tab>('ask');
   const [question, setQuestion] = useState('');
-  const [bloodwork, setBloodwork] = useState('');
   const [answer, setAnswer] = useState('');
   const [loading, setLoading] = useState(false);
-  const [speakingState, setSpeakingState] = useState<'idle' | 'generating' | 'playing'>('idle');
+  const [stats, setStats] = useState<AiStats | null>(null);
+  const [speaking, setSpeaking] = useState<'idle' | 'generating' | 'playing'>('idle');
+  const [voicePref, setVoicePref] = useState<VoicePreference>('male');
   const playerRef = useRef<AudioPlayer | null>(null);
   const scrollRef = useRef<ScrollView>(null);
-  const [audioUri, setAudioUri] = useState<string | null>(null);
-  const [bloodworkFiles, setBloodworkFiles] = useState<{ name: string; uri: string }[]>([]);
-  const [uploadingFiles, setUploadingFiles] = useState(false);
-  const [voicePref, setVoicePref] = useState<VoicePreference>('male');
+
+  // Bloodwork
+  const [reading, setReading] = useState(false);
+  const [report, setReport] = useState<LabReport | null>(null);
+  const [labError, setLabError] = useState<string | null>(null);
+  const [history, setHistory] = useState<LabReport[]>([]);
+  const [pasted, setPasted] = useState('');
 
   useEffect(() => {
-    AsyncStorage.getItem('fbf_voice_preference').then((val) => {
-      if (val === 'male' || val === 'female') setVoicePref(val);
+    getAiStats().then(setStats);
+    getBloodworkHistory().then(setHistory).catch(() => undefined);
+    AsyncStorage.getItem('fbf_voice_preference').then((v) => {
+      if (v === 'male' || v === 'female') setVoicePref(v);
     });
     return () => {
       playerRef.current?.remove();
     };
   }, []);
 
-  const handleAsk = async () => {
-    const q = activeTab === 'ask' ? question.trim() : '';
-    if (activeTab === 'ask' && !q) return;
+  const resetVoice = () => {
+    playerRef.current?.remove();
+    playerRef.current = null;
+    setSpeaking('idle');
+  };
 
-    if (activeTab === 'bloodwork' && !bloodwork.trim() && bloodworkFiles.length === 0) {
-      Alert.alert('Missing Data', 'Please paste your results or attach a file.');
-      return;
-    }
-
-    // Upload bloodwork files if any (native only — web preview skips upload)
-    let fileUrls: string[] = [];
-    if (bloodworkFiles.length > 0) {
-      setUploadingFiles(true);
-      try {
-        if (Platform.OS !== 'web') {
-          for (const file of bloodworkFiles) {
-            const filename = file.uri.split('/').pop() || 'upload';
-            const ext = filename.split('.').pop()?.toLowerCase() || 'jpg';
-            const mimeType = ext === 'pdf' ? 'application/pdf' : `image/${ext === 'jpg' ? 'jpeg' : ext}`;
-
-            const formData = new FormData();
-            formData.append('file', {
-              uri: file.uri,
-              name: filename,
-              type: mimeType,
-            } as unknown as Blob);
-            formData.append('category', 'bloodwork');
-
-            const token = await getToken();
-            const res = await fetch(`${wpApiRoot}/coach/upload`, {
-              method: 'POST',
-              headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-              body: formData,
-            });
-            if (res.ok) {
-              const data = await res.json();
-              if (data.url) fileUrls.push(data.url);
-            }
-          }
-        } else {
-          // Web preview: note files were selected but skip actual upload
-          fileUrls = bloodworkFiles.map(f => `[file: ${f.name}]`);
-        }
-      } catch (err) {
-        console.error('Upload error:', err);
-        Alert.alert('Upload Error', 'Failed to upload files. You can still paste your results as text.');
-        setUploadingFiles(false);
-        // Don't return — let them proceed with text-based analysis
-      }
-      setUploadingFiles(false);
-    }
-
-    const fileNote = fileUrls.length > 0
-      ? `\n\n[${fileUrls.length} bloodwork file(s) uploaded and saved to your records]`
-      : '';
-
-    let fullQuestion: string;
-    if (activeTab === 'bloodwork') {
-      const hasText = bloodwork.trim().length > 0;
-      const hasFiles = fileUrls.length > 0;
-      if (hasText) {
-        fullQuestion = `Please analyze my bloodwork results. For each marker, tell me: the value, standard lab range, enhanced athlete acceptable range, and your assessment (normal/watch/intervene/red flag). Flag anything concerning, explain which compounds could cause abnormal values, and provide the intervention ladder (lifestyle > supplements with doses > pharmaceuticals with doses > discontinuation thresholds). Here are my results:\n\n${bloodwork.trim()}${fileNote}`;
-      } else if (hasFiles) {
-        fullQuestion = `I just uploaded ${fileUrls.length} bloodwork file(s) to my records. I don't have the values typed out yet. Based on my recent check-in data, please give me a general overview of what bloodwork markers I should be watching closely given my current protocol, and what optimal ranges look like for an enhanced athlete. Also remind me to paste my actual values next time for a full analysis.`;
-      } else {
-        fullQuestion = '';
-      }
-    } else {
-      fullQuestion = q;
-    }
-
+  const run = async (q: string) => {
+    if (!q.trim() || loading) return;
     setLoading(true);
     setAnswer('');
-    setAudioUri(null);
-    if (playerRef.current) {
-      playerRef.current.remove();
-      playerRef.current = null;
-    }
-    setSpeakingState('idle');
-
+    resetVoice();
     try {
-      await askCoachStream(
-        fullQuestion,
-        client?.id,
-        (chunk) => {
-          setAnswer(prev => prev + chunk);
-          scrollRef.current?.scrollToEnd({ animated: false });
-        },
-        () => {
-          // First chunk arrived — hide spinner, show streaming text
-          setLoading(false);
-        },
-      );
-      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+      const reply = await askCoach(q);
+      setAnswer(reply);
+      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 150);
     } catch (e: any) {
-      Alert.alert('Error', e.message || 'Failed to get a response.');
+      Alert.alert('AI Coach', e.message || 'Failed to get a response.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSpeak = async () => {
-    if (!answer) return;
+  const analyze = (markers: LabMarker[], when?: string | null) => {
+    const lines = markers.map(markerLine).join('\n');
+    run(
+      `Please analyze my bloodwork${when ? ` (collected ${when})` : ''}. For each marker give the value, the standard lab range, the acceptable range for an enhanced athlete, and your assessment (normal / watch / intervene / red flag). Flag anything concerning, explain which compounds could cause the abnormal values, and give the intervention ladder (lifestyle > supplements with doses > pharmaceuticals with doses > discontinuation thresholds).\n\n${lines}`
+    );
+  };
 
-    // If already have audio, toggle play/pause
-    if (audioUri && playerRef.current) {
-      if (speakingState === 'playing') {
+  const pickLabs = async () => {
+    setLabError(null);
+    try {
+      const res = await DocumentPicker.getDocumentAsync({ type: ['application/pdf', 'image/*'], multiple: false, copyToCacheDirectory: true });
+      if (res.canceled || !res.assets?.length) return;
+      const a = res.assets[0];
+      const type = a.mimeType || (a.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
+      setReading(true);
+      setReport(null);
+      const r = await extractBloodwork({ uri: a.uri, name: a.name, type, file: (a as any).file });
+      setReport(r);
+      setHistory((h) => [r, ...h.filter((x) => x.id !== r.id)]);
+      if (r.markers.length === 0) setLabError("That file didn't look like a lab report. Try the PDF from your lab, or a clear photo of the results page.");
+    } catch (e: any) {
+      setLabError(e.message || 'Could not read that file.');
+    } finally {
+      setReading(false);
+    }
+  };
+
+  const speak = async () => {
+    if (!answer) return;
+    if (playerRef.current) {
+      if (speaking === 'playing') {
         playerRef.current.pause();
-        setSpeakingState('idle');
-        return;
+        setSpeaking('idle');
+      } else {
+        playerRef.current.play();
+        setSpeaking('playing');
       }
-      playerRef.current.play();
-      setSpeakingState('playing');
       return;
     }
-
-    setSpeakingState('generating');
+    setSpeaking('generating');
     try {
-      // Truncate to ~5000 chars for ElevenLabs free tier limits
-      const textToSpeak = answer.length > 5000 ? answer.slice(0, 5000) + '...' : answer;
-      const uri = await generateSpeech(textToSpeak, VOICE_IDS[voicePref]);
-      setAudioUri(uri);
+      const uri = await generateSpeech(answer.length > 5000 ? answer.slice(0, 5000) + '…' : answer, VOICE_IDS[voicePref]);
       const player = await playAudio(uri);
       playerRef.current = player;
-      setSpeakingState('playing');
-      player.addListener('playbackStatusUpdate', (status) => {
-        if (status.playing === false && status.currentTime >= status.duration && status.duration > 0) {
-          setSpeakingState('idle');
-        }
+      setSpeaking('playing');
+      player.addListener('playbackStatusUpdate', (s) => {
+        if (s.playing === false && s.duration > 0 && s.currentTime >= s.duration) setSpeaking('idle');
       });
     } catch (e: any) {
-      setSpeakingState('idle');
-      Alert.alert('Voice Error', e.message || 'Failed to generate speech.');
+      setSpeaking('idle');
+      Alert.alert('Voice', e.message || 'Failed to generate speech.');
     }
   };
 
-  const handleStop = () => {
-    if (playerRef.current) {
-      playerRef.current.remove();
-      playerRef.current = null;
-    }
-    setAudioUri(null);
-    setSpeakingState('idle');
-  };
-
-  const handlePickBloodwork = async () => {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ['application/pdf', 'image/*'],
-        multiple: true,
-      });
-      if (!result.canceled && result.assets?.length) {
-        setBloodworkFiles(prev => [
-          ...prev,
-          ...result.assets.map(a => ({ name: a.name, uri: a.uri })),
-        ]);
-      }
-    } catch {
-      Alert.alert('Error', 'Failed to pick file.');
-    }
-  };
-
-  const removeBloodworkFile = (index: number) => {
-    setBloodworkFiles(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const handleSampleQuestion = (q: string) => {
-    setQuestion(q);
-  };
+  const flagged = report ? report.markers.filter((m) => m.flag === 'high' || m.flag === 'low') : [];
+  const normal = report ? report.markers.filter((m) => !(m.flag === 'high' || m.flag === 'low')) : [];
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={0}
-    >
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.background }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView
         ref={scrollRef}
         style={styles.container}
-        contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.md }]}
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.md, paddingBottom: insets.bottom + 100 }]}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Header */}
-        <BrandHeader title="AI Coach" />
-        <Text style={styles.subtitle}>
-          127M+ words analyzed across 14K+ expert transcripts, 100+ sources — and growing
-        </Text>
-
-        <View style={{ backgroundColor: 'rgba(212, 169, 58, 0.08)', borderWidth: 1, borderColor: 'rgba(212, 169, 58, 0.2)', borderRadius: 8, padding: 10, marginTop: -4 }}>
-          <Text style={{ fontSize: 11, color: '#888', lineHeight: 16, textAlign: 'center' }}>
-            Educational & research purposes only. Not medical advice. No recommendations for human consumption are made or implied. Consult a physician before making health changes.
+        <View style={{ gap: 6 }}>
+          <Eyebrow>FBF AI Coach</Eyebrow>
+          <DisplayText size={34}>Ask anything.</DisplayText>
+          <Text style={styles.stats}>
+            {stats
+              ? `${stats.sources} expert sources · ${stats.words} words${stats.passages ? ` · ${formatPassages(stats.passages)} passages searched` : ''}`
+              : 'Grounded in our expert library, with sources.'}
           </Text>
         </View>
 
-        {/* Tabs */}
-        <View style={styles.tabs}>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'ask' && styles.tabActive]}
-            onPress={() => setActiveTab('ask')}
-          >
-            <Ionicons
-              name="chatbubble-outline"
-              size={15}
-              color={activeTab === 'ask' ? '#fff' : colors.textSecondary}
-            />
-            <Text style={[styles.tabText, activeTab === 'ask' && styles.tabTextActive]}>
-              Ask Coach Bryan
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'bloodwork' && styles.tabActive]}
-            onPress={() => setActiveTab('bloodwork')}
-          >
-            <Ionicons
-              name="medkit-outline"
-              size={15}
-              color={activeTab === 'bloodwork' ? '#fff' : colors.textSecondary}
-            />
-            <Text
-              style={[styles.tabText, activeTab === 'bloodwork' && styles.tabTextActive]}
+        <View style={styles.segment}>
+          {(['ask', 'bloodwork'] as Tab[]).map((t) => (
+            <TouchableOpacity
+              key={t}
+              style={[styles.segBtn, tab === t && styles.segOn]}
+              onPress={() => setTab(t)}
+              accessibilityRole="button"
+              accessibilityState={{ selected: tab === t }}
             >
-              Bloodwork
-            </Text>
-          </TouchableOpacity>
+              <Ionicons name={t === 'ask' ? 'chatbubble-outline' : 'flask-outline'} size={15} color={tab === t ? colors.accentText : colors.textSecondary} />
+              <Text style={[styles.segText, tab === t && styles.segTextOn]}>{t === 'ask' ? 'Ask' : 'Bloodwork'}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
 
-        {/* Ask Tab */}
-        {activeTab === 'ask' && (
-          <>
-            {/* Sample Questions */}
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.chipsScroll}
-              contentContainerStyle={styles.chips}
-            >
+        {tab === 'ask' ? (
+          <SectionCard>
+            <TextInput
+              style={styles.input}
+              placeholder="Training, nutrition, peptides, protocols…"
+              placeholderTextColor={colors.textTertiary}
+              value={question}
+              onChangeText={setQuestion}
+              multiline
+              accessibilityLabel="Your question"
+            />
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
               {SAMPLE_QUESTIONS.map((q) => (
-                <TouchableOpacity
-                  key={q}
-                  style={styles.chip}
-                  onPress={() => handleSampleQuestion(q)}
-                >
+                <TouchableOpacity key={q} style={styles.chip} onPress={() => setQuestion(q)} accessibilityRole="button">
                   <Text style={styles.chipText}>{q}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
-
-            <TextInput
-              style={styles.input}
-              placeholder="Ask about training, nutrition, PEDs, or protocols..."
-              placeholderTextColor={colors.textTertiary}
-              value={question}
-              onChangeText={setQuestion}
-              returnKeyType="send"
-              onSubmitEditing={handleAsk}
-            />
-          </>
-        )}
-
-        {/* Bloodwork Tab */}
-        {activeTab === 'bloodwork' && (
-          <>
-            {/* File Upload */}
-            <TouchableOpacity style={styles.uploadZone} onPress={handlePickBloodwork}>
-              <Ionicons
-                name={bloodworkFiles.length > 0 ? 'document-attach' : 'cloud-upload-outline'}
-                size={28}
-                color={bloodworkFiles.length > 0 ? colors.green : colors.accent}
-              />
-              <Text style={styles.uploadZoneText}>
-                {bloodworkFiles.length > 0
-                  ? `${bloodworkFiles.length} file(s) attached`
-                  : 'Tap to attach bloodwork PDF or photo'}
-              </Text>
-              <Text style={styles.uploadZoneHint}>PDF, JPG, PNG supported</Text>
+            <TouchableOpacity
+              style={[styles.primary, (!question.trim() || loading) && styles.off]}
+              onPress={() => run(question)}
+              disabled={!question.trim() || loading}
+              accessibilityRole="button"
+            >
+              {loading ? <ActivityIndicator color={colors.onAccent} /> : <Text style={styles.primaryText}>Ask Coach Bryan</Text>}
             </TouchableOpacity>
+          </SectionCard>
+        ) : (
+          <>
+            <SectionCard eyebrow="Upload" title="Read my lab report" subtitle="PDF from your lab, or a clear photo. We pull out every marker and flag what's out of range.">
+              <TouchableOpacity style={styles.upload} onPress={pickLabs} disabled={reading} accessibilityRole="button">
+                {reading ? (
+                  <>
+                    <ActivityIndicator color={colors.accent} />
+                    <Text style={styles.uploadText}>Reading your report…</Text>
+                  </>
+                ) : (
+                  <>
+                    <Ionicons name="cloud-upload-outline" size={26} color={colors.accentText} />
+                    <Text style={styles.uploadText}>Choose PDF or photo</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+              {labError ? <Text style={styles.error}>{labError}</Text> : null}
+            </SectionCard>
 
-            {bloodworkFiles.length > 0 && (
-              <View style={styles.fileList}>
-                {bloodworkFiles.map((file, i) => (
-                  <View key={i} style={styles.fileItem}>
-                    <Ionicons name="document" size={16} color={colors.accent} />
-                    <Text style={styles.fileName} numberOfLines={1}>{file.name}</Text>
-                    <TouchableOpacity onPress={() => removeBloodworkFile(i)}>
-                      <Ionicons name="close-circle" size={18} color={colors.red} />
-                    </TouchableOpacity>
+            {report && report.markers.length > 0 ? (
+              <SectionCard
+                eyebrow={report.lab ?? 'Results'}
+                title={`${report.markers.length} markers · ${flagged.length} out of range`}
+                subtitle={report.collected_on ? `Collected ${report.collected_on}` : undefined}
+                highlight
+              >
+                {[...flagged, ...normal].map((m, i) => (
+                  <View key={i} style={styles.labRow}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.labName}>{m.name}</Text>
+                      <Text style={styles.labRef}>
+                        {m.ref_text ?? (m.ref_low != null || m.ref_high != null ? `${m.ref_low ?? ''}–${m.ref_high ?? ''}` : '')}
+                      </Text>
+                    </View>
+                    <Text style={[styles.labVal, m.flag === 'high' && { color: colors.yellow }, m.flag === 'low' && { color: colors.blue }]}>
+                      {m.value} {m.unit ?? ''} {m.flag === 'high' ? '↑' : m.flag === 'low' ? '↓' : ''}
+                    </Text>
                   </View>
                 ))}
-              </View>
-            )}
+                <TouchableOpacity style={[styles.primary, loading && styles.off]} onPress={() => analyze(report.markers, report.collected_on)} disabled={loading} accessibilityRole="button">
+                  {loading ? <ActivityIndicator color={colors.onAccent} /> : <Text style={styles.primaryText}>Analyze with Coach Bryan</Text>}
+                </TouchableOpacity>
+              </SectionCard>
+            ) : null}
 
-            {/* Apple Health Note */}
-            <View style={styles.healthKitNote}>
-              <Ionicons name="heart-circle-outline" size={18} color={colors.accent} />
-              <Text style={styles.healthKitNoteText}>
-                Apple Health data (heart rate, steps, sleep, weight) is auto-imported into your daily check-ins.
-              </Text>
-            </View>
+            <SectionCard eyebrow="Or type it" title="Paste results">
+              <TextInput
+                style={[styles.input, { minHeight: 120 }]}
+                placeholder={'Testosterone Total: 856 ng/dL\nEstradiol: 42 pg/mL\nHematocrit: 51.2%'}
+                placeholderTextColor={colors.textTertiary}
+                value={pasted}
+                onChangeText={setPasted}
+                multiline
+              />
+              <TouchableOpacity
+                style={[styles.secondary, (!pasted.trim() || loading) && styles.off]}
+                onPress={() =>
+                  run(
+                    `Please analyze my bloodwork. For each marker give the value, standard lab range, enhanced-athlete range and your assessment (normal / watch / intervene / red flag), the compounds that could cause abnormal values, and the intervention ladder.\n\n${pasted.trim()}`
+                  )
+                }
+                disabled={!pasted.trim() || loading}
+                accessibilityRole="button"
+              >
+                <Text style={styles.secondaryText}>Analyze pasted results</Text>
+              </TouchableOpacity>
+            </SectionCard>
 
-            <Text style={styles.orText}>— or paste results below —</Text>
-
-            <TextInput
-              style={[styles.input, styles.inputLarge]}
-              placeholder={`Paste your lab results here...\n\nExample:\nTestosterone Total: 856 ng/dL\nEstradiol (E2): 42 pg/mL\nHematocrit: 51.2%\nALT: 67 U/L\nAST: 54 U/L`}
-              placeholderTextColor={colors.textTertiary}
-              value={bloodwork}
-              onChangeText={setBloodwork}
-              multiline
-              textAlignVertical="top"
-            />
+            {history.length > (report ? 1 : 0) ? (
+              <SectionCard eyebrow="History" title="Past reports">
+                {history
+                  .filter((h) => h.id !== report?.id)
+                  .slice(0, 8)
+                  .map((h) => (
+                    <TouchableOpacity key={h.id} style={styles.histRow} onPress={() => setReport(h)} accessibilityRole="button">
+                      <Text style={styles.histTitle}>{h.collected_on ?? h.uploaded_at.slice(0, 10)}</Text>
+                      <Text style={styles.histMeta}>
+                        {h.markers.length} markers · {h.markers.filter((m) => m.flag === 'high' || m.flag === 'low').length} flagged
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+              </SectionCard>
+            ) : null}
           </>
         )}
 
-        {/* Submit */}
-        <Button
-          title={
-            uploadingFiles
-              ? 'Uploading files...'
-              : loading
-              ? 'Coach Bryan is thinking...'
-              : activeTab === 'ask'
-              ? 'Ask Coach Bryan'
-              : 'Analyze Bloodwork'
-          }
-          onPress={handleAsk}
-          loading={loading || uploadingFiles}
-          disabled={loading || uploadingFiles}
-        />
-
-        {/* Answer */}
         {(answer || loading) && (
-          <Card style={styles.answerCard}>
+          <SectionCard
+            eyebrow="Coach Bryan"
+            right={
+              answer ? (
+                <TouchableOpacity onPress={speak} style={styles.listen} disabled={speaking === 'generating'} accessibilityRole="button">
+                  {speaking === 'generating' ? (
+                    <ActivityIndicator color={colors.accent} size="small" />
+                  ) : (
+                    <Ionicons name={speaking === 'playing' ? 'pause' : 'volume-high'} size={18} color={colors.accentText} />
+                  )}
+                  <Text style={styles.listenText}>{speaking === 'playing' ? 'Pause' : 'Listen'}</Text>
+                </TouchableOpacity>
+              ) : undefined
+            }
+          >
             {loading ? (
-              <View style={styles.loadingRow}>
+              <View style={styles.thinking}>
                 <ActivityIndicator color={colors.accent} />
-                <Text style={styles.loadingText}>Coach Bryan is thinking...</Text>
+                <Text style={styles.muted}>Searching the library…</Text>
               </View>
             ) : (
-              <>
-                {/* Voice Controls */}
-                <View style={styles.voiceRow}>
-                  <TouchableOpacity
-                    style={styles.voiceBtn}
-                    onPress={handleSpeak}
-                    disabled={speakingState === 'generating'}
-                  >
-                    {speakingState === 'generating' ? (
-                      <ActivityIndicator color={colors.accent} size="small" />
-                    ) : (
-                      <Ionicons
-                        name={speakingState === 'playing' ? 'pause-circle' : 'volume-high'}
-                        size={24}
-                        color={colors.accent}
-                      />
-                    )}
-                    <Text style={styles.voiceBtnText}>
-                      {speakingState === 'generating'
-                        ? 'Generating voice...'
-                        : speakingState === 'playing'
-                        ? 'Pause'
-                        : 'Listen'}
-                    </Text>
-                  </TouchableOpacity>
-
-                  {speakingState !== 'idle' && (
-                    <TouchableOpacity style={styles.stopBtn} onPress={handleStop}>
-                      <Ionicons name="stop-circle" size={24} color={colors.red} />
-                    </TouchableOpacity>
-                  )}
-                </View>
-
-                <View style={styles.divider} />
-
-                {/* Text Answer */}
-                <Text style={styles.answerText}>{answer}</Text>
-              </>
+              <Text style={styles.answer} selectable>
+                {answer}
+              </Text>
             )}
-          </Card>
+          </SectionCard>
         )}
 
-        <View style={{ height: spacing.xxxl * 2 }} />
+        <Text style={styles.disclaimer}>
+          Educational and research purposes only. Not medical advice. Consult a physician before making health changes.
+        </Text>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  content: {
-    padding: spacing.lg,
-    gap: spacing.lg,
-    paddingBottom: spacing.xxxl * 3,
-  },
-  title: {
-    fontSize: fontSize.xxl,
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
-  subtitle: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    marginTop: -spacing.sm,
-    lineHeight: 20,
-  },
-  tabs: {
-    flexDirection: 'row',
-    gap: 4,
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: 4,
-  },
-  tab: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: borderRadius.md,
-  },
-  tabActive: {
-    backgroundColor: colors.accent,
-  },
-  tabText: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    color: colors.textSecondary,
-  },
-  tabTextActive: {
-    color: colors.onAccent,
-  },
-  chipsScroll: {
-    marginHorizontal: -spacing.lg,
-  },
-  chips: {
-    paddingHorizontal: spacing.lg,
-    gap: 6,
-    flexDirection: 'row',
-  },
-  chip: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 20,
-  },
-  chipText: {
-    fontSize: fontSize.xs,
-    color: colors.textSecondary,
-  },
+  container: { flex: 1, backgroundColor: colors.background },
+  content: { padding: spacing.xl, gap: spacing.md + 2 },
+  stats: { color: colors.textSecondary, fontSize: fontSize.sm },
+  segment: { flexDirection: 'row', gap: 6, backgroundColor: colors.surface, borderRadius: 14, padding: 4, borderWidth: 1, borderColor: colors.border },
+  segBtn: { flex: 1, minHeight: 44, borderRadius: 10, flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'center' },
+  segOn: { backgroundColor: '#2A2414' },
+  segText: { color: colors.textSecondary, fontWeight: '600', fontSize: fontSize.sm + 1 },
+  segTextOn: { color: colors.accentText },
   input: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    padding: 14,
-    color: colors.textPrimary,
-    fontSize: fontSize.md,
-    lineHeight: 22,
+    minHeight: 64, borderRadius: 12, borderWidth: 1, borderColor: colors.borderLight, backgroundColor: colors.surfaceSunken,
+    color: colors.textPrimary, padding: spacing.md, fontSize: fontSize.md, textAlignVertical: 'top',
   },
-  inputLarge: {
-    minHeight: 150,
-    textAlignVertical: 'top',
-  },
-  uploadZone: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.xl,
-    backgroundColor: colors.surface,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    borderStyle: 'dashed',
-    borderRadius: borderRadius.lg,
-    gap: spacing.sm,
-  },
-  uploadZoneText: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    color: colors.textPrimary,
-  },
-  uploadZoneHint: {
-    fontSize: fontSize.xs,
-    color: colors.textTertiary,
-  },
-  fileList: {
-    gap: spacing.xs,
-  },
-  fileItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.md,
-    padding: spacing.sm,
-    paddingHorizontal: spacing.md,
-  },
-  fileName: {
-    flex: 1,
-    fontSize: fontSize.sm,
-    color: colors.textPrimary,
-  },
-  healthKitNote: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    backgroundColor: colors.accentMuted,
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
-    marginTop: spacing.md,
-  },
-  healthKitNoteText: {
-    flex: 1,
-    fontSize: fontSize.xs,
-    color: colors.textSecondary,
-    lineHeight: 18,
-  },
-  orText: {
-    textAlign: 'center',
-    fontSize: fontSize.xs,
-    color: colors.textTertiary,
-  },
-  answerCard: {
-    gap: spacing.md,
-  },
-  loadingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.md,
-    paddingVertical: spacing.lg,
-  },
-  loadingText: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-  },
-  voiceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  voiceBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    backgroundColor: colors.accentMuted,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: borderRadius.md,
-    flex: 1,
-  },
-  voiceBtnText: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    color: colors.accent,
-  },
-  stopBtn: {
-    padding: 8,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.border,
-  },
-  answerText: {
-    fontSize: fontSize.md,
-    lineHeight: 26,
-    color: colors.textPrimary,
-  },
+  chip: { minHeight: 36, paddingHorizontal: 12, borderRadius: 18, borderWidth: 1, borderColor: colors.borderLight, justifyContent: 'center' },
+  chipText: { color: colors.textSecondary, fontSize: 13 },
+  primary: { minHeight: 52, borderRadius: 14, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
+  primaryText: { color: colors.onAccent, fontWeight: '700', fontSize: fontSize.md },
+  secondary: { minHeight: 48, borderRadius: 12, borderWidth: 1, borderColor: colors.borderAccent, alignItems: 'center', justifyContent: 'center' },
+  secondaryText: { color: colors.accentText, fontWeight: '600', fontSize: fontSize.md },
+  off: { opacity: 0.5 },
+  upload: { minHeight: 96, borderRadius: 14, borderWidth: 1, borderStyle: 'dashed', borderColor: colors.borderAccent, backgroundColor: colors.surfaceSunken, alignItems: 'center', justifyContent: 'center', gap: 8 },
+  uploadText: { color: colors.accentText, fontWeight: '600' },
+  error: { color: colors.yellow, fontSize: fontSize.sm },
+  labRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: 6, borderTopWidth: 1, borderTopColor: colors.border },
+  labName: { color: colors.textPrimary, fontSize: fontSize.sm, fontWeight: '600' },
+  labRef: { color: colors.textSecondary, fontSize: 11 },
+  labVal: { color: colors.textPrimary, fontFamily: fonts.display, fontSize: 16 },
+  histRow: { minHeight: 48, justifyContent: 'center', borderTopWidth: 1, borderTopColor: colors.border },
+  histTitle: { color: colors.textPrimary, fontWeight: '600' },
+  histMeta: { color: colors.textSecondary, fontSize: 12 },
+  listen: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 36, paddingHorizontal: 10, borderRadius: 10, borderWidth: 1, borderColor: colors.borderAccent },
+  listenText: { color: colors.accentText, fontWeight: '600', fontSize: 13 },
+  thinking: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  muted: { color: colors.textSecondary },
+  answer: { color: colors.textPrimary, fontSize: fontSize.md, lineHeight: 23 },
+  disclaimer: { color: colors.textSecondary, fontSize: 11, textAlign: 'center', marginTop: spacing.md },
 });

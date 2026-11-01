@@ -144,6 +144,14 @@ export default function RootLayout() {
           options={{ animation: 'slide_from_right' }}
         />
         <Stack.Screen
+          name="weekly-checkin"
+          options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }}
+        />
+        <Stack.Screen
+          name="client/[id]"
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
           name="gyms/index"
           options={{ animation: 'slide_from_right' }}
         />

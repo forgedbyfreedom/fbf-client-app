@@ -214,7 +214,13 @@ export default function TodayScreen() {
     <>
       <SectionCard
         eyebrow="Your coach"
-        title={profile?.coach ? `Message Coach ${profile.coach.name.split(' ')[0]}` : 'Message your coach'}
+        title={
+          (profile?.coaches?.length ?? 0) > 1
+            ? 'Message your coaches'
+            : profile?.coach
+              ? `Message Coach ${profile.coach.name.split(' ')[0]}`
+              : 'Message your coach'
+        }
         subtitle="Questions, updates and check-in feedback in one thread."
         right={
           <TouchableOpacity
@@ -223,7 +229,19 @@ export default function TodayScreen() {
             accessibilityRole="button"
             accessibilityLabel="Open messages"
           >
-            {profile?.coach ? <Avatar uri={profile.coach.avatar_url} name={profile.coach.name} size={44} /> : <Ionicons name="chatbubble-outline" size={18} color={colors.textPrimary} />}
+            {profile?.coaches && profile.coaches.length > 0 ? (
+              <View style={{ flexDirection: 'row' }}>
+                {profile.coaches.slice(0, 3).map((c, i) => (
+                  <View key={c.id} style={{ marginLeft: i ? -12 : 0 }}>
+                    <Avatar uri={c.avatar_url} name={c.name} size={44} />
+                  </View>
+                ))}
+              </View>
+            ) : profile?.coach ? (
+              <Avatar uri={profile.coach.avatar_url} name={profile.coach.name} size={44} />
+            ) : (
+              <Ionicons name="chatbubble-outline" size={18} color={colors.textPrimary} />
+            )}
           </TouchableOpacity>
         }
       />
@@ -285,7 +303,7 @@ export default function TodayScreen() {
       {!desktop && (
       <View style={styles.header}>
         <View style={styles.brand}>
-          <Image source={require('../../assets/fbf-logo.jpg')} style={styles.logo} resizeMode="contain" />
+          <Image source={require('../../assets/fbf-shield.png')} style={styles.logo} resizeMode="contain" />
           <View>
             <Text style={styles.brandName}>FORGED BY FREEDOM</Text>
             <Text style={styles.brandSub}>MONSTERS ARE REAL</Text>
@@ -390,7 +408,7 @@ const styles = StyleSheet.create({
   content: { padding: spacing.xl, gap: spacing.md + 2 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   brand: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm + 2 },
-  logo: { width: 36, height: 36, borderRadius: 8 },
+  logo: { width: 44, height: 42 },
   brandName: { fontFamily: fonts.display, fontSize: 15, fontWeight: '600', letterSpacing: 2, color: colors.textPrimary },
   brandSub: { fontSize: 10, letterSpacing: 2, color: colors.textSecondary },
   contentDesktop: { paddingHorizontal: spacing.xxl },

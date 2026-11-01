@@ -16,6 +16,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useFoodLog } from '../../hooks/useFoodLog';
 import { BrandHeader } from '../../components/ui/BrandHeader';
 import { VoiceMealLog } from '../../components/nutrition/VoiceMealLog';
+import { RunningTotalsBar } from '../../components/nutrition/RunningTotalsBar';
 import { Card } from '../../components/ui/Card';
 import { MealCard } from '../../components/meals/MealCard';
 import { MealEntry } from '../../lib/nutrition-api';
@@ -182,7 +183,7 @@ export default function MealsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { client, refreshClientData, isDemoMode } = useAuth();
-  const { logMeal, isMealLogged, logByVoice } = useFoodLog();
+  const { logMeal, isMealLogged, logByVoice, totals: eatenToday } = useFoodLog();
   const [refreshing, setRefreshing] = useState(false);
   const [selectedDay, setSelectedDay] = useState('Monday');
   const [activeTab, setActiveTab] = useState<TabView>('meals');
@@ -384,6 +385,17 @@ export default function MealsScreen() {
       <View style={{ marginBottom: spacing.md }}>
         <VoiceMealLog onSubmit={logByVoice} />
       </View>
+
+      {/* What you've eaten today vs what's left */}
+      <RunningTotalsBar
+        totals={eatenToday}
+        targets={{
+          calories: client?.target_calories ?? null,
+          protein: client?.target_protein ?? null,
+          carbs: client?.target_carbs ?? null,
+          fats: client?.target_fats ?? null,
+        }}
+      />
 
       {/* Tab Toggle */}
       <View style={styles.tabToggle}>

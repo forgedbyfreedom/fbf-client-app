@@ -37,8 +37,9 @@ export function FoodLogEntryRow({ entry, onPress, onDelete }: FoodLogEntryProps)
           {entry.name}
         </Text>
         <Text style={styles.meta}>
-          {entry.serving_size}
-          {entry.quantity !== 1 ? ` x${entry.quantity}` : ''}
+          {entry.quantity !== 1
+            ? `${+entry.quantity.toFixed(2)} servings · ${entry.serving_size}`
+            : entry.serving_size}
           {entry.confidence === 'low' ? ' · estimate, tap to adjust' : ''}
           {entry.pending ? ' · saving…' : ''}
         </Text>

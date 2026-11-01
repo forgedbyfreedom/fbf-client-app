@@ -190,6 +190,7 @@ export interface CoachClient {
   last_checkin_at: string | null;
   last_weight: number | null;
   today: DailyRow | null;
+  avatar_url?: string | null;
 }
 
 export async function getCoachClients(): Promise<CoachClient[]> {
@@ -206,10 +207,11 @@ export interface HubEvent {
   created_at: string;
   client_id?: number;
   client_name?: string;
+  client_avatar_url?: string | null;
 }
 
 export interface CoachClientDetail {
-  client: { id: number; name: string; email: string };
+  client: { id: number; name: string; email: string; avatar_url?: string | null };
   daily: DailyRow[];
   events: HubEvent[];
   checkins: HubCheckin[];
@@ -244,4 +246,28 @@ export async function getAiStats(): Promise<AiStats | null> {
   } catch {
     return null;
   }
+}
+
+/* ---------------- profile picture ---------------- */
+
+export interface HubProfile {
+  id: number;
+  name: string;
+  avatar_url: string | null;
+  coach: { id: number; name: string; avatar_url: string | null } | null;
+}
+
+export async function getProfile(): Promise<HubProfile> {
+  return apiFetch<HubProfile>('/profile');
+}
+
+export async function uploadAvatar(photo: PickedPhoto): Promise<string | null> {
+  const form = new FormData();
+  await appendFile(form, 'photo', photo, 'avatar.jpg', 'image/jpeg');
+  const r = await multipart<{ avatar_url: string | null }>('/profile/avatar', form);
+  return r.avatar_url;
+}
+
+export async function deleteAvatar(): Promise<void> {
+  await apiFetch('/profile/avatar', { method: 'DELETE' });
 }

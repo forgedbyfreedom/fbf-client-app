@@ -221,7 +221,8 @@ export function BodyScanTracker({ clientId }: BodyScanTrackerProps) {
     { key: 'skeletal_muscle_mass_lbs', label: 'Skeletal Muscle', unit: ' lbs', color: '#3b82f6' },
   ];
 
-  const chartWidth = Dimensions.get('window').width - 80;
+  // Capped so the chart never outgrows its card on a wide desktop window.
+  const chartWidth = Math.min(Dimensions.get('window').width - 80, 560);
 
   if (loading) {
     return (

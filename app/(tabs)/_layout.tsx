@@ -6,6 +6,7 @@ import { Badge } from '../../components/ui/Badge';
 import { useAuth } from '../../hooks/useAuth';
 import { useCoachStatus } from '../../hooks/useCoachStatus';
 import { colors, fontSize } from '../../lib/theme';
+import { useIsDesktop, DESKTOP_CONTENT_MAX } from '../../hooks/useBreakpoint';
 
 export default function TabLayout() {
   // TODO: wire up unread count from chat context
@@ -13,11 +14,14 @@ export default function TabLayout() {
   const { isAdmin } = useAuth();
   // Coaches and Bryan get the Coach console tab; members never see it.
   const isCoach = useCoachStatus();
+  const desktop = useIsDesktop();
 
   return (
     <Tabs
+      tabBar={desktop ? () => null : undefined}
       screenOptions={{
         headerShown: false,
+        sceneStyle: desktop ? styles.desktopScene : undefined,
         tabBarStyle: styles.tabBar,
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textTertiary,
@@ -137,6 +141,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '600',
   },
+  desktopScene: { backgroundColor: colors.background, maxWidth: DESKTOP_CONTENT_MAX, width: '100%', alignSelf: 'center' },
   checkinIcon: {
     marginTop: -4,
   },

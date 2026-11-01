@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Card } from '../ui/Card';
 import { colors, fontSize, spacing } from '../../lib/theme';
 import { Checkin } from '../../types';
@@ -41,17 +41,15 @@ export function TrendChart({
   const min = Math.min(...values);
   const max = Math.max(...values);
   const range = max - min || 1;
-  const chartWidth = Dimensions.get('window').width - 80;
   const chartHeight = 100;
 
   return (
     <Card>
       <Text style={styles.title}>{title}</Text>
       <View style={styles.chartContainer}>
-        <View style={[styles.chart, { width: chartWidth, height: chartHeight }]}>
+        <View style={[styles.chart, { height: chartHeight }]}>
           {data.map((d, i) => {
             const barHeight = ((d.value! - min) / range) * (chartHeight - 20) + 20;
-            const barWidth = Math.max((chartWidth / data.length) - 4, 4);
             return (
               <View
                 key={d.date}
@@ -59,7 +57,8 @@ export function TrendChart({
                   styles.bar,
                   {
                     height: barHeight,
-                    width: barWidth,
+                    flex: 1,
+                    maxWidth: 48,
                     backgroundColor: color,
                     marginHorizontal: 2,
                   },
@@ -103,9 +102,12 @@ const styles = StyleSheet.create({
   chartContainer: {
     marginBottom: spacing.sm,
   },
+  // Bars share the card's width (the old version sized to the whole window and overflowed on web).
   chart: {
     flexDirection: 'row',
     alignItems: 'flex-end',
+    width: '100%',
+    overflow: 'hidden',
   },
   bar: {
     borderRadius: 2,

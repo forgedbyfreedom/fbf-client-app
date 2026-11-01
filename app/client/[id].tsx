@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { Avatar } from '../../components/ui/Avatar';
 import {
   View,
   ScrollView,
@@ -73,10 +74,13 @@ export default function CoachClientScreen() {
 
       {data ? (
         <>
-          <View style={{ gap: 6 }}>
-            <Eyebrow>Client</Eyebrow>
-            <DisplayText size={32}>{data.client.name}</DisplayText>
-            <Text style={styles.muted}>{data.client.email}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.lg }}>
+            <Avatar uri={data.client.avatar_url} name={data.client.name} size={72} />
+            <View style={{ gap: 4, flex: 1 }}>
+              <Eyebrow>Client</Eyebrow>
+              <DisplayText size={30}>{data.client.name}</DisplayText>
+              <Text style={styles.muted}>{data.client.email}</Text>
+            </View>
           </View>
 
           <SectionCard eyebrow="Compliance" title="Last 14 days">

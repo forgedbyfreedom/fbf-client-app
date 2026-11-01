@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SectionCard, Eyebrow, DisplayText } from '../../components/ui/SectionCard';
 import { colors, fontSize, fonts, spacing } from '../../lib/theme';
+import { useIsDesktop } from '../../hooks/useBreakpoint';
 import { generateSpeech, playAudio } from '../../lib/elevenlabs';
 import { VOICE_IDS, type VoicePreference } from './profile';
 import { getToken, wpApiRoot } from '../../lib/wp-auth';
@@ -65,6 +66,7 @@ const formatPassages = (n: number) => (n >= 1_000_000 ? `${(n / 1_000_000).toFix
 
 export default function AICoachScreen() {
   const insets = useSafeAreaInsets();
+  const desktop = useIsDesktop();
   const [tab, setTab] = useState<Tab>('ask');
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
@@ -216,13 +218,23 @@ export default function AICoachScreen() {
               multiline
               accessibilityLabel="Your question"
             />
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
-              {SAMPLE_QUESTIONS.map((q) => (
-                <TouchableOpacity key={q} style={styles.chip} onPress={() => setQuestion(q)} accessibilityRole="button">
-                  <Text style={styles.chipText}>{q}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+            {desktop ? (
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                {SAMPLE_QUESTIONS.map((q) => (
+                  <TouchableOpacity key={q} style={styles.chip} onPress={() => setQuestion(q)} accessibilityRole="button">
+                    <Text style={styles.chipText}>{q}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
+                {SAMPLE_QUESTIONS.map((q) => (
+                  <TouchableOpacity key={q} style={styles.chip} onPress={() => setQuestion(q)} accessibilityRole="button">
+                    <Text style={styles.chipText}>{q}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
             <TouchableOpacity
               style={[styles.primary, (!question.trim() || loading) && styles.off]}
               onPress={() => run(question)}

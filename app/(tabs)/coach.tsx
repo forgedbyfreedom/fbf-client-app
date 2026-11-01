@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { Avatar } from '../../components/ui/Avatar';
 import {
   ActivityIndicator,
   Alert,
@@ -275,13 +276,15 @@ export default function CoachScreen() {
                   onPress={() => a.client_id && router.push(`/client/${a.client_id}`)}
                   accessibilityRole="button"
                 >
-                  <Ionicons
-                    name={a.kind === 'change' ? 'create-outline' : a.kind === 'miss' ? 'alert-circle-outline' : a.kind === 'checkin' ? 'camera-outline' : 'flask-outline'}
-                    size={18}
-                    color={a.kind === 'miss' ? colors.yellow : colors.accentText}
-                  />
+                  <Avatar uri={a.client_avatar_url} name={a.client_name} size={34} />
                   <View style={styles.flex}>
-                    <Text style={styles.alertTitle}>{a.client_name}</Text>
+                    <Text style={styles.alertTitle}>
+                      <Ionicons
+                        name={a.kind === 'change' ? 'create-outline' : a.kind === 'miss' ? 'alert-circle-outline' : a.kind === 'checkin' ? 'camera-outline' : 'flask-outline'}
+                        size={13}
+                        color={a.kind === 'miss' ? colors.yellow : colors.accentText}
+                      />{' '}{a.client_name}
+                    </Text>
                     <Text style={styles.alertText}>{a.summary}</Text>
                   </View>
                   <Text style={styles.alertTime}>{timeAgo(a.created_at)}</Text>
@@ -298,6 +301,7 @@ export default function CoachScreen() {
         )}
         {me?.clients.map((c) => (
           <View key={c.id} style={styles.client}>
+            <Avatar uri={hubClients[c.id]?.avatar_url} name={c.name} size={40} />
             <TouchableOpacity style={styles.flex} onPress={() => router.push(`/client/${c.id}`)} accessibilityRole="button">
               <Text style={styles.clientName}>{c.name}</Text>
               <Text style={styles.clientMeta}>
@@ -402,7 +406,7 @@ const styles = StyleSheet.create({
   note: { color: colors.yellow, fontSize: fontSize.xs, lineHeight: 16 },
   totals: { color: colors.textPrimary, fontSize: fontSize.sm, fontWeight: '600' },
   muted: { color: colors.textSecondary, fontSize: fontSize.sm, textAlign: 'center' },
-  client: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: 16, borderWidth: 1, borderColor: colors.border, padding: spacing.md, marginBottom: spacing.sm },
+  client: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, backgroundColor: colors.surface, borderRadius: 16, borderWidth: 1, borderColor: colors.border, padding: spacing.md, marginBottom: spacing.sm },
   clientName: { color: colors.textPrimary, fontWeight: '600', fontSize: fontSize.md },
   clientMeta: { color: colors.textSecondary, fontSize: fontSize.xs, marginTop: 2 },
   undo: { flexDirection: 'row', alignItems: 'center', gap: 4, padding: spacing.sm },

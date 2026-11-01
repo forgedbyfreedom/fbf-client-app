@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Image, Text, StyleSheet } from 'react-native';
 import { colors, fontSize, spacing } from '../../lib/theme';
+import { useIsDesktop } from '../../hooks/useBreakpoint';
 
 interface BrandHeaderProps {
   title?: string;
@@ -8,6 +9,10 @@ interface BrandHeaderProps {
 }
 
 export function BrandHeader({ title, compact }: BrandHeaderProps) {
+  const desktop = useIsDesktop();
+  if (desktop) {
+    return title ? <Text style={[styles.title, { fontSize: 28, marginBottom: spacing.md }]}>{title}</Text> : null;
+  }
   return (
     <View style={[styles.container, compact && styles.containerCompact]}>
       <Image

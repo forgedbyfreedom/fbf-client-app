@@ -12,6 +12,7 @@
 
 import { apiFetch } from './api';
 import { extractProtocolSections } from './protocol-text';
+import { resolveTargets } from './targets';
 import {
   Checkin,
   Client,
@@ -242,6 +243,10 @@ export async function fetchClientMe(): Promise<ClientMeResponse> {
   const { first, last } = splitName(me.name);
   const programText = me.program_raw_text || me.workout_program || '';
 
+  // WordPress has no structured target fields, so today's targets come from
+  // the coach-approved meal plan (sum of today's meals), else the program text.
+  const targets = resolveTargets({}, mealPlanDays, programText);
+
   const client = {
     id: String(me.id),
     organization_id: '',
@@ -251,11 +256,11 @@ export async function fetchClientMe(): Promise<ClientMeResponse> {
     email: me.email,
     phone: null,
     timezone: 'America/New_York',
-    target_calories: null,
-    target_protein: null,
+    target_calories: targets.calories,
+    target_protein: targets.protein,
     target_steps: null,
-    target_carbs: null,
-    target_fats: null,
+    target_carbs: targets.carbs,
+    target_fats: targets.fats,
     is_active: true,
     leaderboard_opt_in: false,
     weigh_in_day: 'monday',

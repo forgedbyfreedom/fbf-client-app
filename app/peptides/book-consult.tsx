@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   },
   tierCardActive: {
     borderColor: colors.accent,
-    backgroundColor: 'rgba(255,106,0,0.06)',
+    backgroundColor: 'rgba(212, 169, 58, 0.06)',
   },
   tierLabel: {
     fontSize: fontSize.md,
@@ -320,9 +320,9 @@ const styles = StyleSheet.create({
     color: colors.textTertiary,
   },
   reminderBox: {
-    backgroundColor: 'rgba(255,106,0,0.06)',
+    backgroundColor: 'rgba(212, 169, 58, 0.06)',
     borderWidth: 1,
-    borderColor: 'rgba(255,106,0,0.2)',
+    borderColor: 'rgba(212, 169, 58, 0.2)',
     borderRadius: borderRadius.md,
     padding: spacing.lg,
     marginBottom: spacing.xl,

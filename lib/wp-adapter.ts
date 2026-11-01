@@ -11,6 +11,7 @@
  */
 
 import { apiFetch } from './api';
+import { extractProtocolSections } from './protocol-text';
 import {
   Checkin,
   Client,
@@ -271,6 +272,9 @@ export async function fetchClientMe(): Promise<ClientMeResponse> {
     // Extra fields carried through for screens that want the raw text.
     program_name: me.program_name,
     program_raw_text: programText,
+    // Cycle / peptide / medical / supplement sections, verbatim from the
+    // coach-approved program text (WP has no structured fields for these yet).
+    protocol_sections: extractProtocolSections(programText),
     member_status: me.status,
   } as unknown as Client;
 

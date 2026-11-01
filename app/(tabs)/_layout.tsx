@@ -27,16 +27,16 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Dashboard',
+          title: 'Today',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="grid-outline" size={size} color={color} />
+            <Ionicons name="home-outline" size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="workouts"
         options={{
-          title: 'Workouts',
+          title: 'Train',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="barbell-outline" size={size} color={color} />
           ),
@@ -90,12 +90,7 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="compete"
-        options={{
-          title: 'Compete',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="trophy-outline" size={size} color={color} />
-          ),
-        }}
+        options={{ href: null }}
       />
       <Tabs.Screen
         name="coach"
@@ -132,15 +127,15 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: colors.surface,
-    borderTopColor: colors.border,
+    backgroundColor: '#0d0d0f',
+    borderTopColor: '#1f1f22',
     borderTopWidth: 1,
     height: Platform.OS === 'ios' ? 88 : 64,
     paddingTop: 8,
   },
   tabLabel: {
     fontSize: 10,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   checkinIcon: {
     marginTop: -4,

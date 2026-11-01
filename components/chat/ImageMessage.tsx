@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   captionOwn: {
-    color: '#ffffff',
+    color: colors.onAccent,
   },
   captionOther: {
     color: colors.textPrimary,

@@ -1,3 +1,4 @@
+import { reportChange, postDailyLog } from '../lib/hub';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from './useAuth';
@@ -301,20 +302,28 @@ export function useWorkoutLog(): UseWorkoutLogReturn {
     setCurrentDay(null);
     setElapsedSeconds(0);
 
+    postDailyLog({ trained: true, training_skipped: false, workout_name: log.day_name, workout_minutes: durationMin });
+
     return { log, newPRs };
   }, [exercises, startedAt, currentDay, workoutLogs, personalRecords, prHistory, logsKey, prsKey, draftKey]);
 
+  const dayLabel = currentDay ? formatDayName(currentDay) : 'workout';
+
   const renameExercise = useCallback((exerciseIndex: number, newName: string) => {
+    const old = exercises[exerciseIndex]?.exercise_name;
+    if (old && old !== newName) reportChange('workout', `${dayLabel}: swapped ${old} → ${newName}`);
     setExercises((prev) => {
       const updated = [...prev];
       updated[exerciseIndex] = { ...updated[exerciseIndex], exercise_name: newName };
       return updated;
     });
-  }, []);
+  }, [exercises, dayLabel]);
 
   const removeExercise = useCallback((exerciseIndex: number) => {
+    const old = exercises[exerciseIndex];
+    if (old) reportChange('workout', `${dayLabel}: removed ${old.exercise_name}`, [`${old.sets.length} sets`]);
     setExercises((prev) => prev.filter((_, i) => i !== exerciseIndex));
-  }, []);
+  }, [exercises, dayLabel]);
 
   const addExercise = useCallback((name: string, numSets: number, targetReps: string) => {
     const sets = Array.from({ length: numSets }, (_, i) => ({
@@ -324,8 +333,9 @@ export function useWorkoutLog(): UseWorkoutLogReturn {
       actual_reps: '',
       completed: false,
     }));
+    reportChange('workout', `${dayLabel}: added ${name}`, [`${numSets} sets × ${targetReps}`]);
     setExercises((prev) => [...prev, { exercise_name: name, sets }]);
-  }, []);
+  }, [dayLabel]);
 
   const addSet = useCallback((exerciseIndex: number) => {
     setExercises((prev) => {

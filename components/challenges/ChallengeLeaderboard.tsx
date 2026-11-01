@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   rowHighlighted: {
-    backgroundColor: 'rgba(255, 106, 0, 0.08)',
+    backgroundColor: 'rgba(212, 169, 58, 0.08)',
     borderLeftWidth: 3,
     borderLeftColor: colors.accent,
   },

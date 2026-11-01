@@ -270,6 +270,6 @@ const styles = StyleSheet.create({
   addBtnText: {
     fontSize: fontSize.md,
     fontWeight: '700',
-    color: '#fff',
+    color: colors.onAccent,
   },
 });

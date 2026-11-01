@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
   View,
   ScrollView,
@@ -6,54 +6,63 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Image,
   Linking,
 } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
-import { useFoodLog } from '../../hooks/useFoodLog';
 import { api } from '../../lib/api';
 import { Loading } from '../../components/ui/Loading';
 import { Button } from '../../components/ui/Button';
-import { OverviewCard } from '../../components/dashboard/OverviewCard';
-import { StreakCard } from '../../components/dashboard/StreakCard';
-import { TargetsCard } from '../../components/dashboard/TargetsCard';
-import { TrendChart } from '../../components/dashboard/TrendChart';
-import { HistoryList } from '../../components/dashboard/HistoryList';
-import { BodyScanTracker } from '../../components/dashboard/BodyScanTracker';
-import { MetabolicMap } from '../../components/dashboard/MetabolicMap';
-import { VitalStatsCard } from '../../components/dashboard/VitalStatsCard';
-import { Card } from '../../components/ui/Card';
 import { BrandHeader } from '../../components/ui/BrandHeader';
-import { DailyScoreCard } from '../../components/dashboard/DailyScoreCard';
-import { AIInsightsCard } from '../../components/dashboard/AIInsightsCard';
-import { ProgressProjection } from '../../components/dashboard/ProgressProjection';
-import { ActiveChallengesCard } from '../../components/challenges/ActiveChallengesCard';
+import { SectionCard, Eyebrow, DisplayText } from '../../components/ui/SectionCard';
+import { HydrationCard } from '../../components/today/HydrationCard';
+import { AppleHealthCard } from '../../components/today/AppleHealthCard';
 import { CoachUpdatesCard } from '../../components/dashboard/CoachUpdatesCard';
-import { Ionicons } from '@expo/vector-icons';
-import { Platform } from 'react-native';
-import { useHealthKit } from '../../hooks/useHealthKit';
-import { syncHealth, useHealthSyncStatus } from '../../lib/health-sync';
-import { colors, fontSize, spacing } from '../../lib/theme';
+import { useDailySync } from '../../hooks/useDailySync';
+import { postDailyLog } from '../../lib/hub';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert, Platform } from 'react-native';
+import { normalizeMealPlan } from '../../lib/normalize-plan';
+import { getTodaysWorkout, getTodayDayOfWeek, formatDayName } from '../../lib/workout-utils';
+import { colors, fontSize, spacing, fonts } from '../../lib/theme';
 
-export default function DashboardScreen() {
-  const { client, metrics, recentCheckins, streak, loading, clientError, refreshClientData, isAdmin } = useAuth();
-  const { totals: foodLogTotals, hasEntries: hasFoodLog } = useFoodLog();
-  const { available: hkAvailable, authorized: hkAuthorized, requestPermission: hkRequestPermission } = useHealthKit();
+/**
+ * Today — the redesigned home screen. One idea per card:
+ * check-in CTA → coach → today's plan → water → progress → explore.
+ * Everything the old dashboard showed lives on /progress.
+ */
+export default function TodayScreen() {
+  const { client, recentCheckins, streak, loading, clientError, refreshClientData, isAdmin } = useAuth();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [refreshing, setRefreshing] = React.useState(false);
   const [settingUpCoach, setSettingUpCoach] = React.useState(false);
-  const hkStatus = useHealthSyncStatus();
-  const [hkSyncing, setHkSyncing] = React.useState(false);
-  const syncNow = async () => {
-    setHkSyncing(true);
-    try {
-      await syncHealth(true);
-    } finally {
-      setHkSyncing(false);
+  const [skippedToday, setSkippedToday] = React.useState(false);
+  useDailySync();
+
+  const skipKey = `fbf_skip_${new Date().toDateString()}`;
+  React.useEffect(() => {
+    AsyncStorage.getItem(skipKey).then((v) => setSkippedToday(!!v)).catch(() => undefined);
+  }, [skipKey]);
+
+  const skipWorkout = () => {
+    const go = async () => {
+      await postDailyLog({ training_day: true, training_skipped: true, trained: false });
+      await AsyncStorage.setItem(skipKey, '1');
+      setSkippedToday(true);
+    };
+    if (Platform.OS === 'web') {
+      if ((window as any).confirm('Skip today\'s workout? Your coach will be notified.')) go();
+      return;
     }
+    Alert.alert("Skip today's workout?", 'Your coach will be notified.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Skip workout', style: 'destructive', onPress: go },
+    ]);
   };
 
   const onRefresh = useCallback(async () => {
@@ -61,6 +70,48 @@ export default function DashboardScreen() {
     await refreshClientData();
     setRefreshing(false);
   }, [refreshClientData]);
+
+  const todayName = getTodayDayOfWeek();
+
+  const plan = useMemo(() => {
+    if (!client) return null;
+    const workout = getTodaysWorkout(client.workout_program ?? null);
+    const days = normalizeMealPlan(client.meal_plan);
+    const mealDay =
+      days.find((d) => d.day?.toLowerCase() === todayName.toLowerCase()) ?? days[0] ?? null;
+    const meals = mealDay?.meals ?? [];
+    const sum = (k: 'calories' | 'protein_g' | 'carbs_g' | 'fat_g') =>
+      meals.reduce((t, m) => t + (typeof m[k] === 'number' ? (m[k] as number) : 0), 0);
+    const supplements = Array.isArray(client.current_supplements) ? client.current_supplements.length : 0;
+    const protocolCount =
+      (client.current_peds?.length ?? 0) +
+      (client.current_peptides?.length ?? 0) +
+      (client.medical_protocol?.length ?? 0) +
+      (client.protocol_sections?.filter((s) => s.kind !== 'supplements').length ?? 0);
+    return {
+      workout,
+      meals,
+      kcal: sum('calories'),
+      protein: sum('protein_g'),
+      carbs: sum('carbs_g'),
+      fat: sum('fat_g'),
+      supplements,
+      protocolCount,
+    };
+  }, [client, todayName]);
+
+  const weight = useMemo(() => {
+    const withWeight = recentCheckins.filter((c) => c.weight_lbs != null);
+    if (withWeight.length === 0) return null;
+    const latest = withWeight[0].weight_lbs as number;
+    // Compare with the first weigh-in at least 6 days older, else the oldest.
+    const latestDate = new Date(withWeight[0].date).getTime();
+    const prior =
+      withWeight.find((c) => latestDate - new Date(c.date).getTime() >= 6 * 86400000) ??
+      (withWeight.length > 1 ? withWeight[withWeight.length - 1] : null);
+    const delta = prior ? latest - (prior.weight_lbs as number) : null;
+    return { latest, delta };
+  }, [recentCheckins]);
 
   if (loading) return <Loading />;
 
@@ -110,291 +161,258 @@ export default function DashboardScreen() {
     );
   }
 
-  const latestCheckin = recentCheckins[0] ?? null;
-
-  // Calculate weekly body temp average
-  const last7Temps = recentCheckins
-    .slice(0, 7)
-    .map((c) => c.body_temp)
-    .filter((t): t is number => t != null);
-  const avgTemp = last7Temps.length > 0
-    ? (last7Temps.reduce((a, b) => a + b, 0) / last7Temps.length).toFixed(1)
-    : null;
-  const tempWarning = avgTemp && parseFloat(avgTemp) <= 97.4;
+  const now = new Date();
+  const localToday = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const checkedInToday = recentCheckins[0]?.date === localToday;
+  const dateLabel = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
 
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={[
-        styles.content,
-        { paddingTop: insets.top + spacing.md },
-      ]}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor={colors.accent}
-        />
-      }
+      contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.md }]}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
-      <BrandHeader />
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.brand}>
+          <Image source={require('../../assets/fbf-logo.jpg')} style={styles.logo} resizeMode="contain" />
+          <View>
+            <Text style={styles.brandName}>FORGED BY FREEDOM</Text>
+            <Text style={styles.brandSub}>MONSTERS ARE REAL</Text>
+          </View>
+        </View>
+        <TouchableOpacity
+          style={styles.iconBtn}
+          onPress={() => router.push('/(tabs)/profile')}
+          accessibilityRole="button"
+          accessibilityLabel="Profile and settings"
+        >
+          <Ionicons name="person-outline" size={18} color={colors.textPrimary} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Greeting */}
+      <View style={styles.greeting}>
+        <Eyebrow>{dateLabel}{streak?.current_streak ? ` · ${streak.current_streak}-day streak` : ''}</Eyebrow>
+        <DisplayText size={34}>Your plan for today{client.first_name ? `, ${client.first_name}` : ''}.</DisplayText>
+      </View>
+
+      {/* Primary action */}
+      <TouchableOpacity
+        style={[styles.cta, checkedInToday && styles.ctaDone]}
+        onPress={() => router.push('/checkin/0')}
+        accessibilityRole="button"
+        activeOpacity={0.85}
+      >
+        <Ionicons
+          name={checkedInToday ? 'checkmark-circle' : 'add'}
+          size={20}
+          color={checkedInToday ? colors.accentText : colors.onAccent}
+        />
+        <Text style={[styles.ctaText, checkedInToday && styles.ctaTextDone]}>
+          {checkedInToday ? 'Checked in today — update it' : 'Start check-in'}
+        </Text>
+      </TouchableOpacity>
+
+      {/* Coach */}
+      <SectionCard
+        eyebrow="Your coach"
+        title="Message your coach"
+        subtitle="Questions, updates and check-in feedback in one thread."
+        right={
+          <TouchableOpacity
+            style={styles.iconBtnDark}
+            onPress={() => router.push('/(tabs)/chat')}
+            accessibilityRole="button"
+            accessibilityLabel="Open messages"
+          >
+            <Ionicons name="chatbubble-outline" size={18} color={colors.textPrimary} />
+          </TouchableOpacity>
+        }
+      />
+
       <CoachUpdatesCard />
-      <OverviewCard client={client} latestCheckin={latestCheckin} />
 
-      <DailyScoreCard clientId={client.id} />
+      {/* What do I do today? */}
+      <SectionCard eyebrow="What do I do today?" title="Coach-approved plan">
+        <PlanRow
+          n={1}
+          title={plan?.workout ? formatDayName(plan.workout) : 'Rest day'}
+          detail={
+            plan?.workout
+              ? `${plan.workout.exercises.length} exercises`
+              : 'Optional — start any workout from Train'
+          }
+          onPress={() => router.push('/(tabs)/workouts')}
+        />
+        {plan?.workout ? (
+          <TouchableOpacity onPress={skippedToday ? undefined : skipWorkout} disabled={skippedToday} style={styles.skipBtn} accessibilityRole="button">
+            <Text style={styles.skipText}>{skippedToday ? 'Workout skipped today · coach notified' : "Can't train today?"}</Text>
+          </TouchableOpacity>
+        ) : null}
+        <PlanRow
+          n={2}
+          title={plan && plan.meals.length ? `${plan.meals.length} meals${plan.kcal ? ` · ${Math.round(plan.kcal).toLocaleString()} kcal` : ''}` : 'Meal plan'}
+          detail={
+            plan && plan.kcal
+              ? `P ${Math.round(plan.protein)} · C ${Math.round(plan.carbs)} · F ${Math.round(plan.fat)}`
+              : plan && plan.meals.length
+              ? 'Open for foods and amounts'
+              : 'Your coach will publish your meals here'
+          }
+          onPress={() => router.push('/(tabs)/meals')}
+        />
+        <PlanRow
+          n={3}
+          title={plan?.supplements ? `${plan.supplements} supplements` : 'Supplements & protocol'}
+          detail={plan?.protocolCount ? 'Includes your private protocol' : 'Tap to log what you have taken'}
+          onPress={() => router.push('/supplements')}
+        />
+      </SectionCard>
 
-      <StreakCard streak={streak} />
-
-      <ActiveChallengesCard />
-
-      <TargetsCard client={client} latestCheckin={latestCheckin} foodLogTotals={hasFoodLog ? foodLogTotals : null} />
-
-      {/* Apple Health Integration Card — always visible on iOS for 2.5.1 compliance */}
-      {Platform.OS === 'ios' && (
-        <Card style={styles.healthCard}>
-          <View style={styles.healthCardHeader}>
-            <View style={styles.healthCardIcon}>
-              <Ionicons name="heart" size={22} color="#FF2D55" />
-            </View>
-            <View style={styles.healthCardInfo}>
-              <Text style={styles.healthCardTitle}>Apple Health Integration</Text>
-              <Text style={styles.healthCardStatus}>
-                {!hkAvailable
-                  ? 'Apple Health is not available on this device'
-                  : hkAuthorized
-                  ? 'Connected — health data auto-fills your daily check-ins'
-                  : 'Tap to connect and auto-fill your daily check-ins'}
-              </Text>
-            </View>
-          </View>
-          <View style={styles.healthCardTypes}>
-            {['Steps', 'Sleep', 'Heart Rate', 'Body Temp', 'Calories', 'Workouts', 'Weight'].map((type) => (
-              <View key={type} style={styles.healthChip}>
-                <Ionicons name="heart" size={8} color={hkAuthorized ? '#FF2D55' : colors.textTertiary} />
-                <Text style={[styles.healthChipText, hkAuthorized && styles.healthChipTextActive]}>{type}</Text>
-              </View>
-            ))}
-          </View>
-          {hkAvailable && !hkAuthorized && (
-            <TouchableOpacity
-              style={styles.healthConnectBtn}
-              onPress={async () => {
-                if (await hkRequestPermission()) syncNow();
-              }}
-            >
-              <Text style={styles.healthConnectBtnText}>Connect Apple Health</Text>
-            </TouchableOpacity>
-          )}
-          {!!hkStatus && (
-            <Text style={[styles.healthPrivacy, { color: hkStatus.ok ? colors.green : colors.yellow, marginTop: spacing.sm }]}>
-              {hkStatus.message}{' '}
-              {new Date(hkStatus.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
-            </Text>
-          )}
-          {hkAvailable && (
-            <TouchableOpacity style={styles.healthConnectBtn} onPress={syncNow} disabled={hkSyncing}>
-              <Text style={styles.healthConnectBtnText}>{hkSyncing ? 'Syncing…' : 'Sync now'}</Text>
-            </TouchableOpacity>
-          )}
-          <Text style={styles.healthPrivacy}>
-            Your health data is never sold, shared, or used for advertising.
-          </Text>
-        </Card>
-      )}
-
-      <VitalStatsCard client={client} metrics={metrics} latestCheckin={latestCheckin} />
-
-      <AIInsightsCard clientId={client.id} />
-
-      <ProgressProjection clientId={client.id} />
-
-      {recentCheckins.length >= 2 && (
-        <>
-          <TrendChart
-            checkins={recentCheckins}
-            dataKey="weight_lbs"
-            title="Weight Trend"
-            unit=" lbs"
-          />
-          <TrendChart
-            checkins={recentCheckins}
-            dataKey="calories"
-            title="Calories"
-            unit=" kcal"
-            color={colors.gold}
-          />
-          <TrendChart
-            checkins={recentCheckins}
-            dataKey="steps"
-            title="Steps"
-            color={colors.green}
-          />
-          <TrendChart
-            checkins={recentCheckins}
-            dataKey="body_temp"
-            title="Body Temp"
-            unit="°F"
-            color={colors.red}
-          />
-        </>
-      )}
-
-      {avgTemp && (
-        <Card style={tempWarning ? styles.tempCardWarning : undefined}>
-          <View style={styles.tempRow}>
-            <View>
-              <Text style={styles.tempLabel}>7-Day Avg Body Temp</Text>
-              <Text style={[styles.tempValue, tempWarning && { color: colors.red }]}>
-                {avgTemp}°F
-              </Text>
-            </View>
-            {tempWarning && (
-              <Text style={styles.tempAlert}>Possible metabolic slowdown</Text>
-            )}
-          </View>
-        </Card>
-      )}
-
-      <MetabolicMap clientId={client.id} />
-
-      <BodyScanTracker clientId={client.id} />
-
-      <HistoryList checkins={recentCheckins} />
-
-      <TouchableOpacity
-        style={styles.promoCard}
-        onPress={() => WebBrowser.openBrowserAsync('https://forgedbyfreedom.net/')}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.promoTag}>WORLD-CLASS COACHING</Text>
-        <Text style={styles.promoTitle}>Forged by Freedom</Text>
-        <Text style={styles.promoSub}>
-          AI-powered coaching, custom meal plans, real-time check-ins, and the tools to transform your physique. Visit our platform.
-        </Text>
-        <Text style={styles.promoLink}>forgedbyfreedom.net</Text>
+      {/* Weekly check-in (photos) */}
+      <TouchableOpacity onPress={() => router.push('/weekly-checkin')} accessibilityRole="button" activeOpacity={0.85}>
+        <SectionCard
+          eyebrow="Weekly check-in"
+          title="Photos, weight & how the week went"
+          subtitle="Front, side and back. Your coach reviews it and replies."
+          right={<Ionicons name="camera-outline" size={22} color={colors.accentText} />}
+          highlight
+        />
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.recompCard}
-        onPress={() => WebBrowser.openBrowserAsync('https://forgedbyfreedom.net/programs/')}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.recompTag}>PROVEN RESULTS</Text>
-        <Text style={styles.recompTitle}>FBF Recomp Protocol</Text>
-        <Text style={styles.recompSub}>
-          Our signature body recomposition system — lose fat and build muscle simultaneously. Backed by data from hundreds of clients with an average of 12 lbs fat loss and 6 lbs muscle gain in 90 days.
-        </Text>
-        <Text style={styles.promoLink}>Learn More</Text>
+      {/* Water */}
+      <HydrationCard targetOz={client.target_water_oz ?? null} />
+
+      {/* Progress */}
+      <TouchableOpacity onPress={() => router.push('/progress')} accessibilityRole="button" activeOpacity={0.85}>
+        <SectionCard
+          eyebrow="Progress"
+          title={
+            weight
+              ? weight.delta != null
+                ? `${weight.delta > 0 ? '+' : weight.delta < 0 ? '−' : ''}${Math.abs(weight.delta).toFixed(1)} lb`
+                : `${weight.latest.toFixed(1)} lb`
+              : 'Your progress'
+          }
+          subtitle={
+            weight ? `Latest weigh-in ${weight.latest.toFixed(1)} lb · trends, scans and history` : 'Trends, body scans and check-in history'
+          }
+          right={<Ionicons name="chevron-forward" size={20} color={colors.accentText} />}
+        />
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.peptideCard}
-        onPress={() => router.push('/peptides')}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.peptideTag}>PEPTIDE RESEARCH</Text>
-        <Text style={styles.peptideTitle}>Explore Our Peptide Catalog</Text>
-        <Text style={styles.peptideSub}>
-          16 research-backed compounds for recomp, fat loss, longevity, cognitive enhancement, and more. Learn what each peptide does and book a consult for the full protocol.
-        </Text>
-        <Text style={styles.promoLink}>Browse Peptides</Text>
-      </TouchableOpacity>
+      <AppleHealthCard />
 
-      <TouchableOpacity
-        style={styles.storeCard}
-        onPress={() => Linking.openURL('https://www.etsy.com/shop/FBFStrengthNutrition')}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.storeTitle}>FBF Store</Text>
-        <Text style={styles.storeSub}>Shop gear and supplements</Text>
-      </TouchableOpacity>
+      {/* Explore — compact, below the daily work */}
+      <View style={styles.explore}>
+        <Eyebrow style={{ marginBottom: spacing.xs }}>Explore</Eyebrow>
+        <ExploreRow icon="scan-outline" label="Body scan" onPress={() => router.push('/bodyscan')} />
+        <ExploreRow icon="flask-outline" label="Peptide catalog" onPress={() => router.push('/peptides')} />
+        <ExploreRow icon="cart-outline" label="FBF peptide order form" onPress={() => WebBrowser.openBrowserAsync('https://ezformz.net/f/fbf-peptide-catalog-ew6n4u')} />
+        <ExploreRow icon="trophy-outline" label="FBF Recomp Protocol" onPress={() => WebBrowser.openBrowserAsync('https://forgedbyfreedom.net/programs/')} />
+        <ExploreRow icon="globe-outline" label="forgedbyfreedom.net" onPress={() => WebBrowser.openBrowserAsync('https://forgedbyfreedom.net/')} />
+        <ExploreRow icon="bag-outline" label="FBF Store" onPress={() => Linking.openURL('https://www.etsy.com/shop/FBFStrengthNutrition')} last />
+      </View>
 
-      <View style={{ height: spacing.xxxl * 3 }} />
+      <View style={{ height: spacing.xxxl * 2 }} />
     </ScrollView>
   );
 }
 
+function PlanRow({ n, title, detail, onPress }: { n: number; title: string; detail: string; onPress: () => void }) {
+  return (
+    <TouchableOpacity style={styles.planRow} onPress={onPress} accessibilityRole="button" activeOpacity={0.8}>
+      <View style={styles.planNum}>
+        <Text style={styles.planNumText}>{n}</Text>
+      </View>
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={styles.planTitle}>{title}</Text>
+        <Text style={styles.planDetail}>{detail}</Text>
+      </View>
+      <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
+    </TouchableOpacity>
+  );
+}
+
+function ExploreRow({ icon, label, onPress, last }: { icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => void; last?: boolean }) {
+  return (
+    <TouchableOpacity style={[styles.exploreRow, !last && styles.exploreDivider]} onPress={onPress} accessibilityRole="button">
+      <Ionicons name={icon} size={18} color={colors.accentText} />
+      <Text style={styles.exploreLabel}>{label}</Text>
+      <Ionicons name="chevron-forward" size={16} color={colors.textTertiary} />
+    </TouchableOpacity>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  healthCard: {
-    borderColor: 'rgba(255, 45, 85, 0.3)',
-    borderWidth: 1,
-    marginBottom: spacing.lg,
-  },
-  healthCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 12,
-  },
-  healthCardIcon: {
+  container: { flex: 1, backgroundColor: colors.background },
+  content: { padding: spacing.xl, gap: spacing.md + 2 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  brand: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm + 2 },
+  logo: { width: 36, height: 36, borderRadius: 8 },
+  brandName: { fontFamily: fonts.display, fontSize: 15, fontWeight: '600', letterSpacing: 2, color: colors.textPrimary },
+  brandSub: { fontSize: 10, letterSpacing: 2, color: colors.textSecondary },
+  iconBtn: {
     width: 44,
     height: 44,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255, 45, 85, 0.12)',
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  healthCardInfo: {
-    flex: 1,
+  iconBtnDark: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    backgroundColor: colors.surfaceSunken,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  healthCardTitle: {
-    fontSize: fontSize.md,
-    fontWeight: '700',
-    color: '#FF2D55',
-  },
-  healthCardStatus: {
-    fontSize: fontSize.xs,
-    color: colors.textTertiary,
-    marginTop: 2,
-  },
-  healthCardTypes: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    marginBottom: 10,
-  },
-  healthChip: {
+  greeting: { gap: 6, marginTop: spacing.sm },
+  cta: {
+    height: 54,
+    borderRadius: 14,
+    backgroundColor: colors.accent,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(255, 45, 85, 0.06)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    justifyContent: 'center',
+    gap: spacing.sm,
+    marginVertical: spacing.xs,
   },
-  healthChipText: {
-    fontSize: 10,
-    color: colors.textTertiary,
-    fontWeight: '500',
-  },
-  healthChipTextActive: {
-    color: '#FF2D55',
-  },
-  healthConnectBtn: {
-    backgroundColor: '#FF2D55',
-    borderRadius: 8,
-    paddingVertical: 10,
+  ctaDone: { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.borderAccent },
+  ctaText: { color: colors.onAccent, fontWeight: '700', fontSize: fontSize.md },
+  ctaTextDone: { color: colors.accentText },
+  skipBtn: { marginLeft: 40, minHeight: 36, justifyContent: 'center' },
+  skipText: { color: colors.textSecondary, fontSize: 12, textDecorationLine: 'underline' },
+  planRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: 48 },
+  planNum: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#2A2414',
     alignItems: 'center',
-    marginBottom: 8,
+    justifyContent: 'center',
   },
-  healthConnectBtnText: {
-    color: '#fff',
-    fontWeight: '700',
-    fontSize: fontSize.sm,
+  planNumText: { color: colors.accentText, fontSize: 12, fontWeight: '700' },
+  planTitle: { color: colors.textPrimary, fontSize: fontSize.md - 1, fontWeight: '600' },
+  planDetail: { color: colors.textSecondary, fontSize: 12 },
+  explore: {
+    backgroundColor: colors.surface,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.lg + 2,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xs,
   },
-  healthPrivacy: {
-    fontSize: 10,
-    color: colors.textTertiary,
-    textAlign: 'center',
-  },
-  content: {
-    padding: spacing.lg,
-    gap: spacing.lg,
-  },
+  exploreRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: 48 },
+  exploreDivider: { borderBottomWidth: 1, borderBottomColor: colors.border },
+  exploreLabel: { flex: 1, color: colors.textPrimary, fontSize: fontSize.sm + 1 },
   errorContainer: {
     flex: 1,
     backgroundColor: colors.background,
@@ -402,151 +420,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     padding: spacing.xxl,
   },
-  errorTitle: {
-    fontSize: fontSize.xl,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: spacing.md,
-  },
-  errorText: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  tempCardWarning: {
-    borderWidth: 1,
-    borderColor: colors.red,
-  },
-  tempRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  tempLabel: {
-    fontSize: fontSize.xs,
-    color: colors.textTertiary,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  tempValue: {
-    fontSize: fontSize.xxl,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    marginTop: 4,
-  },
-  tempAlert: {
-    fontSize: fontSize.xs,
-    color: colors.red,
-    fontWeight: '600',
-    maxWidth: 120,
-    textAlign: 'right',
-  },
-  promoCard: {
-    backgroundColor: 'rgba(255,106,0,0.08)',
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: colors.accent,
-    padding: spacing.xl,
-    alignItems: 'center',
-  },
-  promoTag: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: colors.accent,
-    letterSpacing: 2,
-    marginBottom: spacing.sm,
-  },
-  promoTitle: {
-    fontSize: fontSize.xl,
-    fontWeight: '800',
-    color: colors.textPrimary,
-    marginBottom: spacing.sm,
-  },
-  promoSub: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: spacing.md,
-  },
-  promoLink: {
-    fontSize: fontSize.sm,
-    fontWeight: '700',
-    color: colors.accent,
-  },
-  recompCard: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: colors.gold,
-    padding: spacing.xl,
-    alignItems: 'center',
-  },
-  recompTag: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: colors.gold,
-    letterSpacing: 2,
-    marginBottom: spacing.sm,
-  },
-  recompTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: '800',
-    color: colors.textPrimary,
-    marginBottom: spacing.sm,
-  },
-  recompSub: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: spacing.md,
-  },
-  peptideCard: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#22c55e',
-    padding: spacing.xl,
-    alignItems: 'center' as const,
-  },
-  peptideTag: {
-    fontSize: 10,
-    fontWeight: '800' as const,
-    color: '#22c55e',
-    letterSpacing: 2,
-    marginBottom: spacing.sm,
-  },
-  peptideTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: '800' as const,
-    color: colors.textPrimary,
-    marginBottom: spacing.sm,
-  },
-  peptideSub: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    textAlign: 'center' as const,
-    lineHeight: 20,
-    marginBottom: spacing.md,
-  },
-  storeCard: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.accent,
-    padding: spacing.lg,
-    alignItems: 'center',
-  },
-  storeTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: '700',
-    color: colors.accent,
-  },
-  storeSub: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    marginTop: 4,
-  },
+  errorTitle: { fontSize: fontSize.xl, fontWeight: '600', color: colors.textPrimary, marginBottom: spacing.md },
+  errorText: { fontSize: fontSize.sm, color: colors.textSecondary, textAlign: 'center', lineHeight: 20 },
 });

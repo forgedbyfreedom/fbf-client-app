@@ -162,6 +162,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
   },
   buttonOff: { opacity: 0.5 },
-  buttonText: { color: '#fff', fontSize: fontSize.md, fontWeight: '700' },
+  buttonText: { color: colors.onAccent, fontSize: fontSize.md, fontWeight: '700' },
   result: { fontSize: fontSize.sm, lineHeight: 19 },
 });

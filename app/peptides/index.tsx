@@ -1,3 +1,4 @@
+import * as WebBrowser from 'expo-web-browser';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -97,6 +98,21 @@ export default function PeptideCatalogScreen() {
         );
       })}
 
+      {/* FBF EZform order form */}
+      <TouchableOpacity
+        style={styles.orderCard}
+        onPress={() => WebBrowser.openBrowserAsync(EZFORM_URL)}
+        activeOpacity={0.8}
+        accessibilityRole="link"
+      >
+        <View style={{ flex: 1, gap: 4 }}>
+          <Text style={styles.orderEyebrow}>ORDER</Text>
+          <Text style={styles.orderTitle}>FBF Peptide Order Form</Text>
+          <Text style={styles.orderSub}>Place an order through our EZform.</Text>
+        </View>
+        <Text style={styles.orderArrow}>›</Text>
+      </TouchableOpacity>
+
       {/* Bottom CTA */}
       <TouchableOpacity
         style={styles.ctaCard}
@@ -116,7 +132,23 @@ export default function PeptideCatalogScreen() {
   );
 }
 
+export const EZFORM_URL = 'https://ezformz.net/f/fbf-peptide-catalog-ew6n4u';
+
 const styles = StyleSheet.create({
+  orderCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.borderAccent,
+    borderRadius: 20,
+    padding: spacing.lg + 2,
+    marginTop: spacing.lg,
+  },
+  orderEyebrow: { fontSize: 10, fontWeight: '700', letterSpacing: 2, color: colors.accent },
+  orderTitle: { fontSize: fontSize.lg, fontWeight: '700', color: colors.textPrimary },
+  orderSub: { fontSize: fontSize.sm, color: colors.textSecondary },
+  orderArrow: { fontSize: 28, color: colors.accentText, marginLeft: spacing.md },
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -205,7 +237,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   categoryBadge: {
-    backgroundColor: 'rgba(255,106,0,0.15)',
+    backgroundColor: 'rgba(212, 169, 58, 0.15)',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     borderRadius: borderRadius.sm,

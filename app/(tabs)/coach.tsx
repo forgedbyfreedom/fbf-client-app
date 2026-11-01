@@ -16,6 +16,9 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { BrandHeader } from '../../components/ui/BrandHeader';
 import { coachApi, AskResult, CoachMe } from '../../lib/coach';
+import { useRouter } from 'expo-router';
+import { getCoachAlerts, getCoachClients, HubEvent, CoachClient as HubClient } from '../../lib/hub';
+import { Eyebrow, DisplayText } from '../../components/ui/SectionCard';
 import { colors, borderRadius, fontSize, spacing } from '../../lib/theme';
 
 /**
@@ -34,6 +37,9 @@ export default function CoachScreen() {
   const [busy, setBusy] = useState<'ask' | 'confirm' | null>(null);
   const [preview, setPreview] = useState<AskResult | null>(null);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const [alerts, setAlerts] = useState<HubEvent[]>([]);
+  const [hubClients, setHubClients] = useState<Record<number, HubClient>>({});
+  const router = useRouter();
 
   const load = useCallback(async () => {
     try {
@@ -42,6 +48,11 @@ export default function CoachScreen() {
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : 'Could not reach Forged by Freedom');
     }
+    // Alerts + compliance come from Coach Hub; the console still works without it.
+    getCoachAlerts().then(setAlerts).catch(() => setAlerts([]));
+    getCoachClients()
+      .then((list) => setHubClients(Object.fromEntries(list.map((c) => [c.id, c]))))
+      .catch(() => setHubClients({}));
   }, []);
 
   useEffect(() => {
@@ -149,6 +160,7 @@ export default function CoachScreen() {
         'Tell Jim great week, keep water at a gallon and a half',
         'Make jane@example.com a coach',
         'Assign Jim and Terri Weldon to Jane',
+        'For Bryan and Wendy, today only, raise carbs to 300',
       ]
     : [
         'Set Jim\'s protein to 220 g',
@@ -165,7 +177,10 @@ export default function CoachScreen() {
         keyboardShouldPersistTaps="handled"
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
       >
-        <Text style={styles.h1}>{me?.is_head ? 'Head Coach' : 'Coach'}</Text>
+        <View style={{ gap: 6, marginBottom: spacing.md }}>
+          <Eyebrow>{me?.is_head ? 'Head coach' : 'Coach'}</Eyebrow>
+          <DisplayText size={32}>Coach console.</DisplayText>
+        </View>
         {loadError && <Text style={styles.error}>{loadError}</Text>}
 
         {/* Ask */}
@@ -189,7 +204,7 @@ export default function CoachScreen() {
             >
               {busy === 'ask' ? (
                 <>
-                  <ActivityIndicator color="#fff" />
+                  <ActivityIndicator color={colors.onAccent} />
                   <Text style={styles.primaryText}>Working it out…</Text>
                 </>
               ) : (
@@ -242,10 +257,38 @@ export default function CoachScreen() {
                 <Text style={styles.secondaryText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.primary, styles.flex, !!busy && styles.off]} disabled={!!busy} onPress={confirm}>
-                {busy === 'confirm' ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryText}>Confirm</Text>}
+                {busy === 'confirm' ? <ActivityIndicator color={colors.onAccent} /> : <Text style={styles.primaryText}>Confirm</Text>}
               </TouchableOpacity>
             </View>
           </View>
+        )}
+
+        {/* Alerts */}
+        {alerts.length > 0 && (
+          <>
+            <Text style={styles.h2}>Alerts · last 14 days</Text>
+            <View style={styles.card}>
+              {alerts.slice(0, 12).map((a) => (
+                <TouchableOpacity
+                  key={a.id}
+                  style={styles.alertRow}
+                  onPress={() => a.client_id && router.push(`/client/${a.client_id}`)}
+                  accessibilityRole="button"
+                >
+                  <Ionicons
+                    name={a.kind === 'change' ? 'create-outline' : a.kind === 'miss' ? 'alert-circle-outline' : a.kind === 'checkin' ? 'camera-outline' : 'flask-outline'}
+                    size={18}
+                    color={a.kind === 'miss' ? colors.yellow : colors.accentText}
+                  />
+                  <View style={styles.flex}>
+                    <Text style={styles.alertTitle}>{a.client_name}</Text>
+                    <Text style={styles.alertText}>{a.summary}</Text>
+                  </View>
+                  <Text style={styles.alertTime}>{timeAgo(a.created_at)}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </>
         )}
 
         {/* Clients */}
@@ -255,13 +298,19 @@ export default function CoachScreen() {
         )}
         {me?.clients.map((c) => (
           <View key={c.id} style={styles.client}>
-            <View style={styles.flex}>
+            <TouchableOpacity style={styles.flex} onPress={() => router.push(`/client/${c.id}`)} accessibilityRole="button">
               <Text style={styles.clientName}>{c.name}</Text>
               <Text style={styles.clientMeta}>
                 {!c.has_program ? 'No program yet' : c.approved ? 'Program approved' : 'Draft — not released'}
                 {me.is_head && c.coach ? ` · Coach: ${c.coach}` : ''}
               </Text>
-            </View>
+              {!!hubClients[c.id] && (
+                <Text style={[styles.clientMeta, hubClients[c.id].alerts_7d ? { color: colors.yellow } : null]}>
+                  {hubClients[c.id].alerts_7d ? `${hubClients[c.id].alerts_7d} alert${hubClients[c.id].alerts_7d === 1 ? '' : 's'} this week` : 'On plan this week'}
+                  {hubClients[c.id].today?.shortfalls?.length ? ` · today: ${hubClients[c.id].today!.shortfalls.join(', ')}` : ''}
+                </Text>
+              )}
+            </TouchableOpacity>
             {c.id !== me.self_id && (
               <TouchableOpacity onPress={() => setText(`Send ${c.name} a note: `)} style={styles.undo}>
                 <Ionicons name="chatbubble-ellipses-outline" size={16} color={colors.accent} />
@@ -299,13 +348,25 @@ export default function CoachScreen() {
   );
 }
 
+function timeAgo(iso: string) {
+  const m = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+  if (m < 60) return `${m}m`;
+  const h = Math.round(m / 60);
+  if (h < 24) return `${h}h`;
+  return `${Math.round(h / 24)}d`;
+}
+
 const styles = StyleSheet.create({
+  alertRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: 48, paddingVertical: 6, borderTopWidth: 1, borderTopColor: colors.border },
+  alertTitle: { color: colors.textPrimary, fontWeight: '600', fontSize: fontSize.sm },
+  alertText: { color: colors.textSecondary, fontSize: fontSize.xs, marginTop: 2 },
+  alertTime: { color: colors.textTertiary, fontSize: fontSize.xs },
   container: { flex: 1, backgroundColor: colors.background },
   center: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center', padding: spacing.xl },
   content: { padding: spacing.lg },
   h1: { fontSize: fontSize.xxl, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.md },
   h2: { fontSize: fontSize.md, fontWeight: '700', color: colors.accent, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: spacing.xl, marginBottom: spacing.sm },
-  card: { backgroundColor: colors.surface, borderRadius: borderRadius.lg, borderWidth: 1, borderColor: colors.border, padding: spacing.lg, gap: spacing.sm },
+  card: { backgroundColor: colors.surface, borderRadius: 20, borderWidth: 1, borderColor: colors.border, padding: spacing.lg, gap: spacing.sm },
   previewCard: { borderColor: colors.accent, marginTop: spacing.md },
   label: { fontSize: fontSize.md, fontWeight: '700', color: colors.textPrimary },
   input: {
@@ -321,7 +382,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   primary: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accent, borderRadius: borderRadius.md, paddingVertical: spacing.md, paddingHorizontal: spacing.lg },
-  primaryText: { color: '#fff', fontWeight: '700', fontSize: fontSize.md },
+  primaryText: { color: colors.onAccent, fontWeight: '700', fontSize: fontSize.md },
   secondary: { alignItems: 'center', justifyContent: 'center', borderRadius: borderRadius.md, borderWidth: 1, borderColor: colors.border, paddingVertical: spacing.md, paddingHorizontal: spacing.lg },
   secondaryText: { color: colors.textSecondary, fontWeight: '600', fontSize: fontSize.md },
   off: { opacity: 0.5 },
@@ -341,7 +402,7 @@ const styles = StyleSheet.create({
   note: { color: colors.yellow, fontSize: fontSize.xs, lineHeight: 16 },
   totals: { color: colors.textPrimary, fontSize: fontSize.sm, fontWeight: '600' },
   muted: { color: colors.textSecondary, fontSize: fontSize.sm, textAlign: 'center' },
-  client: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: borderRadius.md, borderWidth: 1, borderColor: colors.border, padding: spacing.md, marginBottom: spacing.sm },
+  client: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: 16, borderWidth: 1, borderColor: colors.border, padding: spacing.md, marginBottom: spacing.sm },
   clientName: { color: colors.textPrimary, fontWeight: '600', fontSize: fontSize.md },
   clientMeta: { color: colors.textSecondary, fontSize: fontSize.xs, marginTop: 2 },
   undo: { flexDirection: 'row', alignItems: 'center', gap: 4, padding: spacing.sm },

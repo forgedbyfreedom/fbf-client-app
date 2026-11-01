@@ -12,6 +12,9 @@ import { AppleHealthConnect } from '../../components/settings/AppleHealthConnect
 import { OuraConnect } from '../../components/settings/OuraConnect';
 import { GarminConnect } from '../../components/settings/GarminConnect';
 import { colors, fontSize, spacing, borderRadius } from '../../lib/theme';
+import { Avatar } from '../../components/ui/Avatar';
+import { useProfile, changeAvatar, removeAvatar } from '../../hooks/useProfile';
+import { ActivityIndicator, Platform } from 'react-native';
 
 const PUSH_PREF_KEY = 'fbf_push_enabled';
 const CHAT_NOTIF_KEY = 'fbf_chat_notifications';
@@ -27,6 +30,15 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user, client, signOut, isDemoMode, toggleDemoMode } = useAuth();
+  const { profile, loading: photoBusy, error: photoError } = useProfile();
+  const onChangePhoto = async () => {
+    try {
+      await changeAvatar();
+    } catch (e: any) {
+      if (Platform.OS === 'web') (window as any).alert?.(e?.message ?? 'Upload failed');
+      else Alert.alert('Photo', e?.message ?? 'Upload failed');
+    }
+  };
   const [pushEnabled, setPushEnabled] = useState(true);
   const [chatNotifications, setChatNotifications] = useState(true);
   const [voicePref, setVoicePref] = useState<VoicePreference>('male');
@@ -75,6 +87,23 @@ export default function ProfileScreen() {
       ]}
     >
       <BrandHeader title="Profile" />
+
+      <View style={styles.photoRow}>
+        <TouchableOpacity onPress={onChangePhoto} accessibilityRole="button" accessibilityLabel="Change profile photo">
+          <Avatar uri={profile?.avatar_url} name={profile?.name ?? (client ? `${client.first_name} ${client.last_name}` : '')} size={96} />
+          <View style={styles.photoBadge}>
+            {photoBusy ? <ActivityIndicator size="small" color={colors.onAccent} /> : <Ionicons name="camera" size={15} color={colors.onAccent} />}
+          </View>
+        </TouchableOpacity>
+        <View style={{ flex: 1, gap: 6 }}>
+          <Text style={styles.photoName}>{profile?.name ?? (client ? `${client.first_name} ${client.last_name}` : '')}</Text>
+          <View style={{ flexDirection: 'row', gap: 14 }}>
+            <TouchableOpacity onPress={onChangePhoto} accessibilityRole="button"><Text style={styles.photoLink}>{profile?.avatar_url ? 'Change photo' : 'Add a photo'}</Text></TouchableOpacity>
+            {profile?.avatar_url ? <TouchableOpacity onPress={() => removeAvatar()} accessibilityRole="button"><Text style={styles.photoRemove}>Remove</Text></TouchableOpacity> : null}
+          </View>
+          {photoError ? <Text style={styles.photoRemove}>{photoError}</Text> : <Text style={styles.photoHint}>Your coach sees this next to your check-ins.</Text>}
+        </View>
+      </View>
 
       <Card style={styles.card}>
         <View style={styles.infoRow}>
@@ -300,6 +329,12 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
+  photoRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg, marginBottom: spacing.lg },
+  photoBadge: { position: 'absolute', right: 0, bottom: 0, width: 30, height: 30, borderRadius: 15, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: colors.background },
+  photoName: { color: colors.textPrimary, fontSize: fontSize.lg, fontWeight: '700' },
+  photoLink: { color: colors.accentText, fontWeight: '600' },
+  photoRemove: { color: colors.textSecondary },
+  photoHint: { color: colors.textTertiary, fontSize: 12 },
   container: {
     flex: 1,
     backgroundColor: colors.background,

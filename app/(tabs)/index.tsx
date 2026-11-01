@@ -1,4 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
+import { useIsDesktop } from '../../hooks/useBreakpoint';
+import { Avatar } from '../../components/ui/Avatar';
+import { useProfile } from '../../hooks/useProfile';
 import {
   View,
   ScrollView,
@@ -43,6 +46,8 @@ export default function TodayScreen() {
   const [settingUpCoach, setSettingUpCoach] = React.useState(false);
   const [skippedToday, setSkippedToday] = React.useState(false);
   useDailySync();
+  const { profile } = useProfile();
+  const desktop = useIsDesktop();
 
   const skipKey = `fbf_skip_${new Date().toDateString()}`;
   React.useEffect(() => {
@@ -166,74 +171,8 @@ export default function TodayScreen() {
   const checkedInToday = recentCheckins[0]?.date === localToday;
   const dateLabel = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
 
-  return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.md }]}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
-    >
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.brand}>
-          <Image source={require('../../assets/fbf-logo.jpg')} style={styles.logo} resizeMode="contain" />
-          <View>
-            <Text style={styles.brandName}>FORGED BY FREEDOM</Text>
-            <Text style={styles.brandSub}>MONSTERS ARE REAL</Text>
-          </View>
-        </View>
-        <TouchableOpacity
-          style={styles.iconBtn}
-          onPress={() => router.push('/(tabs)/profile')}
-          accessibilityRole="button"
-          accessibilityLabel="Profile and settings"
-        >
-          <Ionicons name="person-outline" size={18} color={colors.textPrimary} />
-        </TouchableOpacity>
-      </View>
-
-      {/* Greeting */}
-      <View style={styles.greeting}>
-        <Eyebrow>{dateLabel}{streak?.current_streak ? ` · ${streak.current_streak}-day streak` : ''}</Eyebrow>
-        <DisplayText size={34}>Your plan for today{client.first_name ? `, ${client.first_name}` : ''}.</DisplayText>
-      </View>
-
-      {/* Primary action */}
-      <TouchableOpacity
-        style={[styles.cta, checkedInToday && styles.ctaDone]}
-        onPress={() => router.push('/checkin/0')}
-        accessibilityRole="button"
-        activeOpacity={0.85}
-      >
-        <Ionicons
-          name={checkedInToday ? 'checkmark-circle' : 'add'}
-          size={20}
-          color={checkedInToday ? colors.accentText : colors.onAccent}
-        />
-        <Text style={[styles.ctaText, checkedInToday && styles.ctaTextDone]}>
-          {checkedInToday ? 'Checked in today — update it' : 'Start check-in'}
-        </Text>
-      </TouchableOpacity>
-
-      {/* Coach */}
-      <SectionCard
-        eyebrow="Your coach"
-        title="Message your coach"
-        subtitle="Questions, updates and check-in feedback in one thread."
-        right={
-          <TouchableOpacity
-            style={styles.iconBtnDark}
-            onPress={() => router.push('/(tabs)/chat')}
-            accessibilityRole="button"
-            accessibilityLabel="Open messages"
-          >
-            <Ionicons name="chatbubble-outline" size={18} color={colors.textPrimary} />
-          </TouchableOpacity>
-        }
-      />
-
-      <CoachUpdatesCard />
-
-      {/* What do I do today? */}
+  const planCard = (
+    <>
       <SectionCard eyebrow="What do I do today?" title="Coach-approved plan">
         <PlanRow
           n={1}
@@ -269,8 +208,29 @@ export default function TodayScreen() {
           onPress={() => router.push('/supplements')}
         />
       </SectionCard>
-
-      {/* Weekly check-in (photos) */}
+    </>
+  );
+  const coachCard = (
+    <>
+      <SectionCard
+        eyebrow="Your coach"
+        title={profile?.coach ? `Message Coach ${profile.coach.name.split(' ')[0]}` : 'Message your coach'}
+        subtitle="Questions, updates and check-in feedback in one thread."
+        right={
+          <TouchableOpacity
+            style={profile?.coach ? undefined : styles.iconBtnDark}
+            onPress={() => router.push('/(tabs)/chat')}
+            accessibilityRole="button"
+            accessibilityLabel="Open messages"
+          >
+            {profile?.coach ? <Avatar uri={profile.coach.avatar_url} name={profile.coach.name} size={44} /> : <Ionicons name="chatbubble-outline" size={18} color={colors.textPrimary} />}
+          </TouchableOpacity>
+        }
+      />
+    </>
+  );
+  const weeklyCard = (
+    <>
       <TouchableOpacity onPress={() => router.push('/weekly-checkin')} accessibilityRole="button" activeOpacity={0.85}>
         <SectionCard
           eyebrow="Weekly check-in"
@@ -280,11 +240,10 @@ export default function TodayScreen() {
           highlight
         />
       </TouchableOpacity>
-
-      {/* Water */}
-      <HydrationCard targetOz={client.target_water_oz ?? null} />
-
-      {/* Progress */}
+    </>
+  );
+  const progressCard = (
+    <>
       <TouchableOpacity onPress={() => router.push('/progress')} accessibilityRole="button" activeOpacity={0.85}>
         <SectionCard
           eyebrow="Progress"
@@ -301,10 +260,10 @@ export default function TodayScreen() {
           right={<Ionicons name="chevron-forward" size={20} color={colors.accentText} />}
         />
       </TouchableOpacity>
-
-      <AppleHealthCard />
-
-      {/* Explore — compact, below the daily work */}
+    </>
+  );
+  const exploreCard = (
+    <>
       <View style={styles.explore}>
         <Eyebrow style={{ marginBottom: spacing.xs }}>Explore</Eyebrow>
         <ExploreRow icon="scan-outline" label="Body scan" onPress={() => router.push('/bodyscan')} />
@@ -314,6 +273,87 @@ export default function TodayScreen() {
         <ExploreRow icon="globe-outline" label="forgedbyfreedom.net" onPress={() => WebBrowser.openBrowserAsync('https://forgedbyfreedom.net/')} />
         <ExploreRow icon="bag-outline" label="FBF Store" onPress={() => Linking.openURL('https://www.etsy.com/shop/FBFStrengthNutrition')} last />
       </View>
+    </>
+  );
+  return (
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={[styles.content, desktop && styles.contentDesktop, { paddingTop: insets.top + (desktop ? spacing.xl : spacing.md) }]}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+    >
+      {/* Header — the desktop sidebar already carries the logo and profile */}
+      {!desktop && (
+      <View style={styles.header}>
+        <View style={styles.brand}>
+          <Image source={require('../../assets/fbf-logo.jpg')} style={styles.logo} resizeMode="contain" />
+          <View>
+            <Text style={styles.brandName}>FORGED BY FREEDOM</Text>
+            <Text style={styles.brandSub}>MONSTERS ARE REAL</Text>
+          </View>
+        </View>
+        <TouchableOpacity
+          style={styles.avatarBtn}
+          onPress={() => router.push('/(tabs)/profile')}
+          accessibilityRole="button"
+          accessibilityLabel="Profile and settings"
+        >
+          <Avatar uri={profile?.avatar_url} name={profile?.name ?? client.first_name} size={40} />
+        </TouchableOpacity>
+      </View>
+      )}
+
+      {/* Greeting + primary action */}
+      <View style={desktop ? styles.heroDesktop : undefined}>
+        <View style={[styles.greeting, desktop && { flex: 1 }]}>
+        <Eyebrow>{dateLabel}{streak?.current_streak ? ` · ${streak.current_streak}-day streak` : ''}</Eyebrow>
+        <DisplayText size={34}>Your plan for today{client.first_name ? `, ${client.first_name}` : ''}.</DisplayText>
+        </View>
+        <View style={desktop ? { width: 320 } : undefined}>
+      <TouchableOpacity
+        style={[styles.cta, checkedInToday && styles.ctaDone]}
+        onPress={() => router.push('/checkin/0')}
+        accessibilityRole="button"
+        activeOpacity={0.85}
+      >
+        <Ionicons
+          name={checkedInToday ? 'checkmark-circle' : 'add'}
+          size={20}
+          color={checkedInToday ? colors.accentText : colors.onAccent}
+        />
+        <Text style={[styles.ctaText, checkedInToday && styles.ctaTextDone]}>
+          {checkedInToday ? 'Checked in today — update it' : 'Start check-in'}
+        </Text>
+      </TouchableOpacity>
+        </View>
+      </View>
+
+      <CoachUpdatesCard />
+
+      {desktop ? (
+        <View style={styles.columns}>
+          <View style={styles.colMain}>
+            {planCard}
+            <HydrationCard targetOz={client.target_water_oz ?? null} />
+            <AppleHealthCard />
+          </View>
+          <View style={styles.colSide}>
+            {coachCard}
+            {weeklyCard}
+            {progressCard}
+            {exploreCard}
+          </View>
+        </View>
+      ) : (
+        <>
+          {coachCard}
+          {planCard}
+          {weeklyCard}
+          <HydrationCard targetOz={client.target_water_oz ?? null} />
+          {progressCard}
+          <AppleHealthCard />
+          {exploreCard}
+        </>
+      )}
 
       <View style={{ height: spacing.xxxl * 2 }} />
     </ScrollView>
@@ -353,6 +393,12 @@ const styles = StyleSheet.create({
   logo: { width: 36, height: 36, borderRadius: 8 },
   brandName: { fontFamily: fonts.display, fontSize: 15, fontWeight: '600', letterSpacing: 2, color: colors.textPrimary },
   brandSub: { fontSize: 10, letterSpacing: 2, color: colors.textSecondary },
+  contentDesktop: { paddingHorizontal: spacing.xxl },
+  heroDesktop: { flexDirection: 'row', alignItems: 'flex-end', gap: spacing.xl },
+  columns: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.lg },
+  colMain: { flex: 3, gap: spacing.md + 2, minWidth: 0 },
+  colSide: { flex: 2, gap: spacing.md + 2, minWidth: 0 },
+  avatarBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   iconBtn: {
     width: 44,
     height: 44,

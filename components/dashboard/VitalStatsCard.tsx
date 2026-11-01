@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { api } from '../../lib/api';
+import { scansApi } from '../../lib/scans';
 import { Card } from '../ui/Card';
 import { BodyScan, Client, ClientMetrics } from '../../types';
 import { colors, fontSize, spacing, borderRadius } from '../../lib/theme';
@@ -16,14 +16,16 @@ export function VitalStatsCard({ client, metrics, latestCheckin }: VitalStatsCar
   const [scans, setScans] = useState<BodyScan[]>([]);
 
   useEffect(() => {
-    api.get<{ scans: BodyScan[] }>(`/api/clients/${client.id}/scans`)
-      .then((res) => setScans(res.scans || []))
+    // Body scans live on forgedbyfreedom.net (fbf-sync/v1/scans), newest first.
+    scansApi
+      .list()
+      .then((list) => setScans([...list].sort((a, b) => String(b.scan_date).localeCompare(String(a.scan_date)))))
       .catch(() => {});
   }, [client.id]);
 
   const latestScan = scans[0] || null;
   const firstScan = scans.length > 1 ? scans[scans.length - 1] : null;
-  const currentWeight = latestCheckin?.weight_lbs ?? metrics?.weight_current ?? client.last_weight ?? null;
+  const currentWeight = latestCheckin?.weight_lbs ?? client.last_weight ?? metrics?.weight_current ?? latestScan?.total_weight_lbs ?? null;
 
   // Body composition deltas
   const bfDelta = firstScan && latestScan?.body_fat_pct != null && firstScan.body_fat_pct != null

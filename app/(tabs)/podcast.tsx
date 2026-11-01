@@ -23,7 +23,7 @@ const PODCAST_TOPICS = [
   { id: 'motivation', label: 'Motivation', icon: 'flame-outline' as const, prompt: 'Give an energizing 60-second motivational speech for someone on their fitness journey. Be encouraging, direct, and reference the discipline of daily habits.' },
   { id: 'nutrition', label: 'Nutrition Tips', icon: 'nutrition-outline' as const, prompt: 'Share a concise, practical nutrition tip for someone focused on body recomposition. Include one actionable takeaway they can implement today.' },
   { id: 'recovery', label: 'Recovery', icon: 'bed-outline' as const, prompt: 'Explain one key recovery strategy for athletes in under 60 seconds. Cover why it matters and how to do it properly.' },
-  { id: 'mindset', label: 'Mindset', icon: 'brain-outline' as const, prompt: 'Deliver a short podcast segment on mental toughness and consistency in fitness. Reference how small daily wins compound over time.' },
+  { id: 'mindset', label: 'Mindset', icon: 'bulb-outline' as const, prompt: 'Deliver a short podcast segment on mental toughness and consistency in fitness. Reference how small daily wins compound over time.' },
   { id: 'training', label: 'Training', icon: 'barbell-outline' as const, prompt: 'Share one training principle or technique tip in under 60 seconds. Be specific and practical.' },
   { id: 'custom', label: 'Custom Topic', icon: 'create-outline' as const, prompt: '' },
 ];

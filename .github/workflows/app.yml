@@ -1,0 +1,70 @@
+name: App checks & over-the-air update
+
+# Every pull request: type-check and build the iOS bundle.
+# Every merge to wordpress-backend (the 1.1.x line that is actually shipped):
+# the same checks, then publish an EAS Update so installed apps pick it up on
+# their next launch — no App Store review.
+
+on:
+  pull_request:
+  push:
+    branches: [wordpress-backend]
+  workflow_dispatch:
+
+concurrency:
+  group: app-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Type-check
+        run: npx tsc --noEmit -p .
+      - name: Build iOS bundle
+        run: npx expo export --platform ios --output-dir /tmp/expo-dist
+
+  publish:
+    needs: check
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/wordpress-backend'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Require EXPO_TOKEN
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::error::Add an EXPO_TOKEN repository secret (expo.dev → Account settings → Access tokens) to publish updates."
+            exit 1
+          fi
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      # The installed binary was built with eas.json's production env baked in.
+      # An update must carry the same values or startup code that reads them
+      # (e.g. the Supabase client) throws on launch. eas.json is the one source.
+      - name: Load production env from eas.json
+        run: |
+          node -e '
+            const env = require("./eas.json").build.production.env || {};
+            const fs = require("fs");
+            for (const [k, v] of Object.entries(env)) fs.appendFileSync(process.env.GITHUB_ENV, `${k}=${v}\n`);
+            console.log("Loaded:", Object.keys(env).join(", "));
+          '
+      - name: Publish update to production
+        env:
+          MSG: ${{ github.event.head_commit.message || 'Manual publish' }}
+        run: eas update --channel production --message "$(printf '%s' "$MSG" | head -n1 | cut -c1-200)" --non-interactive

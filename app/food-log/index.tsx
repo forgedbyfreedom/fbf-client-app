@@ -18,6 +18,7 @@ import { RunningTotalsBar } from '../../components/nutrition/RunningTotalsBar';
 import { FoodLogEntryRow } from '../../components/nutrition/FoodLogEntry';
 import { EditFoodModal } from '../../components/nutrition/EditFoodModal';
 import { QuickAddFood } from '../../components/nutrition/QuickAddFood';
+import { VoiceMealLog } from '../../components/nutrition/VoiceMealLog';
 import { Card } from '../../components/ui/Card';
 import { colors, fontSize, spacing, borderRadius } from '../../lib/theme';
 
@@ -38,7 +39,20 @@ export default function FoodLogScreen() {
     clearLog,
     populateFromMealPlan,
     hasEntries,
+    logByVoice,
+    refresh,
+    syncError,
+    pendingCount,
   } = useFoodLog();
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refresh();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refresh]);
 
   const [editEntry, setEditEntry] = useState<FoodLogEntry | null>(null);
   const [editVisible, setEditVisible] = useState(false);
@@ -132,9 +146,24 @@ export default function FoodLogScreen() {
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />
+        }
       >
         {/* Running Totals */}
         <RunningTotalsBar totals={totals} targets={targets} />
+
+        {(pendingCount > 0 || syncError) && (
+          <Text style={styles.syncNote}>
+            {pendingCount > 0
+              ? `${pendingCount} change${pendingCount === 1 ? '' : 's'} saved on your phone — will upload when you're back online.`
+              : `Couldn't refresh from Forged by Freedom: ${syncError}. Pull down to retry.`}
+          </Text>
+        )}
+
+        {/* Dictate a meal */}
+        <VoiceMealLog onSubmit={logByVoice} />
 
         {/* Action Buttons */}
         <View style={styles.actionRow}>
@@ -157,7 +186,7 @@ export default function FoodLogScreen() {
               <Ionicons name="nutrition-outline" size={48} color={colors.textTertiary} />
               <Text style={styles.emptyTitle}>No Foods Logged</Text>
               <Text style={styles.emptySubtitle}>
-                Tap "Quick Add" to log a food, or load today's meals from your meal plan.
+                Say what you ate above, tap "Quick Add", or load today's meals from your meal plan.
               </Text>
             </View>
           </Card>
@@ -278,6 +307,12 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     fontWeight: '600',
     color: colors.accent,
+  },
+  syncNote: {
+    fontSize: fontSize.xs,
+    color: colors.yellow,
+    marginBottom: spacing.md,
+    lineHeight: 16,
   },
   emptyCard: {
     marginTop: spacing.md,

@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Platform } from 'react-native';
+import { NativeModules, Platform } from 'react-native';
+import { HEALTH_PERMISSIONS } from '../lib/health-sync';
 
 // react-native-health is iOS-only; we dynamically require it to avoid crashes on Android/web
 let AppleHealthKit: any = null;
@@ -8,22 +9,15 @@ let HealthKitPermissions: any = null;
 if (Platform.OS === 'ios') {
   try {
     const RNHealth = require('react-native-health');
-    AppleHealthKit = RNHealth.default;
-    HealthKitPermissions = {
-      permissions: {
-        read: [
-          RNHealth.HealthKitPermission?.StepCount ?? 'StepCount',
-          RNHealth.HealthKitPermission?.SleepAnalysis ?? 'SleepAnalysis',
-          RNHealth.HealthKitPermission?.HeartRate ?? 'HeartRate',
-          RNHealth.HealthKitPermission?.RestingHeartRate ?? 'RestingHeartRate',
-          RNHealth.HealthKitPermission?.BodyTemperature ?? 'BodyTemperature',
-          RNHealth.HealthKitPermission?.ActiveEnergyBurned ?? 'ActiveEnergyBurned',
-          RNHealth.HealthKitPermission?.Workout ?? 'Workout',
-          RNHealth.HealthKitPermission?.Weight ?? 'Weight',
-        ],
-        write: [],
-      },
-    };
+    // module.exports = HealthKit (no default export): `.default` alone is undefined.
+    // Library export may be an empty copy of the native module (new architecture);
+    // fall back to the native module itself. See lib/health-sync.ts.
+    const lib = RNHealth?.default ?? RNHealth;
+    const native = (NativeModules as any).AppleHealthKit;
+    AppleHealthKit =
+      lib && typeof lib.initHealthKit === 'function' ? lib : native && typeof native.initHealthKit === 'function' ? native : null;
+    // One shared read list with the background sync so iOS asks once.
+    HealthKitPermissions = HEALTH_PERMISSIONS;
   } catch {
     // react-native-health not installed or not linked
   }
@@ -76,7 +70,7 @@ export function useHealthKit() {
     setAvailable(true);
 
     // Check if already authorized on mount (and when app returns from Settings)
-    AppleHealthKit.initHealthKit(HealthKitPermissions.permissions, (err: any) => {
+    AppleHealthKit.initHealthKit(HealthKitPermissions, (err: any) => {
       if (!err) {
         setAuthorized(true);
       }
@@ -87,7 +81,7 @@ export function useHealthKit() {
     if (!AppleHealthKit || !HealthKitPermissions) return false;
 
     return new Promise((resolve) => {
-      AppleHealthKit.initHealthKit(HealthKitPermissions.permissions, (err: any) => {
+      AppleHealthKit.initHealthKit(HealthKitPermissions, (err: any) => {
         if (err) {
           console.warn('[HealthKit] Permission denied or error:', err);
           setAuthorized(false);

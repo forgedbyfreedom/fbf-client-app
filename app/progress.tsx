@@ -21,6 +21,9 @@ import { AIInsightsCard } from '../components/dashboard/AIInsightsCard';
 import { ProgressProjection } from '../components/dashboard/ProgressProjection';
 import { ActiveChallengesCard } from '../components/challenges/ActiveChallengesCard';
 import { colors, fontSize, spacing } from '../lib/theme';
+import { PhotoCompare } from '../components/progress/PhotoCompare';
+import { SectionCard } from '../components/ui/SectionCard';
+import { getCheckins, HubCheckin } from '../lib/hub';
 
 /**
  * Progress — everything the old dashboard showed, moved off the home screen
@@ -32,10 +35,15 @@ export default function ProgressScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [refreshing, setRefreshing] = React.useState(false);
+  const [checkins, setCheckins] = React.useState<HubCheckin[]>([]);
+  React.useEffect(() => {
+    getCheckins().then(setCheckins).catch(() => setCheckins([]));
+  }, []);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await refreshClientData();
+    getCheckins().then(setCheckins).catch(() => undefined);
     setRefreshing(false);
   }, [refreshClientData]);
 
@@ -72,6 +80,25 @@ export default function ProgressScreen() {
         <Eyebrow>Every change has a story</Eyebrow>
         <DisplayText size={34}>Your progress.</DisplayText>
       </View>
+
+      <PhotoCompare checkins={checkins} />
+
+      {checkins.find((c) => c.feedback) ? (
+        <SectionCard
+          eyebrow="From your coach"
+          title={`Feedback · ${new Date(checkins.find((c) => c.feedback)!.feedback_at || checkins.find((c) => c.feedback)!.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+          highlight
+        >
+          <Text style={{ color: colors.textPrimary, fontSize: fontSize.sm + 1, lineHeight: 21 }}>{checkins.find((c) => c.feedback)!.feedback}</Text>
+        </SectionCard>
+      ) : null}
+
+      <TouchableOpacity onPress={() => router.push('/bodyscan')} accessibilityRole="button">
+        <SectionCard eyebrow="Body scan" title="360° body composition" subtitle="Body fat, lean mass and measurements from one slow turn on video." right={<Ionicons name="scan-outline" size={22} color={colors.accentText} />} />
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => router.push('/weekly-checkin')} accessibilityRole="button">
+        <SectionCard eyebrow="Weekly check-in" title="New check-in" subtitle="Weight, how the week went, and three photos." right={<Ionicons name="camera-outline" size={22} color={colors.accentText} />} />
+      </TouchableOpacity>
 
       <OverviewCard client={client} latestCheckin={latestCheckin} />
 

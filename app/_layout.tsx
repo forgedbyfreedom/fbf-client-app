@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Platform, StyleSheet } from 'react-native';
+import { View, Platform, StyleSheet, AppState } from 'react-native';
 import { Stack, Redirect, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as Linking from 'expo-linking';
@@ -9,6 +9,9 @@ import { useAuth } from '../hooks/useAuth';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { Loading } from '../components/ui/Loading';
 import { colors } from '../lib/theme';
+import { syncHealth } from '../lib/health-sync';
+import { refreshInbox, resetInbox } from '../lib/coach-inbox';
+import { flush as flushFoodLog } from '../lib/food-log-store';
 import { useFonts, Oswald_600SemiBold, Oswald_700Bold } from '@expo-google-fonts/oswald';
 
 function RootNavigation() {
@@ -23,6 +26,32 @@ function RootNavigation() {
 
 function PushNotificationHandler() {
   usePushNotifications();
+  return null;
+}
+
+/**
+ * While signed in: push Apple Health to the site and drain any food-log
+ * changes saved offline — on launch and every time the app comes back to
+ * the foreground. Both are throttled/idempotent, so this is cheap.
+ */
+function BackgroundSyncHandler() {
+  const { session } = useAuth();
+  useEffect(() => {
+    if (!session) {
+      resetInbox(); // never show the previous account's coach updates
+      return;
+    }
+    const run = () => {
+      syncHealth().catch(() => undefined);
+      flushFoodLog().catch(() => undefined);
+      refreshInbox().catch(() => undefined);
+    };
+    run();
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') run();
+    });
+    return () => sub.remove();
+  }, [session]);
   return null;
 }
 
@@ -115,6 +144,17 @@ export default function RootLayout() {
           options={{ animation: 'slide_from_right' }}
         />
         <Stack.Screen
+          name="weekly-checkin"
+          options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }}
+        />
+        <Stack.Screen name="bodyscan/index" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="bodyscan/capture" options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="bodyscan/report" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen
+          name="client/[id]"
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
           name="gyms/index"
           options={{ animation: 'slide_from_right' }}
         />
@@ -130,9 +170,14 @@ export default function RootLayout() {
           name="challenges/[id]"
           options={{ animation: 'slide_from_right' }}
         />
+        <Stack.Screen
+          name="coach-updates"
+          options={{ animation: 'slide_from_right' }}
+        />
       </Stack>
       <RootNavigation />
       {Platform.OS !== 'web' && <PushNotificationHandler />}
+      <BackgroundSyncHandler />
       <DeepLinkHandler />
     </AuthProvider>
   );

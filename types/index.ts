@@ -115,6 +115,8 @@ export interface Client {
   current_peds: PedItem[];
   current_peptides: PeptideItem[];
   meal_plan: any[] | null;
+  /** Coach-written program text (WordPress App Bridge). */
+  program_raw_text?: string | null;
   workout_program: WorkoutDay[] | null;
   cardio_protocol: CardioProtocol[] | null;
   medical_protocol: MedicalProtocol[] | null;
@@ -122,7 +124,6 @@ export interface Client {
   created_at: string;
   target_water_oz?: number | null;
   program_name?: string | null;
-  program_raw_text?: string | null;
   protocol_sections?: { title: string; kind: 'cycle' | 'peptides' | 'medical' | 'supplements'; body: string }[];
 }
 
@@ -369,7 +370,11 @@ export interface FoodLogEntry {
   quantity: number;
   meal_label: string;
   timestamp: string;
-  source: 'manual' | 'meal_plan' | 'barcode';
+  source: 'manual' | 'meal_plan' | 'barcode' | 'voice';
+  /** Set on dictated items: how sure the macro estimate is. */
+  confidence?: 'high' | 'medium' | 'low';
+  /** True while saved on the phone but not yet on forgedbyfreedom.net. */
+  pending?: boolean;
 }
 
 export interface DailyFoodLog {

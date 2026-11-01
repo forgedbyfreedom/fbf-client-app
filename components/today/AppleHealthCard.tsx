@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useHealthKit } from '../../hooks/useHealthKit';
+import { syncHealth, useHealthSyncStatus } from '../../lib/health-sync';
 import { SectionCard } from '../ui/SectionCard';
 import { colors, spacing, fontSize } from '../../lib/theme';
 
@@ -11,6 +12,16 @@ const TYPES = ['Steps', 'Sleep', 'Heart Rate', 'Body Temp', 'Calories', 'Workout
 
 export function AppleHealthCard() {
   const { available, authorized, requestPermission } = useHealthKit();
+  const status = useHealthSyncStatus();
+  const [syncing, setSyncing] = React.useState(false);
+  const syncNow = async () => {
+    setSyncing(true);
+    try {
+      await syncHealth(true);
+    } finally {
+      setSyncing(false);
+    }
+  };
   if (Platform.OS !== 'ios') return null;
 
   return (
@@ -38,9 +49,25 @@ export function AppleHealthCard() {
         ))}
       </View>
       {available && !authorized ? (
-        <TouchableOpacity style={styles.btn} onPress={() => requestPermission()} accessibilityRole="button">
+        <TouchableOpacity
+          style={styles.btn}
+          onPress={async () => {
+            if (await requestPermission()) syncNow();
+          }}
+          accessibilityRole="button"
+        >
           <Text style={styles.btnText}>Connect Apple Health</Text>
         </TouchableOpacity>
+      ) : null}
+      {available && authorized ? (
+        <TouchableOpacity style={styles.syncBtn} onPress={syncNow} disabled={syncing} accessibilityRole="button">
+          <Text style={styles.syncText}>{syncing ? 'Syncing…' : 'Sync now'}</Text>
+        </TouchableOpacity>
+      ) : null}
+      {status ? (
+        <Text style={[styles.privacy, { color: status.ok ? colors.green : colors.yellow }]}>
+          {status.message} {new Date(status.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+        </Text>
       ) : null}
       <Text style={styles.privacy}>Your health data is never sold, shared, or used for advertising.</Text>
     </SectionCard>
@@ -62,5 +89,7 @@ const styles = StyleSheet.create({
   chipTextOn: { color: '#FF6B88' },
   btn: { backgroundColor: '#FF2D55', borderRadius: 12, minHeight: 46, alignItems: 'center', justifyContent: 'center' },
   btnText: { color: '#fff', fontWeight: '700', fontSize: fontSize.sm },
+  syncBtn: { borderWidth: 1, borderColor: colors.borderAccent, borderRadius: 12, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
+  syncText: { color: colors.accentText, fontWeight: '700', fontSize: fontSize.sm },
   privacy: { fontSize: 11, color: colors.textSecondary, textAlign: 'center', marginTop: spacing.xs },
 });

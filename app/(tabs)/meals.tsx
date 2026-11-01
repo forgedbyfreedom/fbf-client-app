@@ -30,6 +30,8 @@ import {
   generateShoppingList,
 } from '../../lib/nutrition-api';
 import { normalizeMealPlan } from '../../lib/normalize-plan';
+import { reportChange } from '../../lib/hub';
+import { describeMealChange } from '../../lib/plan-diff';
 import { generateMealPlanPDF, generateGroceryListPDF } from '../../lib/pdf-export';
 
 // Fallback meal plan for demo/new users without a coach-assigned plan
@@ -178,7 +180,7 @@ type TabView = 'meals' | 'shopping';
 export default function MealsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { client, refreshClientData } = useAuth();
+  const { client, refreshClientData, isDemoMode } = useAuth();
   const { logMeal, isMealLogged } = useFoodLog();
   const [refreshing, setRefreshing] = useState(false);
   const [selectedDay, setSelectedDay] = useState('Monday');
@@ -190,10 +192,37 @@ export default function MealsScreen() {
 
   // Use client's coach-assigned meal plan if available, otherwise fall back to sample.
   // normalizeMealPlan handles both array and object JSONB shapes from the DB.
-  const baseMealPlan: MealPlanDay[] = useMemo(() => {
-    const normalized = normalizeMealPlan(client?.meal_plan);
-    return normalized.length > 0 ? normalized : SAMPLE_MEAL_PLAN;
-  }, [client?.meal_plan]);
+  // The sample plan is ONLY for demo mode. A real client must never see
+  // invented meals presented as their plan while theirs is being built.
+  const normalizedPlan: MealPlanDay[] = useMemo(() => normalizeMealPlan(client?.meal_plan), [client?.meal_plan]);
+  const planPending = !isDemoMode && normalizedPlan.length === 0;
+  const baseMealPlan: MealPlanDay[] = useMemo(
+    () => (normalizedPlan.length > 0 ? normalizedPlan : isDemoMode ? SAMPLE_MEAL_PLAN : []),
+    [normalizedPlan, isDemoMode]
+  );
+
+  // The nutrition section of the coach's program, shown while the structured
+  // plan is being generated so the client still sees their real meals.
+  const programNutrition = useMemo(() => {
+    const text = String(client?.program_raw_text || '');
+    const i = text.search(/NUTRITION/i);
+    return i >= 0 ? text.slice(i, i + 2500).trim() : '';
+  }, [client?.program_raw_text]);
+
+  // While the plan is building, refresh quietly every 30 s (up to ~10 min).
+  useEffect(() => {
+    if (!planPending) return;
+    let n = 0;
+    const t = setInterval(() => {
+      n += 1;
+      if (n > 20) {
+        clearInterval(t);
+        return;
+      }
+      refreshClientData().catch(() => undefined);
+    }, 30000);
+    return () => clearInterval(t);
+  }, [planPending, refreshClientData]);
 
   // Local editable copy of the meal plan
   const [localMealPlan, setLocalMealPlan] = useState<MealPlanDay[]>(baseMealPlan);
@@ -250,6 +279,11 @@ export default function MealsScreen() {
   }, [logMeal, isMealLogged]);
 
   const handleUpdateMeal = useCallback((dayName: string, updatedMeal: MealEntry) => {
+    const before = localMealPlan.find((d) => d.day === dayName)?.meals.find((m) => m.id === updatedMeal.id);
+    if (before) {
+      const { summary, details } = describeMealChange(before, updatedMeal);
+      if (details.length) reportChange('meal plan', `${dayName}: ${summary}`, details);
+    }
     setLocalMealPlan((prev) =>
       prev.map((day) =>
         day.day === dayName
@@ -257,9 +291,13 @@ export default function MealsScreen() {
           : day
       )
     );
-  }, []);
+  }, [localMealPlan]);
 
   const handleDeleteMealFromPlan = useCallback((dayName: string, mealId: string) => {
+    const removed = localMealPlan.find((d) => d.day === dayName)?.meals.find((m) => m.id === mealId);
+    if (removed) {
+      reportChange('meal plan', `${dayName}: removed ${removed.name} from the plan`, removed.ingredients.map((i) => `${i.quantity} ${i.unit} ${i.name}`.trim()));
+    }
     setLocalMealPlan((prev) =>
       prev.map((day) =>
         day.day === dayName
@@ -267,7 +305,7 @@ export default function MealsScreen() {
           : day
       ).filter((day) => day.meals.length > 0)
     );
-  }, []);
+  }, [localMealPlan]);
 
   const handleAddMealToDay = useCallback((dayName: string) => {
     // Navigate to food log where they can add foods freely
@@ -388,7 +426,20 @@ export default function MealsScreen() {
         </Card>
       )}
 
-      {activeTab === 'meals' ? (
+      {activeTab === 'meals' && planPending ? (
+        <Card style={styles.pendingCard}>
+          <Text style={styles.pendingTitle}>Your meal plan is being built</Text>
+          <Text style={styles.pendingText}>
+            It's generated from your coach's program and usually takes a few minutes. This screen refreshes on its own.
+          </Text>
+          {!!programNutrition && (
+            <>
+              <Text style={styles.pendingSub}>From your program</Text>
+              <Text style={styles.pendingProgram}>{programNutrition}</Text>
+            </>
+          )}
+        </Card>
+      ) : activeTab === 'meals' ? (
         <>
           {/* Day Selector + Export */}
           <View style={styles.sectionHeader}>
@@ -542,6 +593,11 @@ export default function MealsScreen() {
 }
 
 const styles = StyleSheet.create({
+  pendingCard: { marginHorizontal: spacing.lg, gap: spacing.sm },
+  pendingTitle: { fontSize: fontSize.lg, fontWeight: '700', color: colors.textPrimary },
+  pendingText: { fontSize: fontSize.sm, color: colors.textSecondary, lineHeight: 19 },
+  pendingSub: { fontSize: fontSize.xs, fontWeight: '700', color: colors.accent, textTransform: 'uppercase', marginTop: spacing.sm },
+  pendingProgram: { fontSize: fontSize.sm, color: colors.textPrimary, lineHeight: 20 },
   container: {
     flex: 1,
     backgroundColor: colors.background,

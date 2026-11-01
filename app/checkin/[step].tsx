@@ -75,6 +75,8 @@ function CheckinFormContent() {
       const numericFields = [
         'weight_lbs', 'body_temp', 'calories', 'protein_g', 'carbs_g', 'fat_g',
         'steps', 'rpe', 'performance_rating', 'cardio_minutes', 'estimated_calories_burned',
+        'blood_pressure_systolic', 'blood_pressure_diastolic', 'blood_glucose',
+        'resting_heart_rate', 'avg_heart_rate', 'workout_duration_min',
       ];
 
       for (const key of numericFields) {
@@ -96,6 +98,8 @@ function CheckinFormContent() {
       payload.workout_description = form.workout_description || null;
       payload.sleep_hours = form.sleep_hours;
       payload.sleep_quality = form.sleep_quality;
+      payload.sleep_time = form.sleep_time || null;
+      payload.wake_time = form.wake_time || null;
       payload.supplement_compliance = form.supplement_compliance;
       payload.ped_log_json = form.ped_log_json.length > 0 ? form.ped_log_json : null;
       payload.side_effects_notes = form.side_effects_notes || null;

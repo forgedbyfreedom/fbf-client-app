@@ -14,6 +14,7 @@ const SOURCE_ICONS: Record<string, string> = {
   manual: 'create-outline',
   meal_plan: 'restaurant-outline',
   barcode: 'barcode-outline',
+  voice: 'mic-outline',
 };
 
 export function FoodLogEntryRow({ entry, onPress, onDelete }: FoodLogEntryProps) {
@@ -38,6 +39,8 @@ export function FoodLogEntryRow({ entry, onPress, onDelete }: FoodLogEntryProps)
         <Text style={styles.meta}>
           {entry.serving_size}
           {entry.quantity !== 1 ? ` x${entry.quantity}` : ''}
+          {entry.confidence === 'low' ? ' · estimate, tap to adjust' : ''}
+          {entry.pending ? ' · saving…' : ''}
         </Text>
       </View>
       <View style={styles.macros}>

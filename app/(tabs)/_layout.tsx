@@ -4,12 +4,15 @@ import { View, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Badge } from '../../components/ui/Badge';
 import { useAuth } from '../../hooks/useAuth';
+import { useCoachStatus } from '../../hooks/useCoachStatus';
 import { colors, fontSize } from '../../lib/theme';
 
 export default function TabLayout() {
   // TODO: wire up unread count from chat context
   const unreadCount = 0;
   const { isAdmin } = useAuth();
+  // Coaches and Bryan get the Coach console tab; members never see it.
+  const isCoach = useCoachStatus();
 
   return (
     <Tabs
@@ -87,10 +90,15 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="compete"
+        options={{ href: null }}
+      />
+      <Tabs.Screen
+        name="coach"
         options={{
-          title: 'Compete',
+          title: 'Coach',
+          href: isCoach ? '/(tabs)/coach' : null,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="trophy-outline" size={size} color={color} />
+            <Ionicons name="clipboard-outline" size={size} color={color} />
           ),
         }}
       />

@@ -21,6 +21,11 @@ import { BrandHeader } from '../../components/ui/BrandHeader';
 import { SectionCard, Eyebrow, DisplayText } from '../../components/ui/SectionCard';
 import { HydrationCard } from '../../components/today/HydrationCard';
 import { AppleHealthCard } from '../../components/today/AppleHealthCard';
+import { CoachUpdatesCard } from '../../components/dashboard/CoachUpdatesCard';
+import { useDailySync } from '../../hooks/useDailySync';
+import { postDailyLog } from '../../lib/hub';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert, Platform } from 'react-native';
 import { normalizeMealPlan } from '../../lib/normalize-plan';
 import { getTodaysWorkout, getTodayDayOfWeek, formatDayName } from '../../lib/workout-utils';
 import { colors, fontSize, spacing, fonts } from '../../lib/theme';
@@ -36,6 +41,29 @@ export default function TodayScreen() {
   const router = useRouter();
   const [refreshing, setRefreshing] = React.useState(false);
   const [settingUpCoach, setSettingUpCoach] = React.useState(false);
+  const [skippedToday, setSkippedToday] = React.useState(false);
+  useDailySync();
+
+  const skipKey = `fbf_skip_${new Date().toDateString()}`;
+  React.useEffect(() => {
+    AsyncStorage.getItem(skipKey).then((v) => setSkippedToday(!!v)).catch(() => undefined);
+  }, [skipKey]);
+
+  const skipWorkout = () => {
+    const go = async () => {
+      await postDailyLog({ training_day: true, training_skipped: true, trained: false });
+      await AsyncStorage.setItem(skipKey, '1');
+      setSkippedToday(true);
+    };
+    if (Platform.OS === 'web') {
+      if ((window as any).confirm('Skip today\'s workout? Your coach will be notified.')) go();
+      return;
+    }
+    Alert.alert("Skip today's workout?", 'Your coach will be notified.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Skip workout', style: 'destructive', onPress: go },
+    ]);
+  };
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -203,6 +231,8 @@ export default function TodayScreen() {
         }
       />
 
+      <CoachUpdatesCard />
+
       {/* What do I do today? */}
       <SectionCard eyebrow="What do I do today?" title="Coach-approved plan">
         <PlanRow
@@ -215,6 +245,11 @@ export default function TodayScreen() {
           }
           onPress={() => router.push('/(tabs)/workouts')}
         />
+        {plan?.workout ? (
+          <TouchableOpacity onPress={skippedToday ? undefined : skipWorkout} disabled={skippedToday} style={styles.skipBtn} accessibilityRole="button">
+            <Text style={styles.skipText}>{skippedToday ? 'Workout skipped today · coach notified' : "Can't train today?"}</Text>
+          </TouchableOpacity>
+        ) : null}
         <PlanRow
           n={2}
           title={plan && plan.meals.length ? `${plan.meals.length} meals${plan.kcal ? ` · ${Math.round(plan.kcal).toLocaleString()} kcal` : ''}` : 'Meal plan'}
@@ -234,6 +269,17 @@ export default function TodayScreen() {
           onPress={() => router.push('/supplements')}
         />
       </SectionCard>
+
+      {/* Weekly check-in (photos) */}
+      <TouchableOpacity onPress={() => router.push('/weekly-checkin')} accessibilityRole="button" activeOpacity={0.85}>
+        <SectionCard
+          eyebrow="Weekly check-in"
+          title="Photos, weight & how the week went"
+          subtitle="Front, side and back. Your coach reviews it and replies."
+          right={<Ionicons name="camera-outline" size={22} color={colors.accentText} />}
+          highlight
+        />
+      </TouchableOpacity>
 
       {/* Water */}
       <HydrationCard targetOz={client.target_water_oz ?? null} />
@@ -261,7 +307,9 @@ export default function TodayScreen() {
       {/* Explore — compact, below the daily work */}
       <View style={styles.explore}>
         <Eyebrow style={{ marginBottom: spacing.xs }}>Explore</Eyebrow>
+        <ExploreRow icon="scan-outline" label="Body scan" onPress={() => router.push('/bodyscan')} />
         <ExploreRow icon="flask-outline" label="Peptide catalog" onPress={() => router.push('/peptides')} />
+        <ExploreRow icon="cart-outline" label="FBF peptide order form" onPress={() => WebBrowser.openBrowserAsync('https://ezformz.net/f/fbf-peptide-catalog-ew6n4u')} />
         <ExploreRow icon="trophy-outline" label="FBF Recomp Protocol" onPress={() => WebBrowser.openBrowserAsync('https://forgedbyfreedom.net/programs/')} />
         <ExploreRow icon="globe-outline" label="forgedbyfreedom.net" onPress={() => WebBrowser.openBrowserAsync('https://forgedbyfreedom.net/')} />
         <ExploreRow icon="bag-outline" label="FBF Store" onPress={() => Linking.openURL('https://www.etsy.com/shop/FBFStrengthNutrition')} last />
@@ -339,6 +387,8 @@ const styles = StyleSheet.create({
   ctaDone: { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.borderAccent },
   ctaText: { color: colors.onAccent, fontWeight: '700', fontSize: fontSize.md },
   ctaTextDone: { color: colors.accentText },
+  skipBtn: { marginLeft: 40, minHeight: 36, justifyContent: 'center' },
+  skipText: { color: colors.textSecondary, fontSize: 12, textDecorationLine: 'underline' },
   planRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: 48 },
   planNum: {
     width: 28,

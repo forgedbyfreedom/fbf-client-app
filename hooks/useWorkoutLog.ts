@@ -1,7 +1,9 @@
+import { reportChange, postDailyLog } from '../lib/hub';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from './useAuth';
-import { api } from '../lib/api';
+import { fetchWorkouts, pushWorkout } from '../lib/fbf-sync';
+import { saveWorkoutToHealth, sessionWindow } from '../lib/health-sync';
 import {
   WorkoutDay,
   ExerciseLog,
@@ -134,21 +136,28 @@ export function useWorkoutLog(): UseWorkoutLogReturn {
     if (!logsKey || !prsKey) return;
     setLoading(true);
     try {
-      // Try API first
+      // Local copy first so history shows instantly / offline.
+      const localRaw = await AsyncStorage.getItem(logsKey);
+      const localLogs: WorkoutLog[] = localRaw ? JSON.parse(localRaw) : [];
+      if (localLogs.length) setWorkoutLogs(localLogs);
+
+      // Then reconcile with forgedbyfreedom.net: upload anything that never
+      // made it (finished offline, or logged before sync existed), and pull
+      // anything saved from another device.
       try {
-        const apiLogs = await api.get<{ logs: WorkoutLog[] }>('/api/client/workout-logs');
-        if (apiLogs?.logs?.length) {
-          setWorkoutLogs(apiLogs.logs);
-          await AsyncStorage.setItem(logsKey, JSON.stringify(apiLogs.logs));
-        } else {
-          throw new Error('No API data');
+        const serverLogs = await fetchWorkouts(200);
+        const onServer = new Set(serverLogs.map((l) => l.id));
+        const unsynced = localLogs.filter((l) => !onServer.has(l.id));
+        for (const log of unsynced) {
+          await pushWorkout(log);
         }
+        const merged = [...serverLogs, ...unsynced].sort((a, b) =>
+          (b.completed_at || b.started_at || b.date).localeCompare(a.completed_at || a.started_at || a.date)
+        );
+        setWorkoutLogs(merged);
+        await AsyncStorage.setItem(logsKey, JSON.stringify(merged));
       } catch {
-        // Fall back to local storage
-        const localLogs = await AsyncStorage.getItem(logsKey);
-        if (localLogs) {
-          setWorkoutLogs(JSON.parse(localLogs));
-        }
+        // Offline or site unreachable — local history stays; retried next load.
       }
 
       // Load PRs from local storage (always local as source of truth)
@@ -243,6 +252,11 @@ export function useWorkoutLog(): UseWorkoutLogReturn {
       prs_hit: newPRs,
     };
 
+    // A draft left open for days must not log as a multi-day session.
+    const win = sessionWindow(log);
+    log.started_at = win.start.toISOString();
+    log.duration_min = win.minutes;
+
     // Update local logs
     const updatedLogs = [log, ...workoutLogs];
     setWorkoutLogs(updatedLogs);
@@ -270,12 +284,16 @@ export function useWorkoutLog(): UseWorkoutLogReturn {
     // Clear draft
     await AsyncStorage.removeItem(draftKey);
 
-    // Try to sync to API
+    // Save to forgedbyfreedom.net. If offline, it's already in local history
+    // and loadHistory() uploads it next time (the server de-duplicates by id).
     try {
-      await api.post('/api/client/workout-logs', log);
+      await pushWorkout(log);
     } catch {
-      // Offline - already saved locally
+      // retried on next history load
     }
+
+    // Also into Apple Health (Health → Workouts, Fitness rings); best effort.
+    saveWorkoutToHealth(log).catch(() => undefined);
 
     // Reset state
     setExercises([]);
@@ -284,20 +302,28 @@ export function useWorkoutLog(): UseWorkoutLogReturn {
     setCurrentDay(null);
     setElapsedSeconds(0);
 
+    postDailyLog({ trained: true, training_skipped: false, workout_name: log.day_name, workout_minutes: durationMin });
+
     return { log, newPRs };
   }, [exercises, startedAt, currentDay, workoutLogs, personalRecords, prHistory, logsKey, prsKey, draftKey]);
 
+  const dayLabel = currentDay ? formatDayName(currentDay) : 'workout';
+
   const renameExercise = useCallback((exerciseIndex: number, newName: string) => {
+    const old = exercises[exerciseIndex]?.exercise_name;
+    if (old && old !== newName) reportChange('workout', `${dayLabel}: swapped ${old} → ${newName}`);
     setExercises((prev) => {
       const updated = [...prev];
       updated[exerciseIndex] = { ...updated[exerciseIndex], exercise_name: newName };
       return updated;
     });
-  }, []);
+  }, [exercises, dayLabel]);
 
   const removeExercise = useCallback((exerciseIndex: number) => {
+    const old = exercises[exerciseIndex];
+    if (old) reportChange('workout', `${dayLabel}: removed ${old.exercise_name}`, [`${old.sets.length} sets`]);
     setExercises((prev) => prev.filter((_, i) => i !== exerciseIndex));
-  }, []);
+  }, [exercises, dayLabel]);
 
   const addExercise = useCallback((name: string, numSets: number, targetReps: string) => {
     const sets = Array.from({ length: numSets }, (_, i) => ({
@@ -307,8 +333,9 @@ export function useWorkoutLog(): UseWorkoutLogReturn {
       actual_reps: '',
       completed: false,
     }));
+    reportChange('workout', `${dayLabel}: added ${name}`, [`${numSets} sets × ${targetReps}`]);
     setExercises((prev) => [...prev, { exercise_name: name, sets }]);
-  }, []);
+  }, [dayLabel]);
 
   const addSet = useCallback((exerciseIndex: number) => {
     setExercises((prev) => {

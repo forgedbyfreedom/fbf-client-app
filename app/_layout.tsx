@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { useIsDesktop } from '../hooks/useBreakpoint';
 import { DesktopShell } from '../components/desktop/DesktopShell';
 import { View, Platform, StyleSheet, AppState, useWindowDimensions } from 'react-native';
-import { Stack, Redirect, useRouter } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as Linking from 'expo-linking';
 import * as Updates from 'expo-updates';
@@ -16,14 +16,27 @@ import { refreshInbox, resetInbox } from '../lib/coach-inbox';
 import { flush as flushFoodLog } from '../lib/food-log-store';
 import { useFonts, Oswald_600SemiBold, Oswald_700Bold } from '@expo-google-fonts/oswald';
 
+/**
+ * Sends signed-out visitors to sign-in and signed-in members out of it — but
+ * only when they are in the wrong place. (It used to render a <Redirect> on
+ * every render, so any re-render, e.g. the iPhone keyboard resizing the browser
+ * window, re-opened the sign-in screen and threw away the field being typed in,
+ * and resizing a desktop window bounced members back to Today.)
+ */
 function RootNavigation() {
   const { session, loading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
+  const inAuth = segments[0] === '(auth)';
+
+  useEffect(() => {
+    if (loading) return;
+    if (!session && !inAuth) router.replace('/(auth)/login');
+    else if (session && inAuth) router.replace('/(tabs)');
+  }, [session, loading, inAuth, router]);
 
   if (loading) return <Loading />;
-
-  if (!session) return <Redirect href="/(auth)/login" />;
-
-  return <Redirect href="/(tabs)" />;
+  return null;
 }
 
 function PushNotificationHandler() {
@@ -101,24 +114,32 @@ export default function RootLayout() {
   useFonts({ Oswald_600SemiBold, Oswald_700Bold });
   const desktop = useIsDesktop();
   const { width } = useWindowDimensions();
-  // Centre pages outside the tab shell in an 880px column (padding keeps the dark background edge to edge).
-  const sidePad = desktop ? Math.max(24, (width - 248 - 880) / 2) : 0;
+  // Desktop only: centre pages outside the tab shell (880px column) and sign-in (440px).
+  // On phones these stay 0, and screenOptions keeps the same identity when the
+  // window resizes (the keyboard opening on iPhone); a new screenOptions on every
+  // resize made the web stack redraw the sign-in form and drop the tapped field.
+  const sidePad = desktop ? Math.round(Math.max(24, (width - 248 - 880) / 2)) : 0;
+  const authPad = desktop ? Math.round(Math.max(24, (width - 440) / 2)) : 0;
+  const screenOptions = useMemo(
+    () =>
+      ({ route }: { route: { name: string } }) => ({
+        headerShown: false,
+        contentStyle:
+          desktop && route.name === '(auth)'
+            ? { backgroundColor: colors.background, paddingHorizontal: authPad }
+            : desktop && route.name !== '(tabs)'
+              ? { backgroundColor: colors.background, paddingHorizontal: sidePad }
+              : { backgroundColor: colors.background },
+        animation: 'fade' as const,
+      }),
+    [desktop, sidePad, authPad]
+  );
   const content = (
     <AuthProvider>
       <StatusBar style="light" />
       <DesktopShell>
       <Stack
-        screenOptions={({ route }) => ({
-          headerShown: false,
-          // Desktop web: pages outside the tab shell get a centred, readable column.
-          contentStyle:
-            desktop && route.name === '(auth)'
-              ? { backgroundColor: colors.background, paddingHorizontal: Math.max(24, (width - 440) / 2) }
-              : desktop && route.name !== '(tabs)'
-                ? { backgroundColor: colors.background, paddingHorizontal: sidePad }
-                : { backgroundColor: colors.background },
-          animation: 'fade',
-        })}
+        screenOptions={screenOptions}
       >
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />

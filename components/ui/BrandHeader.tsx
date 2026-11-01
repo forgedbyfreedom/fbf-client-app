@@ -16,7 +16,7 @@ export function BrandHeader({ title, compact }: BrandHeaderProps) {
   return (
     <View style={[styles.container, compact && styles.containerCompact]}>
       <Image
-        source={require('../../assets/fbf-logo.jpg')}
+        source={require('../../assets/fbf-shield.png')}
         style={compact ? styles.logoCompact : styles.logo}
         resizeMode="contain"
       />
@@ -43,9 +43,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   logo: {
-    width: 44,
+    width: 46,
     height: 44,
-    borderRadius: 10,
   },
   logoCompact: {
     width: 32,

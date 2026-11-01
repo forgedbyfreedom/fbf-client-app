@@ -62,7 +62,7 @@ export function DesktopSidebar({ isCoach, isAdmin }: { isCoach: boolean; isAdmin
   return (
     <View style={styles.bar}>
       <View style={styles.brand}>
-        <Image source={require('../../assets/fbf-logo.jpg')} style={styles.logo} resizeMode="contain" />
+        <Image source={require('../../assets/fbf-shield.png')} style={styles.logo} resizeMode="contain" />
         <View>
           <Text style={styles.brandName}>FORGED BY FREEDOM</Text>
           <Text style={styles.brandSub}>MONSTERS ARE REAL</Text>
@@ -116,7 +116,7 @@ export function DesktopSidebar({ isCoach, isAdmin }: { isCoach: boolean; isAdmin
 const styles = StyleSheet.create({
   bar: { width: 248, backgroundColor: '#0d0d0f', borderRightWidth: 1, borderRightColor: colors.border, paddingHorizontal: spacing.md, paddingVertical: spacing.lg, gap: spacing.md },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 6, marginBottom: 4 },
-  logo: { width: 34, height: 34, borderRadius: 6 },
+  logo: { width: 44, height: 42 },
   brandName: { color: colors.textPrimary, fontFamily: fonts.display, fontSize: 14, letterSpacing: 1 },
   brandSub: { color: colors.textTertiary, fontSize: 9, letterSpacing: 1.6 },
   cta: { minHeight: 44, borderRadius: 12, backgroundColor: colors.accent, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },

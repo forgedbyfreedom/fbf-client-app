@@ -50,11 +50,20 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          <Image
-            source={require('../../assets/fbf-logo.jpg')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          {Platform.OS === 'web' ? (
+            // Web: the 3D shield intro plays once (muted) and rests on the finished shield, which is also the poster.
+            React.createElement('video', {
+              src: '/fbf-shield-intro.mp4',
+              poster: '/fbf-shield-intro.jpg',
+              autoPlay: true,
+              muted: true,
+              playsInline: true,
+              'aria-label': 'Forged by Freedom',
+              style: { width: '100%', maxWidth: 440, aspectRatio: '16 / 9', borderRadius: 16, objectFit: 'cover', display: 'block', marginBottom: 8, background: '#000' },
+            })
+          ) : (
+            <Image source={require('../../assets/fbf-shield.png')} style={styles.logo} resizeMode="contain" />
+          )}
           <Text style={styles.subtitle}>Client Portal</Text>
         </View>
 
@@ -125,8 +134,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xxl,
   },
   logo: {
-    width: 220,
-    height: 280,
+    width: 230,
+    height: 216,
     marginBottom: spacing.sm,
   },
   subtitle: {

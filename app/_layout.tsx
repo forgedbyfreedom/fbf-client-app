@@ -147,6 +147,9 @@ export default function RootLayout() {
           name="weekly-checkin"
           options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }}
         />
+        <Stack.Screen name="bodyscan/index" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="bodyscan/capture" options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="bodyscan/report" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen
           name="client/[id]"
           options={{ animation: 'slide_from_right' }}

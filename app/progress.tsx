@@ -93,6 +93,9 @@ export default function ProgressScreen() {
         </SectionCard>
       ) : null}
 
+      <TouchableOpacity onPress={() => router.push('/bodyscan')} accessibilityRole="button">
+        <SectionCard eyebrow="Body scan" title="360° body composition" subtitle="Body fat, lean mass and measurements from one slow turn on video." right={<Ionicons name="scan-outline" size={22} color={colors.accentText} />} />
+      </TouchableOpacity>
       <TouchableOpacity onPress={() => router.push('/weekly-checkin')} accessibilityRole="button">
         <SectionCard eyebrow="Weekly check-in" title="New check-in" subtitle="Weight, how the week went, and three photos." right={<Ionicons name="camera-outline" size={22} color={colors.accentText} />} />
       </TouchableOpacity>

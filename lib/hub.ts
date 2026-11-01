@@ -255,6 +255,8 @@ export interface HubProfile {
   name: string;
   avatar_url: string | null;
   coach: { id: number; name: string; avatar_url: string | null } | null;
+  /** All assigned coaches (a client can have several). */
+  coaches?: { id: number; name: string; avatar_url: string | null }[];
 }
 
 export async function getProfile(): Promise<HubProfile> {

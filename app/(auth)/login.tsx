@@ -16,7 +16,7 @@ import { Input } from '../../components/ui/Input';
 import { colors, fontSize, spacing } from '../../lib/theme';
 
 export default function LoginScreen() {
-  const { signIn } = useAuth();
+  const { signIn, sessionNotice } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -84,7 +84,11 @@ export default function LoginScreen() {
             containerStyle={styles.inputContainer}
           />
 
-          {error ? <Text style={styles.error}>{error}</Text> : null}
+          {error ? (
+            <Text style={styles.error}>{error}</Text>
+          ) : sessionNotice ? (
+            <Text style={styles.error}>{sessionNotice}</Text>
+          ) : null}
 
           <Button
             title="Sign In"

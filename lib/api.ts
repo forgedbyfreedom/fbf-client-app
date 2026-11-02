@@ -1,6 +1,6 @@
 // API layer — now backed by the WordPress App Bridge on forgedbyfreedom.net.
 // Auth token comes from lib/wp-auth (SecureStore), not Supabase.
-import { getToken, wpApiRoot } from './wp-auth';
+import { getToken, wpApiRoot, friendlyApiError } from './wp-auth';
 
 const API_BASE = wpApiRoot; // e.g. https://forgedbyfreedom.net/wp-json/fbf/v1
 
@@ -26,7 +26,7 @@ export async function apiFetch<T = unknown>(
   const contentType = res.headers.get('content-type') || '';
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(`API ${res.status}: ${body}`);
+    throw new Error(friendlyApiError(res.status, body));
   }
   if (!contentType.includes('application/json')) {
     throw new Error(
@@ -62,7 +62,7 @@ export async function apiUpload(
   });
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(`API ${res.status}: ${body}`);
+    throw new Error(friendlyApiError(res.status, body));
   }
   return res.json();
 }

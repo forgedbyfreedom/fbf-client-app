@@ -97,7 +97,7 @@ export default function ChatScreen() {
     } catch (e) {
       const msg = e instanceof Error ? e.message : '';
       setError(
-        msg.includes('401')
+        msg.includes('401') || msg.includes('session expired')
           ? 'Please sign in again to use the community.'
           : 'Could not load messages. Pull to retry.'
       );

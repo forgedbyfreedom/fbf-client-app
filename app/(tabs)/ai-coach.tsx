@@ -270,6 +270,14 @@ export default function AICoachScreen() {
                 subtitle={report.collected_on ? `Collected ${report.collected_on}` : undefined}
                 highlight
               >
+                {report.warnings && report.warnings.length > 0 ? (
+                  <View style={styles.labNotice} accessibilityRole="alert">
+                    <Text style={styles.labNoticeTitle}>{report.partial ? 'Only part of this report was read' : 'Check these against your original report'}</Text>
+                    {report.warnings.slice(0, 8).map((w, i) => (
+                      <Text key={i} style={styles.labNoticeText}>• {w}</Text>
+                    ))}
+                  </View>
+                ) : null}
                 {[...flagged, ...normal].map((m, i) => (
                   <View key={i} style={styles.labRow}>
                     <View style={{ flex: 1 }}>
@@ -390,6 +398,9 @@ const styles = StyleSheet.create({
   upload: { minHeight: 96, borderRadius: 14, borderWidth: 1, borderStyle: 'dashed', borderColor: colors.borderAccent, backgroundColor: colors.surfaceSunken, alignItems: 'center', justifyContent: 'center', gap: 8 },
   uploadText: { color: colors.accentText, fontWeight: '600' },
   error: { color: colors.yellow, fontSize: fontSize.sm },
+  labNotice: { borderWidth: 1, borderColor: colors.yellow, borderRadius: 8, padding: spacing.md, marginBottom: spacing.sm, gap: 4 },
+  labNoticeTitle: { color: colors.yellow, fontSize: fontSize.sm, fontWeight: '700' },
+  labNoticeText: { color: colors.textPrimary, fontSize: fontSize.sm },
   labRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: 6, borderTopWidth: 1, borderTopColor: colors.border },
   labName: { color: colors.textPrimary, fontSize: fontSize.sm, fontWeight: '600' },
   labRef: { color: colors.textSecondary, fontSize: 11 },

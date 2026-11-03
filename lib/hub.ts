@@ -174,6 +174,10 @@ export interface LabReport {
   uploaded_at: string;
   filename: string;
   markers: LabMarker[];
+  /** Added by the FBF Bloodwork Reader plugin (1.0+). Older reports won't have these. */
+  warnings?: string[];
+  partial?: boolean;
+  unreadable?: number;
 }
 
 export async function extractBloodwork(file: { uri: string; name: string; type: string; file?: Blob }): Promise<LabReport> {

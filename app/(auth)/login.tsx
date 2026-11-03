@@ -58,6 +58,13 @@ export default function LoginScreen() {
             <Image source={require('../../assets/fbf-shield.png')} style={styles.logo} resizeMode="contain" />
           )}
           <Text style={styles.subtitle}>Client Portal</Text>
+          <View style={styles.partner} accessibilityRole="text" accessibilityLabel="Team Yarbro Partner and Trained Athlete">
+            <View style={styles.partnerRule} />
+            <Text style={styles.partnerText}>
+              TEAM YARBRO PARTNER <Text style={styles.partnerDot}>·</Text> TRAINED ATHLETE
+            </Text>
+            <View style={styles.partnerRule} />
+          </View>
         </View>
 
         <View style={styles.form}>
@@ -136,6 +143,30 @@ const styles = StyleSheet.create({
     fontSize: fontSize.lg,
     color: colors.textSecondary,
     letterSpacing: 1,
+  },
+  partner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+    alignSelf: 'stretch',
+    justifyContent: 'center',
+  },
+  partnerRule: {
+    flex: 1,
+    maxWidth: 40,
+    height: 1,
+    backgroundColor: colors.borderAccent,
+  },
+  partnerText: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.6,
+    color: colors.accentText,
+    textAlign: 'center',
+  },
+  partnerDot: {
+    color: colors.textTertiary,
   },
   form: {
     gap: spacing.lg,

@@ -9,6 +9,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SectionCard, Eyebrow, DisplayText } from '../../components/ui/SectionCard';
 import { listScans, fetchReportHtml, measurementRows, kgToLb, ScanSummary } from '../../lib/bodyscan';
+import { getAssessments, Assessment } from '../../lib/hub';
+import { AssessmentCard } from '../../components/progress/AssessmentCard';
 import { colors, fontSize, fonts, spacing } from '../../lib/theme';
 
 export default function BodyScanReport() {
@@ -19,6 +21,7 @@ export default function BodyScanReport() {
   const [prev, setPrev] = useState<ScanSummary | null>(null);
   const [html, setHtml] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [assess, setAssess] = useState<{ a: Assessment; prev: Assessment | null } | null>(null);
 
   useEffect(() => {
     const sid = Number(id);
@@ -32,6 +35,12 @@ export default function BodyScanReport() {
       })
       .catch((e) => setError(e?.message ?? 'Could not load scan'));
     if (Platform.OS === 'web') fetchReportHtml(sid).then(setHtml).catch(() => setHtml(null));
+    getAssessments()
+      .then((list) => {
+        const i = list.findIndex((x) => x.scan_id === sid);
+        setAssess(i >= 0 ? { a: list[i], prev: list[i + 1] ?? null } : null);
+      })
+      .catch(() => undefined);
   }, [id]);
 
   const rows = measurementRows(scan?.measurements);
@@ -81,6 +90,8 @@ export default function BodyScanReport() {
               </View>
             ) : null}
           </SectionCard>
+
+          {assess ? <AssessmentCard a={assess.a} prev={assess.prev} eyebrow="Calipers & tape · this scan" /> : null}
 
           {rows.length ? (
             <SectionCard eyebrow="Measurements" title={prev ? 'This scan vs last' : undefined}>

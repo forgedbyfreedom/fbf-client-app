@@ -1,5 +1,9 @@
 /**
- * Body scan capture — prep → numbers → record one slow turn → upload.
+ * Body scan capture — prep → numbers → tape → calipers → record one slow
+ * turn → upload. Every scan requires the full assessment: all tape sites
+ * and the Jackson-Pollock 7-site skinfolds. The assessment is saved first
+ * (server-validated, body fat calculated there), then the video uploads and
+ * the two are linked.
  * iOS/Android: in-app camera with a 10-second countdown so you can prop the
  * phone and step back. Web app: record with the phone's camera or pick a video.
  *
@@ -17,9 +21,12 @@ import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SectionCard, Eyebrow, DisplayText } from '../../components/ui/SectionCard';
 import { submitScan, maxUploadBytes, PaymentRequiredError, PickedVideo, ScanIntake } from '../../lib/bodyscan';
+import { saveAssessment, linkAssessmentToScan, getAssessments, Assessment } from '../../lib/hub';
+import { TAPE_SITES, SKINFOLD_SITES, CALIPER_TIPS, jp7, parseNum, invalidSites, SiteDef } from '../../lib/assessment';
 import { colors, fontSize, fonts, spacing } from '../../lib/theme';
 
-type Step = 'prep' | 'numbers' | 'record' | 'uploading' | 'done';
+type Step = 'prep' | 'numbers' | 'tape' | 'calipers' | 'record' | 'uploading' | 'done';
+const STEPS = 5;
 const INTAKE_KEY = 'fbf_bodyscan_intake_v1';
 const COUNTDOWN = 10;
 const MAX_SECONDS = 20;
@@ -44,6 +51,9 @@ export default function BodyScanCapture() {
   const [inch, setInch] = useState('');
   const [weight, setWeight] = useState('');
   const [tape, setTape] = useState<Record<string, string>>({});
+  const [folds, setFolds] = useState<Record<string, string>>({});
+  const [last, setLast] = useState<Assessment | null>(null);
+  const [assessmentId, setAssessmentId] = useState<number | null>(null);
 
   // video
   const [video, setVideo] = useState<PickedVideo | null>(null);
@@ -52,6 +62,10 @@ export default function BodyScanCapture() {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    getAssessments().then((a) => setLast(a[0] ?? null)).catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     AsyncStorage.getItem(INTAKE_KEY).then((raw) => {
@@ -69,16 +83,13 @@ export default function BodyScanCapture() {
   }, []);
 
   const heightIn = (num(ft) ?? 0) * 12 + (num(inch) ?? 0);
-  const numbersReady = !!sex && heightIn > 48 && (num(weight) ?? 0) > 60;
-
-  const TAPE: { key: keyof ScanIntake; label: string; show?: boolean }[] = [
-    { key: 'waist_in', label: 'Waist at navel' },
-    { key: 'neck_in', label: 'Neck' },
-    { key: 'hips_in', label: 'Hips (widest)', show: sex === 'female' },
-    { key: 'chest_in', label: 'Chest' },
-    { key: 'arm_in', label: 'Arm (flexed)' },
-    { key: 'thigh_in', label: 'Thigh' },
-  ];
+  const ageNum = num(age) ?? 0;
+  const numbersReady = !!sex && heightIn > 48 && (num(weight) ?? 0) > 70 && ageNum >= 18 && ageNum <= 100;
+  const tapeBad = invalidSites(TAPE_SITES, tape);
+  const foldBad = invalidSites(SKINFOLD_SITES, folds);
+  const foldSum = SKINFOLD_SITES.reduce((a, d) => a + (parseNum(folds[d.key]) ?? 0), 0);
+  const bfPreview = sex && foldBad.length === 0 ? jp7(sex, ageNum, foldSum) : null;
+  const [showBad, setShowBad] = useState(false);
 
   /* ---------- native recording with countdown ---------- */
   useEffect(() => {
@@ -152,14 +163,28 @@ export default function BodyScanCapture() {
       return;
     }
     const intake: ScanIntake = { sex, age: num(age), height_in: Math.round(heightIn * 10) / 10, weight_lb: num(weight)! };
-    for (const t of TAPE) {
-      const v = num(tape[t.key as string] ?? '');
-      if (v && (t.show ?? true)) (intake as any)[t.key] = v;
-    }
+    const tapeNums: Record<string, number> = {};
+    for (const d of TAPE_SITES) tapeNums[d.key] = parseNum(tape[d.key])!;
+    const foldNums: Record<string, number> = {};
+    for (const d of SKINFOLD_SITES) foldNums[d.key] = parseNum(folds[d.key])!;
+    // The scan plugin reads these tape fields to anchor the video.
+    for (const k of ['neck_in', 'chest_in', 'waist_in', 'hips_in', 'arm_in', 'thigh_in'] as const) (intake as any)[k] = tapeNums[k];
     AsyncStorage.setItem(INTAKE_KEY, JSON.stringify({ sex, age: intake.age, height_in: intake.height_in })).catch(() => undefined);
     setStep('uploading');
     try {
-      await submitScan(video, intake);
+      // 1) Assessment first: nothing uploads (or gets charged) with numbers missing.
+      let aid = assessmentId;
+      if (!aid) {
+        const a = await saveAssessment({ sex, age: ageNum, height_in: intake.height_in, weight_lb: intake.weight_lb, tape: tapeNums, skinfolds: foldNums });
+        aid = a.id;
+        setAssessmentId(a.id);
+      }
+      // 2) Video.
+      const res = await submitScan(video, intake);
+      // 3) Link them (retried once; the assessment is already safe if this fails).
+      if (res?.id) {
+        await linkAssessmentToScan(aid, res.id).catch(() => linkAssessmentToScan(aid!, res.id).catch(() => undefined));
+      }
       setStep('done');
     } catch (e: any) {
       if (e instanceof PaymentRequiredError) {
@@ -189,7 +214,20 @@ export default function BodyScanCapture() {
   if (step === 'prep') {
     return (
       <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.md, paddingBottom: insets.bottom + 60 }]}>
-        {header('Step 1 of 3', 'Before you scan.')}
+        {header(`Step 1 of ${STEPS}`, 'Before you scan.')}
+        <SectionCard eyebrow="Every scan has three parts" title="Scan, tape, calipers">
+          {[
+            ['videocam-outline', 'A 12–20 second video: one slow turn.'],
+            ['resize-outline', 'Tape measurements at 7 sites (a soft tape measure).'],
+            ['analytics-outline', 'A 7-site caliper test (skinfold calipers).'],
+          ].map(([icon, text]) => (
+            <View key={text} style={styles.tip}>
+              <Ionicons name={icon as any} size={20} color={colors.accentText} />
+              <Text style={styles.tipText}>{text}</Text>
+            </View>
+          ))}
+          <Text style={styles.muted}>All three are required. Have the tape and calipers ready before you start.</Text>
+        </SectionCard>
         <SectionCard eyebrow="Setup" title="Get these right">
           {[
             ['shirt-outline', 'Fitted underwear or nothing. Loose clothing ruins the read.'],
@@ -215,7 +253,7 @@ export default function BodyScanCapture() {
     return (
       <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.background }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.md, paddingBottom: insets.bottom + 60 }]} keyboardShouldPersistTaps="handled">
-          {header('Step 2 of 3', 'Your numbers.', undefined, () => setStep('prep'))}
+          {header(`Step 2 of ${STEPS}`, 'Your numbers.', 'All required — the 7-site body fat formula uses your age.', () => setStep('prep'))}
           <SectionCard eyebrow="Required">
             <View style={styles.segment}>
               {(['male', 'female'] as const).map((s) => (
@@ -233,17 +271,91 @@ export default function BodyScanCapture() {
               <Field label="Age" value={age} onChange={setAge} />
               <View style={{ flex: 2 }} />
             </View>
+            {age && ageNum > 0 && ageNum < 18 ? <Text style={styles.error}>Body scans are for adults 18 and older.</Text> : null}
           </SectionCard>
-          <SectionCard eyebrow="Tape measure · optional" subtitle="Inches. The tape anchors the video, so every measurement you add sharpens the result. Waist and neck matter most.">
-            <View style={styles.tapeGrid}>
-              {TAPE.filter((t) => t.show ?? true).map((t) => (
-                <Field key={t.key as string} label={t.label} value={tape[t.key as string] ?? ''} onChange={(v) => setTape((p) => ({ ...p, [t.key as string]: v }))} half />
+          <TouchableOpacity style={[styles.primary, !numbersReady && styles.off]} disabled={!numbersReady} onPress={() => setStep('tape')} accessibilityRole="button">
+            <Text style={styles.primaryText}>Next: tape measurements</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    );
+  }
+
+  if (step === 'tape' || step === 'calipers') {
+    const isTape = step === 'tape';
+    const defs = isTape ? TAPE_SITES : SKINFOLD_SITES;
+    const values = isTape ? tape : folds;
+    const setValues = isTape ? setTape : setFolds;
+    const bad = isTape ? tapeBad : foldBad;
+    const prevVals: Record<string, number> | undefined = isTape ? last?.tape : last?.skinfolds;
+    const next = () => {
+      if (bad.length) {
+        setShowBad(true);
+        return;
+      }
+      setShowBad(false);
+      setStep(isTape ? 'calipers' : 'record');
+    };
+    return (
+      <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.background }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.md, paddingBottom: insets.bottom + 60 }]} keyboardShouldPersistTaps="handled">
+          {header(
+            `Step ${isTape ? 3 : 4} of ${STEPS}`,
+            isTape ? 'Tape measurements.' : 'Caliper test.',
+            isTape
+              ? 'Every site is required, in inches. Same tape, same spots, morning before food, every scan.'
+              : 'Jackson-Pollock 7-site, in millimetres. Every site is required.',
+            () => {
+              setShowBad(false);
+              setStep(isTape ? 'numbers' : 'tape');
+            }
+          )}
+          {!isTape ? (
+            <SectionCard eyebrow="How to measure">
+              {CALIPER_TIPS.map((t) => (
+                <View key={t} style={styles.tip}>
+                  <Ionicons name="checkmark-circle-outline" size={18} color={colors.accentText} />
+                  <Text style={styles.tipText}>{t}</Text>
+                </View>
+              ))}
+            </SectionCard>
+          ) : null}
+          <SectionCard eyebrow={isTape ? 'Tape · inches · required' : 'Skinfolds · mm · required'}>
+            <View style={{ gap: spacing.md }}>
+              {defs.map((d) => (
+                <MeasureField
+                  key={d.key}
+                  def={d}
+                  unit={isTape ? 'in' : 'mm'}
+                  value={values[d.key] ?? ''}
+                  last={prevVals?.[d.key]}
+                  invalid={showBad && bad.includes(d.key)}
+                  onChange={(v) => setValues((p) => ({ ...p, [d.key]: v }))}
+                />
               ))}
             </View>
           </SectionCard>
-          <TouchableOpacity style={[styles.primary, !numbersReady && styles.off]} disabled={!numbersReady} onPress={() => setStep('record')} accessibilityRole="button">
-            <Text style={styles.primaryText}>Next: record your turn</Text>
+          {!isTape ? (
+            <SectionCard eyebrow="7-site result" highlight>
+              <View style={styles.heroRow}>
+                <Text style={styles.bfNum}>{bfPreview != null ? `${bfPreview}%` : '—'}</Text>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text style={styles.readyText}>body fat (calipers)</Text>
+                  <Text style={styles.muted}>Sum of 7 sites: {Math.round(foldSum * 10) / 10} mm</Text>
+                  {last?.bf_percent != null ? <Text style={styles.muted}>Last assessment: {last.bf_percent}%</Text> : null}
+                </View>
+              </View>
+            </SectionCard>
+          ) : null}
+          {showBad && bad.length ? (
+            <Text style={styles.error}>
+              Still needed: {defs.filter((d) => bad.includes(d.key)).map((d) => d.label).join(', ')}.
+            </Text>
+          ) : null}
+          <TouchableOpacity style={[styles.primary, bad.length > 0 && styles.off]} onPress={next} accessibilityRole="button" accessibilityState={{ disabled: bad.length > 0 }}>
+            <Text style={styles.primaryText}>{isTape ? 'Next: caliper test' : 'Next: record your turn'}</Text>
           </TouchableOpacity>
+          <Text style={styles.need}>{bad.length ? `${defs.length - bad.length} of ${defs.length} sites entered` : 'All sites entered'}</Text>
         </ScrollView>
       </KeyboardAvoidingView>
     );
@@ -301,7 +413,7 @@ export default function BodyScanCapture() {
   if (isWeb) {
     return (
       <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.md, paddingBottom: insets.bottom + 60 }]}>
-        {header('Step 3 of 3', 'Record one slow turn.', 'On your phone, tap below and choose “Take Video”. Prop the phone at hip height, step back, and turn once slowly.', () => setStep('numbers'))}
+        {header(`Step 5 of ${STEPS}`, 'Record one slow turn.', 'On your phone, tap below and choose “Take Video”. Prop the phone at hip height, step back, and turn once slowly.', () => setStep('calipers'))}
         <TouchableOpacity style={styles.upload} onPress={pickVideo} accessibilityRole="button">
           <Ionicons name="videocam-outline" size={30} color={colors.accentText} />
           <Text style={styles.uploadText}>{video ? 'Choose a different video' : 'Record or choose video'}</Text>
@@ -321,7 +433,7 @@ export default function BodyScanCapture() {
         <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surfaceSunken }]} />
       )}
       <View style={[styles.camTop, { paddingTop: insets.top + spacing.sm }]}>
-        <TouchableOpacity style={styles.back} onPress={() => (recording ? camRef.current?.stopRecording() : setStep('numbers'))} accessibilityRole="button" accessibilityLabel="Back">
+        <TouchableOpacity style={styles.back} onPress={() => (recording ? camRef.current?.stopRecording() : setStep('calipers'))} accessibilityRole="button" accessibilityLabel="Back">
           <Ionicons name="chevron-back" size={20} color={colors.textPrimary} />
         </TouchableOpacity>
         <View style={styles.pill}>
@@ -362,6 +474,37 @@ export default function BodyScanCapture() {
           )}
         </View>
       </View>
+    </View>
+  );
+}
+
+function MeasureField({ def, unit, value, last, invalid, onChange }: { def: SiteDef; unit: string; value: string; last?: number; invalid: boolean; onChange: (v: string) => void }) {
+  const n = parseNum(value);
+  const out = value !== '' && (n === undefined || n < def.min || n > def.max);
+  return (
+    <View style={{ gap: 4 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+        <View style={{ flex: 1, gap: 2 }}>
+          <Text style={styles.measureLabel}>{def.label}</Text>
+          <Text style={styles.measureHow}>{def.how}</Text>
+        </View>
+        <View style={{ width: 104, gap: 2 }}>
+          <View style={[styles.measureBox, (invalid || out) && styles.measureBad]}>
+            <TextInput
+              style={styles.measureInput}
+              value={value}
+              onChangeText={(t) => onChange(t.replace(/[^0-9.,]/g, ''))}
+              keyboardType="decimal-pad"
+              placeholder={last != null ? String(last) : '—'}
+              placeholderTextColor={colors.textTertiary}
+              accessibilityLabel={`${def.label} in ${unit === 'in' ? 'inches' : 'millimetres'}`}
+            />
+            <Text style={styles.measureUnit}>{unit}</Text>
+          </View>
+          {last != null ? <Text style={styles.measureLast}>last {last}</Text> : null}
+        </View>
+      </View>
+      {out ? <Text style={styles.measureErr}>Check this — expected {def.min}–{def.max} {unit}.</Text> : null}
     </View>
   );
 }
@@ -422,4 +565,15 @@ const styles = StyleSheet.create({
   camBottom: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: spacing.lg, gap: spacing.md, backgroundColor: 'rgba(10,10,11,0.55)', paddingTop: spacing.md },
   camButtons: { flexDirection: 'row', gap: spacing.sm },
   stop: { flex: 1, backgroundColor: colors.red },
+  heroRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg },
+  bfNum: { color: colors.accentText, fontFamily: fonts.display, fontSize: 48, lineHeight: 54 },
+  need: { color: colors.textSecondary, fontSize: 12, textAlign: 'center' },
+  measureLabel: { color: colors.textPrimary, fontWeight: '700', fontSize: fontSize.md },
+  measureHow: { color: colors.textSecondary, fontSize: 12, lineHeight: 17 },
+  measureBox: { minHeight: 48, borderRadius: 12, borderWidth: 1, borderColor: colors.borderLight, backgroundColor: colors.surfaceSunken, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10 },
+  measureBad: { borderColor: colors.yellow },
+  measureInput: { flex: 1, minWidth: 0, color: colors.textPrimary, fontSize: fontSize.lg, fontFamily: fonts.display, paddingVertical: 8 },
+  measureUnit: { color: colors.textSecondary, fontSize: 12 },
+  measureLast: { color: colors.textTertiary, fontSize: 11, textAlign: 'right' },
+  measureErr: { color: colors.yellow, fontSize: 12 },
 });

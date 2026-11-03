@@ -14,7 +14,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { SectionCard, Eyebrow, DisplayText } from '../../components/ui/SectionCard';
-import { PhotoCompare } from '../../components/progress/PhotoCompare';
+import { PhotoLab } from '../../components/progress/PhotoLab';
+import { AssessmentCard } from '../../components/progress/AssessmentCard';
 import { getCoachClient, sendCheckinFeedback, CoachClientDetail, HubCheckin } from '../../lib/hub';
 import { colors, fontSize, fonts, spacing } from '../../lib/theme';
 
@@ -107,7 +108,10 @@ export default function CoachClientScreen() {
             )}
           </SectionCard>
 
-          <PhotoCompare checkins={data.checkins} title="Progress photos" />
+          <PhotoLab checkins={data.checkins} title="Progress photos" />
+          {data.assessments?.length ? (
+            <AssessmentCard a={data.assessments[0]} prev={data.assessments[1] ?? null} eyebrow={`Calipers & tape · ${data.assessments.length} assessment${data.assessments.length === 1 ? '' : 's'}`} />
+          ) : null}
 
           {data.checkins.map((c) => (
             <CheckinCard key={c.id} checkin={c} onSaved={load} />

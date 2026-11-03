@@ -1,3 +1,4 @@
+import type { PhotoPose } from './pose';
 // FBF Coach Hub API (WordPress plugin "fbf-coach-hub", namespace fbf/v1).
 // Client: report plan changes, sync the day's log, weekly check-ins, bloodwork.
 // Coach: clients, alerts, check-in review.
@@ -71,6 +72,8 @@ export interface CheckinFields {
   protocol_notes?: string;
   wins?: string;
   struggles?: string;
+  /** Older photos added to the timeline with the date they were taken. */
+  historical?: boolean;
 }
 
 export interface HubCheckin {
@@ -80,6 +83,8 @@ export interface HubCheckin {
   fields: CheckinFields;
   photos: ('front' | 'side' | 'back')[];
   photo_urls: Partial<Record<'front' | 'side' | 'back', string>>;
+  /** Cached body keypoints per photo (auto alignment). */
+  poses?: Partial<Record<'front' | 'side' | 'back', PhotoPose>>;
   feedback: string | null;
   feedback_at: string | null;
 }
@@ -125,6 +130,23 @@ export async function submitCheckin(fields: CheckinFields, photos: Partial<Recor
     if (p) await appendFile(form, slot, p, `${slot}.jpg`, 'image/jpeg');
   }
   return multipart<HubCheckin>('/checkins-v2', form);
+}
+
+/** Add older progress photos (taken before today) to the timeline. */
+export async function submitOlderPhotos(takenOn: string, photos: Partial<Record<PhotoSlot, PickedPhoto>>, weightLbs?: number): Promise<HubCheckin> {
+  const form = new FormData();
+  form.append('taken_on', takenOn);
+  form.append('fields', JSON.stringify(weightLbs ? { weight_lbs: weightLbs } : {}));
+  for (const slot of ['front', 'side', 'back'] as PhotoSlot[]) {
+    const p = photos[slot];
+    if (p) await appendFile(form, slot, p, `${slot}.jpg`, 'image/jpeg');
+  }
+  return multipart<HubCheckin>('/checkins-v2', form);
+}
+
+/** Cache the detected body keypoints for one check-in photo. */
+export async function savePose(checkinId: number, slot: PhotoSlot, pose: PhotoPose | null): Promise<void> {
+  await apiFetch(`/checkins-v2/${checkinId}/pose`, { method: 'POST', body: JSON.stringify({ slot, pose }) });
 }
 
 export async function getCheckins(): Promise<HubCheckin[]> {
@@ -216,6 +238,7 @@ export interface CoachClientDetail {
   events: HubEvent[];
   checkins: HubCheckin[];
   bloodwork: LabReport[];
+  assessments?: Assessment[];
 }
 
 export async function getCoachClient(id: number): Promise<CoachClientDetail> {
@@ -282,4 +305,53 @@ export async function transcribeAudio(clip: { uri: string; file?: Blob; name: st
   await appendFile(form, 'audio', clip, clip.name, clip.type);
   const r = await multipart<{ text: string }>('/voice/transcribe', form);
   return r.text;
+}
+
+/* ---------------- body assessments (tape + 7-site calipers) ---------------- */
+
+export interface AssessmentInput {
+  sex: 'male' | 'female';
+  age: number;
+  height_in: number;
+  weight_lb: number;
+  tape: Record<string, number>;
+  skinfolds: Record<string, number>;
+}
+
+export interface Assessment extends AssessmentInput {
+  id: number;
+  user_id: number;
+  created_at: string;
+  scan_id: number | null;
+  method: 'jp7';
+  sum_mm: number;
+  body_density: number;
+  bf_percent: number | null;
+  fat_mass_lb: number | null;
+  lean_mass_lb: number | null;
+}
+
+async function hubJson<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const token = await getToken();
+  const res = await fetch(`${wpApiRoot}${path}`, {
+    ...init,
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(init.headers as any) },
+  });
+  const body = await res.json().catch(() => null);
+  if (!res.ok) throw new Error((body && body.message) || `Request failed (${res.status})`);
+  return body as T;
+}
+
+/** Server validates every field and calculates body fat (JP7 + Siri). */
+export async function saveAssessment(input: AssessmentInput): Promise<Assessment> {
+  return hubJson<Assessment>('/assessments', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export async function linkAssessmentToScan(id: number, scanId: number): Promise<Assessment> {
+  return hubJson<Assessment>(`/assessments/${id}/scan`, { method: 'POST', body: JSON.stringify({ scan_id: scanId }) });
+}
+
+export async function getAssessments(): Promise<Assessment[]> {
+  const r = await hubJson<{ assessments: Assessment[] }>('/assessments');
+  return r.assessments ?? [];
 }

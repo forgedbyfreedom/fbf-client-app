@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { View, ScrollView, RefreshControl, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../hooks/useAuth';
 import { useFoodLog } from '../hooks/useFoodLog';
@@ -21,7 +21,7 @@ import { AIInsightsCard } from '../components/dashboard/AIInsightsCard';
 import { ProgressProjection } from '../components/dashboard/ProgressProjection';
 import { ActiveChallengesCard } from '../components/challenges/ActiveChallengesCard';
 import { colors, fontSize, spacing } from '../lib/theme';
-import { PhotoCompare } from '../components/progress/PhotoCompare';
+import { PhotoLab } from '../components/progress/PhotoLab';
 import { SectionCard } from '../components/ui/SectionCard';
 import { getCheckins, HubCheckin } from '../lib/hub';
 
@@ -36,9 +36,11 @@ export default function ProgressScreen() {
   const router = useRouter();
   const [refreshing, setRefreshing] = React.useState(false);
   const [checkins, setCheckins] = React.useState<HubCheckin[]>([]);
-  React.useEffect(() => {
-    getCheckins().then(setCheckins).catch(() => setCheckins([]));
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      getCheckins().then(setCheckins).catch(() => undefined);
+    }, [])
+  );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -81,7 +83,7 @@ export default function ProgressScreen() {
         <DisplayText size={34}>Your progress.</DisplayText>
       </View>
 
-      <PhotoCompare checkins={checkins} />
+      <PhotoLab checkins={checkins} onAddOlder={() => router.push('/older-photos')} />
 
       {checkins.find((c) => c.feedback) ? (
         <SectionCard
@@ -94,7 +96,7 @@ export default function ProgressScreen() {
       ) : null}
 
       <TouchableOpacity onPress={() => router.push('/bodyscan')} accessibilityRole="button">
-        <SectionCard eyebrow="Body scan" title="360° body composition" subtitle="Body fat, lean mass and measurements from one slow turn on video." right={<Ionicons name="scan-outline" size={22} color={colors.accentText} />} />
+        <SectionCard eyebrow="Body scan" title="360° body composition" subtitle="Video scan, tape measurements and a 7-site caliper test — body fat two ways." right={<Ionicons name="scan-outline" size={22} color={colors.accentText} />} />
       </TouchableOpacity>
       <TouchableOpacity onPress={() => router.push('/weekly-checkin')} accessibilityRole="button">
         <SectionCard eyebrow="Weekly check-in" title="New check-in" subtitle="Weight, how the week went, and three photos." right={<Ionicons name="camera-outline" size={22} color={colors.accentText} />} />

@@ -5,6 +5,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SectionCard, Eyebrow, DisplayText } from '../../components/ui/SectionCard';
 import { listScans, MineResponse, ScanSummary, kgToLb } from '../../lib/bodyscan';
+import { getAssessments, Assessment } from '../../lib/hub';
 import { colors, fontSize, fonts, spacing } from '../../lib/theme';
 
 export default function BodyScanHome() {
@@ -14,8 +15,10 @@ export default function BodyScanHome() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
+  const [assessments, setAssessments] = useState<Assessment[]>([]);
 
   const load = useCallback(async () => {
+    getAssessments().then(setAssessments).catch(() => undefined);
     try {
       setError('');
       setData(await listScans());
@@ -45,6 +48,8 @@ export default function BodyScanHome() {
   const latest = done[0];
   const prev = done[1];
   const delta = latest?.bf_percent != null && prev?.bf_percent != null ? Math.round((latest.bf_percent - prev.bf_percent) * 10) / 10 : null;
+  const byScan: Record<number, Assessment> = {};
+  for (const a of assessments) if (a.scan_id && !byScan[a.scan_id]) byScan[a.scan_id] = a;
   const pricing = data?.pricing;
   const priceLine =
     pricing?.mode === 'free'
@@ -67,7 +72,7 @@ export default function BodyScanHome() {
       <View style={{ gap: 6 }}>
         <Eyebrow>Body scan</Eyebrow>
         <DisplayText size={34}>360° body composition.</DisplayText>
-        <Text style={styles.sub}>One slow turn on video plus your tape measurements. No BMI — body fat, lean mass and every measurement, with the uncertainty shown.</Text>
+        <Text style={styles.sub}>Every scan is three parts: one slow turn on video, tape measurements at 7 sites, and a 7-site caliper test. No BMI — body fat two ways, lean mass and every measurement.</Text>
       </View>
 
       {loading ? (
@@ -92,6 +97,7 @@ export default function BodyScanHome() {
                   </View>
                 </View>
                 <View style={styles.statRow}>
+                  {byScan[latest.id]?.bf_percent != null ? <Stat label="Calipers" value={`${byScan[latest.id].bf_percent}%`} /> : null}
                   {latest.lean_mass_kg != null ? <Stat label="Lean mass" value={`${kgToLb(latest.lean_mass_kg)} lb`} /> : null}
                   {latest.category ? <Stat label="Category" value={latest.category} /> : null}
                 </View>
@@ -122,11 +128,13 @@ export default function BodyScanHome() {
             ) : null}
           </SectionCard>
 
+          {assessments.length ? <AssessmentHistory list={assessments} /> : null}
+
           <SectionCard eyebrow="History" title={data?.scans.length ? `${data.scans.length} scan${data.scans.length === 1 ? '' : 's'}` : 'No scans yet'}>
             {(data?.scans ?? []).length === 0 ? (
               <Text style={styles.muted}>Your first scan takes about two minutes. Results usually arrive within a few minutes.</Text>
             ) : (
-              data!.scans.map((s) => <ScanRow key={s.id} scan={s} onOpen={() => router.push(`/bodyscan/report?id=${s.id}`)} />)
+              data!.scans.map((s) => <ScanRow key={s.id} scan={s} caliper={byScan[s.id]?.bf_percent ?? null} onOpen={() => router.push(`/bodyscan/report?id=${s.id}`)} />)
             )}
           </SectionCard>
         </>
@@ -144,7 +152,39 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function ScanRow({ scan, onOpen }: { scan: ScanSummary; onOpen: () => void }) {
+/** Calipers + tape over time: latest vs previous, and every assessment. */
+function AssessmentHistory({ list }: { list: Assessment[] }) {
+  const [a, b] = list;
+  const d = (x?: number | null, y?: number | null, unit = '') =>
+    x != null && y != null ? `${x - y > 0 ? '+' : x - y < 0 ? '−' : ''}${Math.abs(Math.round((x - y) * 10) / 10)}${unit}` : null;
+  return (
+    <SectionCard eyebrow="Calipers & tape" title={`${a.bf_percent}% body fat · 7-site`} subtitle={`${a.created_at.slice(0, 10)} · sum ${a.sum_mm} mm${b ? ` · ${d(a.bf_percent, b.bf_percent, '%')} since ${b.created_at.slice(0, 10)}` : ''}`}>
+      <View style={styles.statRow}>
+        <Stat label="Waist" value={`${a.tape.waist_in}"`} />
+        <Stat label="Lean" value={a.lean_mass_lb != null ? `${a.lean_mass_lb} lb` : '—'} />
+        <Stat label="Fat" value={a.fat_mass_lb != null ? `${a.fat_mass_lb} lb` : '—'} />
+      </View>
+      <View style={{ marginTop: spacing.sm }}>
+        <View style={styles.tHead}>
+          {['Date', 'BF %', 'Sum mm', 'Waist', 'Weight'].map((h) => (
+            <Text key={h} style={styles.tH}>{h}</Text>
+          ))}
+        </View>
+        {list.slice(0, 12).map((x) => (
+          <View key={x.id} style={styles.tRow}>
+            <Text style={styles.tD}>{x.created_at.slice(5, 10)}</Text>
+            <Text style={[styles.tD, { color: colors.accentText }]}>{x.bf_percent ?? '—'}</Text>
+            <Text style={styles.tD}>{x.sum_mm}</Text>
+            <Text style={styles.tD}>{x.tape.waist_in}</Text>
+            <Text style={styles.tD}>{x.weight_lb}</Text>
+          </View>
+        ))}
+      </View>
+    </SectionCard>
+  );
+}
+
+function ScanRow({ scan, caliper, onOpen }: { scan: ScanSummary; caliper: number | null; onOpen: () => void }) {
   const done = scan.status === 'complete';
   return (
     <TouchableOpacity style={styles.row} disabled={!done} onPress={onOpen} accessibilityRole="button">
@@ -152,7 +192,7 @@ function ScanRow({ scan, onOpen }: { scan: ScanSummary; onOpen: () => void }) {
         <Text style={styles.rowDate}>{scan.created_at?.slice(0, 10)}</Text>
         {scan.status === 'failed' ? <Text style={[styles.rowMeta, { color: colors.red }]}>{scan.fail_reason ?? 'Scan failed — try again'}</Text> : null}
         {!done && scan.status !== 'failed' ? <Text style={styles.rowMeta}>Processing… usually a few minutes</Text> : null}
-        {done && scan.bf_low != null ? <Text style={styles.rowMeta}>{scan.bf_low}–{scan.bf_high}%</Text> : null}
+        {done && scan.bf_low != null ? <Text style={styles.rowMeta}>{scan.bf_low}–{scan.bf_high}%{caliper != null ? ` · calipers ${caliper}%` : ''}</Text> : null}
       </View>
       {done ? <Text style={styles.rowBf}>{scan.bf_percent}%</Text> : scan.status !== 'failed' ? <ActivityIndicator color={colors.accent} size="small" /> : null}
     </TouchableOpacity>
@@ -182,5 +222,9 @@ const styles = StyleSheet.create({
   row: { minHeight: 56, flexDirection: 'row', alignItems: 'center', borderTopWidth: 1, borderTopColor: colors.border, paddingVertical: 8 },
   rowDate: { color: colors.textPrimary, fontWeight: '600' },
   rowMeta: { color: colors.textSecondary, fontSize: 12 },
+  tHead: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: 6 },
+  tH: { flex: 1, color: colors.textSecondary, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.6 },
+  tRow: { flexDirection: 'row', paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: colors.border },
+  tD: { flex: 1, color: colors.textPrimary, fontSize: 13, fontWeight: '600' },
   rowBf: { color: colors.accentText, fontFamily: fonts.display, fontSize: 22 },
 });

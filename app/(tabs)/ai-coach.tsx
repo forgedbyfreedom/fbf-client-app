@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Modal,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
@@ -22,7 +23,7 @@ import { useIsDesktop } from '../../hooks/useBreakpoint';
 import { generateSpeech, playAudio } from '../../lib/elevenlabs';
 import { VOICE_IDS, type VoicePreference } from './profile';
 import { getToken, wpApiRoot } from '../../lib/wp-auth';
-import { extractBloodwork, getBloodworkHistory, getAiStats, AiStats, LabReport, LabMarker } from '../../lib/hub';
+import { analyzeBloodwork, extractBloodwork, getBloodworkHistory, getAiStats, AiStats, LabReport, LabMarker } from '../../lib/hub';
 
 const SAMPLE_QUESTIONS = [
   'How is my progress this week?',
@@ -71,6 +72,7 @@ export default function AICoachScreen() {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [runError, setRunError] = useState<string | null>(null);
+  const [waitNotice, setWaitNotice] = useState(false);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState<AiStats | null>(null);
   const [speaking, setSpeaking] = useState<'idle' | 'generating' | 'playing'>('idle');
@@ -102,15 +104,25 @@ export default function AICoachScreen() {
     setSpeaking('idle');
   };
 
-  const run = async (q: string) => {
+  const run = async (q: string, labs?: LabReport) => {
     if (!q.trim() || loading) return;
     setLoading(true);
     setAnswer('');
     setRunError(null);
     resetVoice();
+    if (labs) setWaitNotice(true);
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 250);
     try {
-      const reply = await askCoach(q);
+      let reply: string | null = null;
+      if (labs) {
+        try {
+          reply = await analyzeBloodwork(labs);
+        } catch (err: any) {
+          if (err?.name === 'AbortError') throw err;
+          reply = null; // fall back to the coach chat below
+        }
+      }
+      if (!reply) reply = await askCoach(q);
       setAnswer(reply);
       setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 150);
     } catch (e: any) {
@@ -122,10 +134,13 @@ export default function AICoachScreen() {
       Alert.alert('AI Coach', msg);
     } finally {
       setLoading(false);
+      setWaitNotice(false);
     }
   };
 
-  const analyze = (markers: LabMarker[], when?: string | null) => {
+  const analyze = (lab: LabReport) => {
+    const markers = lab.markers;
+    const when = lab.collected_on;
     // Keep the reply short enough to finish well inside the server's time limit:
     // full detail only for out-of-range markers, one grouped line for the rest.
     const isOut = (m: LabMarker) => m.flag === 'high' || m.flag === 'low';
@@ -136,7 +151,8 @@ export default function AICoachScreen() {
         `1) OUT OF RANGE: for each marker below, give the value, what it means for an enhanced athlete, your assessment (watch / intervene / red flag), the compounds that could cause it, and the intervention ladder (lifestyle > supplements > pharmaceuticals > discontinuation thresholds).\n` +
         `2) IN RANGE: do not go marker by marker. Write 2-4 lines on anything that deserves attention even though it is in range, and say the rest look fine.\n` +
         `3) Finish with the 3 most important actions.\n\n` +
-        `OUT OF RANGE:\n${out || '(none flagged)'}\n\nIN RANGE:\n${rest || '(none)'}`
+        `OUT OF RANGE:\n${out || '(none flagged)'}\n\nIN RANGE:\n${rest || '(none)'}`,
+      lab
     );
   };
 
@@ -192,6 +208,20 @@ export default function AICoachScreen() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.background }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <Modal visible={waitNotice} transparent animationType="fade" onRequestClose={() => setWaitNotice(false)}>
+        <View style={styles.noticeBackdrop}>
+          <View style={styles.noticeCard} accessibilityViewIsModal>
+            <ActivityIndicator color={colors.accent} size="large" />
+            <Text style={styles.noticeTitle}>Building your detailed analysis</Text>
+            <Text style={styles.noticeBody}>
+              This can take a minute or two. Keep the app open and your results will appear below as soon as they're ready.
+            </Text>
+            <TouchableOpacity style={styles.primary} onPress={() => setWaitNotice(false)} accessibilityRole="button">
+              <Text style={styles.primaryText}>Got it</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
       <ScrollView
         ref={scrollRef}
         style={styles.container}
@@ -307,7 +337,7 @@ export default function AICoachScreen() {
                     </Text>
                   </View>
                 ))}
-                <TouchableOpacity style={[styles.primary, loading && styles.off]} onPress={() => analyze(report.markers, report.collected_on)} disabled={loading} accessibilityRole="button">
+                <TouchableOpacity style={[styles.primary, loading && styles.off]} onPress={() => analyze(report)} disabled={loading} accessibilityRole="button">
                   {loading ? <ActivityIndicator color={colors.onAccent} /> : <Text style={styles.primaryText}>Analyze with Coach Bryan</Text>}
                 </TouchableOpacity>
               </SectionCard>
@@ -409,6 +439,10 @@ const styles = StyleSheet.create({
   chip: { minHeight: 36, paddingHorizontal: 12, borderRadius: 18, borderWidth: 1, borderColor: colors.borderLight, justifyContent: 'center' },
   chipText: { color: colors.textSecondary, fontSize: 13 },
   primary: { minHeight: 52, borderRadius: 14, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
+  noticeBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', alignItems: 'center', justifyContent: 'center', padding: spacing.lg },
+  noticeCard: { width: '100%', maxWidth: 380, backgroundColor: colors.surface, borderRadius: 16, borderWidth: 1, borderColor: colors.border, padding: spacing.lg, gap: spacing.md, alignItems: 'center' },
+  noticeTitle: { color: colors.textPrimary, fontSize: fontSize.lg, fontWeight: '700', textAlign: 'center' },
+  noticeBody: { color: colors.textSecondary, fontSize: fontSize.md, textAlign: 'center', lineHeight: 22 },
   primaryText: { color: colors.onAccent, fontWeight: '700', fontSize: fontSize.md },
   secondary: { minHeight: 48, borderRadius: 12, borderWidth: 1, borderColor: colors.borderAccent, alignItems: 'center', justifyContent: 'center' },
   secondaryText: { color: colors.accentText, fontWeight: '600', fontSize: fontSize.md },

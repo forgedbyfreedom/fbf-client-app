@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'expo-router';
 import { Avatar } from '../ui/Avatar';
 import { useProfile } from '../../hooks/useProfile';
 import { colors, fonts, spacing } from '../../lib/theme';
+import { BrandMark } from '../ui/BrandMark';
 
 type Item = { route: string; label: string; icon: keyof typeof Ionicons.glyphMap; show?: boolean };
 
@@ -62,7 +63,7 @@ export function DesktopSidebar({ isCoach, isAdmin }: { isCoach: boolean; isAdmin
   return (
     <View style={styles.bar}>
       <View style={styles.brand}>
-        <Image source={require('../../assets/fbf-shield.png')} style={styles.logo} resizeMode="contain" />
+        <BrandMark height={40} />
         <View>
           <Text style={styles.brandName}>FORGED BY FREEDOM</Text>
           <Text style={styles.brandSub}>MONSTERS ARE REAL</Text>

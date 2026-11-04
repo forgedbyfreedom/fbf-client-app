@@ -65,10 +65,10 @@ export default function LoginScreen() {
             <BrandMark height={170} style={{ marginBottom: spacing.sm }} />
           )}
           <Text style={styles.subtitle}>Client Portal</Text>
-          <View style={styles.partner} accessibilityRole="text" accessibilityLabel="Team Yarbro Partner and Trained Athlete">
+          <View style={styles.partner} accessibilityRole="text" accessibilityLabel="Powered by Yarbro, Trained Athlete">
             <View style={styles.partnerRule} />
             <Text style={styles.partnerText}>
-              TEAM YARBRO PARTNER <Text style={styles.partnerDot}>·</Text> TRAINED ATHLETE
+              POWERED BY YARBRO <Text style={styles.partnerDot}>·</Text> TRAINED ATHLETE
             </Text>
             <View style={styles.partnerRule} />
           </View>

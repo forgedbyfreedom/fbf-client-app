@@ -13,6 +13,7 @@ const TAB_PATH: Record<string, string> = {
   index: '/',
   workouts: '/workouts',
   meals: '/meals',
+  protocol: '/protocol',
   chat: '/chat',
   'ai-coach': '/ai-coach',
   coach: '/coach',
@@ -32,6 +33,7 @@ export function DesktopSidebar({ isCoach, isAdmin }: { isCoach: boolean; isAdmin
     { route: 'index', label: 'Today', icon: 'home-outline' },
     { route: 'workouts', label: 'Train', icon: 'barbell-outline' },
     { route: 'meals', label: 'Meals', icon: 'nutrition-outline' },
+    { route: 'protocol', label: 'Protocol', icon: 'flask-outline' },
     { route: 'chat', label: 'Messages', icon: 'chatbubble-outline' },
     { route: 'ai-coach', label: 'AI Coach', icon: 'fitness-outline' },
   ];

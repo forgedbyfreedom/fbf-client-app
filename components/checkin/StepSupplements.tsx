@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CheckinContext } from '../../providers/CheckinProvider';
 import { useAuth } from '../../hooks/useAuth';
 import { Input } from '../ui/Input';
+import { extractProtocolItems } from '../../lib/protocol-text';
 import { CompoundLogger } from './CompoundLogger';
 import { colors, fontSize, spacing } from '../../lib/theme';
 
@@ -27,6 +28,11 @@ export function StepSupplements() {
     for (const x of client?.current_peptides ?? []) out.push({ key: `peptide_${x.name}`, name: x.name, detail: [x.dose, x.frequency].filter(Boolean).join(' · '), kind: 'peptide', dose: x.dose, frequency: x.frequency, route: 'SubQ injection' });
     for (const x of client?.current_peds ?? []) out.push({ key: `ped_${x.compound}`, name: x.compound, detail: [x.dose, x.frequency].filter(Boolean).join(' · '), kind: 'ped', dose: x.dose, frequency: x.frequency, route: x.route });
     for (const x of (client?.medical_protocol ?? []) as any[]) out.push({ key: `medical_${x.name}`, name: x.name, detail: [x.dose, x.frequency].filter(Boolean).join(' · '), kind: 'medical', dose: x.dose ?? '', frequency: x.frequency ?? '', route: x.route ?? 'Oral' });
+    const have = new Set(out.map((r) => r.key));
+    for (const w of extractProtocolItems(client?.protocol_sections)) {
+      if (have.has(w.key)) continue;
+      out.push({ key: w.key, name: w.name, detail: w.dose, kind: w.type, dose: w.dose, frequency: '', route: w.route || (w.type === 'peptide' ? 'SubQ injection' : '') });
+    }
     return out;
   }, [client]);
 

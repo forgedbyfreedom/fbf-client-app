@@ -9,6 +9,7 @@ import * as Updates from 'expo-updates';
 import { AuthProvider } from '../providers/AuthProvider';
 import { useAuth } from '../hooks/useAuth';
 import { usePushNotifications } from '../hooks/usePushNotifications';
+import LaunchIntro from '../components/LaunchIntro';
 import { Loading } from '../components/ui/Loading';
 import { colors } from '../lib/theme';
 import { syncHealth } from '../lib/health-sync';
@@ -215,6 +216,7 @@ export default function RootLayout() {
       {Platform.OS !== 'web' && <PushNotificationHandler />}
       <BackgroundSyncHandler />
       <DeepLinkHandler />
+      <LaunchIntro />
     </AuthProvider>
   );
 

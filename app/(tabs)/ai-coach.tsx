@@ -17,6 +17,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AnalysisView } from '../../components/ui/AnalysisView';
 import { SectionCard, Eyebrow, DisplayText } from '../../components/ui/SectionCard';
 import { colors, fontSize, fonts, spacing } from '../../lib/theme';
 import { useIsDesktop } from '../../hooks/useBreakpoint';
@@ -408,9 +409,7 @@ export default function AICoachScreen() {
             ) : runError && !answer ? (
               <Text style={styles.error}>{runError}</Text>
             ) : (
-              <Text style={styles.answer} selectable>
-                {answer}
-              </Text>
+              <AnalysisView text={answer} />
             )}
           </SectionCard>
         )}

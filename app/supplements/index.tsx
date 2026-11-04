@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, usePathname } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../../hooks/useAuth';
 import { BrandHeader } from '../../components/ui/BrandHeader';
@@ -52,6 +52,7 @@ const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 export default function SupplementsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const inTab = (usePathname() || '').startsWith('/protocol');
   const { client, refreshClientData } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<TabView>('protocols');
@@ -185,10 +186,12 @@ export default function SupplementsScreen() {
     >
       {/* Header */}
       <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={colors.accent} />
-        </TouchableOpacity>
-        <BrandHeader title="Supplements & Protocol" compact />
+        {!inTab && (
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Ionicons name="chevron-back" size={24} color={colors.accent} />
+          </TouchableOpacity>
+        )}
+        <BrandHeader title="Cycle, Supplements & Support" compact />
       </View>
 
       {/* Compliance Summary */}

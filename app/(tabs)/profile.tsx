@@ -212,7 +212,7 @@ export default function ProfileScreen() {
 
       <TouchableOpacity
         style={styles.supplementsBtn}
-        onPress={() => router.push('/supplements')}
+        onPress={() => router.navigate('/(tabs)/protocol' as any)}
         activeOpacity={0.7}
       >
         <View style={styles.supplementsBtnIcon}>

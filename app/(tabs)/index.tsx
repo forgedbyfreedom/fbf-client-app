@@ -209,7 +209,7 @@ export default function TodayScreen() {
           n={3}
           title={plan?.supplements ? `${plan.supplements} supplements` : 'Supplements & protocol'}
           detail={plan?.protocolCount ? 'Includes your private protocol' : 'Tap to log what you have taken'}
-          onPress={() => router.push('/supplements')}
+          onPress={() => router.navigate('/(tabs)/protocol' as any)}
         />
       </SectionCard>
     </>

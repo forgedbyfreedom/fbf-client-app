@@ -70,6 +70,7 @@ export default function AICoachScreen() {
   const [tab, setTab] = useState<Tab>('ask');
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
+  const [runError, setRunError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState<AiStats | null>(null);
   const [speaking, setSpeaking] = useState<'idle' | 'generating' | 'playing'>('idle');
@@ -105,22 +106,37 @@ export default function AICoachScreen() {
     if (!q.trim() || loading) return;
     setLoading(true);
     setAnswer('');
+    setRunError(null);
     resetVoice();
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 250);
     try {
       const reply = await askCoach(q);
       setAnswer(reply);
       setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 150);
     } catch (e: any) {
-      Alert.alert('AI Coach', e.message || 'Failed to get a response.');
+      const timedOut = e?.name === 'AbortError';
+      const msg = timedOut
+        ? 'The analysis took too long. Tap Analyze again, or ask about one marker at a time.'
+        : e?.message || 'Failed to get a response.';
+      setRunError(msg);
+      Alert.alert('AI Coach', msg);
     } finally {
       setLoading(false);
     }
   };
 
   const analyze = (markers: LabMarker[], when?: string | null) => {
-    const lines = markers.map(markerLine).join('\n');
+    // Keep the reply short enough to finish well inside the server's time limit:
+    // full detail only for out-of-range markers, one grouped line for the rest.
+    const isOut = (m: LabMarker) => m.flag === 'high' || m.flag === 'low';
+    const out = markers.filter(isOut).map(markerLine).join('\n');
+    const rest = markers.filter((m) => !isOut(m)).map(markerLine).join('\n');
     run(
-      `Please analyze my bloodwork${when ? ` (collected ${when})` : ''}. For each marker give the value, the standard lab range, the acceptable range for an enhanced athlete, and your assessment (normal / watch / intervene / red flag). Flag anything concerning, explain which compounds could cause the abnormal values, and give the intervention ladder (lifestyle > supplements with doses > pharmaceuticals with doses > discontinuation thresholds).\n\n${lines}`
+      `Please analyze my bloodwork${when ? ` (collected ${when})` : ''}. Keep it focused and under about 600 words.\n\n` +
+        `1) OUT OF RANGE: for each marker below, give the value, what it means for an enhanced athlete, your assessment (watch / intervene / red flag), the compounds that could cause it, and the intervention ladder (lifestyle > supplements > pharmaceuticals > discontinuation thresholds).\n` +
+        `2) IN RANGE: do not go marker by marker. Write 2-4 lines on anything that deserves attention even though it is in range, and say the rest look fine.\n` +
+        `3) Finish with the 3 most important actions.\n\n` +
+        `OUT OF RANGE:\n${out || '(none flagged)'}\n\nIN RANGE:\n${rest || '(none)'}`
     );
   };
 
@@ -338,7 +354,7 @@ export default function AICoachScreen() {
           </>
         )}
 
-        {(answer || loading) && (
+        {(answer || loading || runError) && (
           <SectionCard
             eyebrow="Coach Bryan"
             right={
@@ -357,8 +373,10 @@ export default function AICoachScreen() {
             {loading ? (
               <View style={styles.thinking}>
                 <ActivityIndicator color={colors.accent} />
-                <Text style={styles.muted}>Searching the library…</Text>
+                <Text style={styles.muted}>Reading your results… this can take up to a minute. Your analysis will appear here.</Text>
               </View>
+            ) : runError && !answer ? (
+              <Text style={styles.error}>{runError}</Text>
             ) : (
               <Text style={styles.answer} selectable>
                 {answer}

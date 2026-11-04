@@ -21,8 +21,8 @@ const PER_SHEET = 54;
 const COLS = 6;
 const FOOTAGE_MS = (FRAMES / FPS) * 1000; // 7200
 const MERGE_AT = 6700; // shield starts sliding aside just before the footage ends
-const OUT_AT = 13200; // hold the finished lockup for ~6 s
-const TOTAL = 13900;
+const OUT_AT = 14700; // hold the finished lockup for ~7.5 s
+const TOTAL = 15400;
 const GOLD = '#D4A93A';
 
 let played = false;
@@ -95,7 +95,7 @@ function Intro({ onDone }: { onDone: () => void }) {
 
   const root = useAnimatedStyle(() => ({ opacity: out.value * show.value }));
   const shield = useAnimatedStyle(() => ({
-    transform: [{ translateX: -0.14 * D * merge.value }, { scale: 1 - 0.38 * merge.value }],
+    transform: [{ translateX: -0.115 * D * merge.value }, { scale: 1 - 0.38 * merge.value }],
   }));
   const yarbroH = 0.64 * D;
   const yarbroW = yarbroH * (223 / 640);
@@ -120,9 +120,9 @@ function Intro({ onDone }: { onDone: () => void }) {
               </View>
             </Animated.View>
 
-            <Animated.View style={[styles.rule, { height: 0.56 * H, left: D / 2 + 0.135 * D, top: H * 0.22 }, rule]} />
+            <Animated.View style={[styles.rule, { height: 0.56 * H, left: D / 2 + 0.075 * D, top: H * 0.22 }, rule]} />
 
-            <Animated.View style={[styles.yarbroWrap, { width: yarbroW, height: yarbroH, left: D / 2 + 0.165 * D, top: (H - yarbroH) / 2 }, yarbroStyle]}>
+            <Animated.View style={[styles.yarbroWrap, { width: yarbroW, height: yarbroH, left: D / 2 + 0.105 * D, top: (H - yarbroH) / 2 }, yarbroStyle]}>
               <Image source={YARBRO} style={{ width: yarbroW, height: yarbroH }} resizeMode="contain" />
               <Animated.View style={[StyleSheet.absoluteFill, goldStyle]}>
                 <Image source={YARBRO} style={{ width: yarbroW, height: yarbroH, tintColor: GOLD }} resizeMode="contain" />

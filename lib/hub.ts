@@ -186,6 +186,27 @@ export async function extractBloodwork(file: { uri: string; name: string; type: 
   return multipart<LabReport>('/bloodwork/extract', form);
 }
 
+/** Written analysis of a report. Needs the FBF Bloodwork Reader plugin 1.1+; returns null if the route is missing. */
+export async function analyzeBloodwork(report: Pick<LabReport, 'id' | 'markers' | 'collected_on'>): Promise<string | null> {
+  const token = await getToken();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 95000);
+  try {
+    const res = await fetch(`${wpApiRoot}/bloodwork/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: JSON.stringify({ report_id: report.id, markers: report.markers, collected_on: report.collected_on }),
+      signal: controller.signal,
+    });
+    if (res.status === 404) return null;
+    const body = await res.json().catch(() => null);
+    if (!res.ok) throw new Error((body && body.message) || `Analysis failed (${res.status})`);
+    return (body && body.reply) || null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export async function getBloodworkHistory(): Promise<LabReport[]> {
   const r = await apiFetch<{ reports: LabReport[] }>('/bloodwork/history');
   return r.reports ?? [];

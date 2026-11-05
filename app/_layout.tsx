@@ -186,6 +186,9 @@ export default function RootLayout() {
         <Stack.Screen name="bodyscan/index" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="bodyscan/capture" options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="bodyscan/report" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="posing/index" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="posing/capture" options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="posing/queue" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen
           name="client/[id]"
           options={{ animation: 'slide_from_right' }}

@@ -182,6 +182,11 @@ export default function CoachScreen() {
           <Eyebrow>{me?.is_head ? 'Head coach' : 'Coach'}</Eyebrow>
           <DisplayText size={32}>Coach console.</DisplayText>
         </View>
+        <TouchableOpacity style={styles.posingLink} onPress={() => router.push('/posing/queue')} accessibilityRole="button">
+          <Ionicons name="body-outline" size={20} color={colors.accentText} />
+          <Text style={styles.posingLinkText}>Posing review queue</Text>
+          <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
+        </TouchableOpacity>
         {loadError && <Text style={styles.error}>{loadError}</Text>}
 
         {/* Ask */}
@@ -366,6 +371,8 @@ const styles = StyleSheet.create({
   alertText: { color: colors.textSecondary, fontSize: fontSize.xs, marginTop: 2 },
   alertTime: { color: colors.textTertiary, fontSize: fontSize.xs },
   container: { flex: 1, backgroundColor: colors.background },
+  posingLink: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, backgroundColor: colors.surface, borderRadius: 16, borderWidth: 1, borderColor: colors.borderAccent, padding: spacing.md, marginBottom: spacing.md },
+  posingLinkText: { flex: 1, color: colors.textPrimary, fontWeight: '600', fontSize: fontSize.md },
   center: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center', padding: spacing.xl },
   content: { padding: spacing.lg },
   h1: { fontSize: fontSize.xxl, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.md },

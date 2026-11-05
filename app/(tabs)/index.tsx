@@ -289,6 +289,7 @@ export default function TodayScreen() {
       <View style={styles.explore}>
         <Eyebrow style={{ marginBottom: spacing.xs }}>Explore</Eyebrow>
         <ExploreRow icon="scan-outline" label="Body scan" onPress={() => router.push('/bodyscan')} />
+        <ExploreRow icon="body-outline" label="Posing studio" onPress={() => router.push('/posing')} />
         <ExploreRow icon="flask-outline" label="Peptide catalog" onPress={() => router.push('/peptides')} />
         <ExploreRow icon="cart-outline" label="FBF peptide order form" onPress={() => WebBrowser.openBrowserAsync('https://ezformz.net/f/fbf-peptide-catalog-ew6n4u')} />
         <ExploreRow icon="trophy-outline" label="FBF Recomp Protocol" onPress={() => WebBrowser.openBrowserAsync('https://forgedbyfreedom.net/programs/')} />

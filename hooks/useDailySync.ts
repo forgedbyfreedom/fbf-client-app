@@ -65,7 +65,7 @@ export function useDailySync() {
     let cancelled = false;
 
     const build = async (): Promise<DailyLog> => {
-      const eaten = new Set(entries.filter((e) => e.source === 'meal_plan').map((e) => e.name));
+      const eatenPlan = new Set(entries.filter((e) => e.source === 'meal_plan').map((e) => e.meal_label || e.name));
       const offPlanMeals = new Set(
         entries.filter((e) => e.source !== 'meal_plan').map((e) => e.meal_label || e.name)
       );
@@ -78,7 +78,7 @@ export function useDailySync() {
       } catch {}
       return {
         meals_planned: plan.mealNames.length,
-        meals_eaten: plan.mealNames.filter((n) => eaten.has(n)).length,
+        meals_eaten: Math.min(plan.mealNames.length, eatenPlan.size),
         off_plan_meals: offPlanMeals.size,
         water_oz: Math.round(totalOz),
         water_target_oz: client.target_water_oz ?? undefined,
@@ -91,6 +91,14 @@ export function useDailySync() {
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(async () => {
       const log = await build();
+      // Don't write a plan-only, all-zero row before the client has logged
+      // anything — that made empty days indistinguishable from real misses.
+      const hasActivity =
+        (log.meals_eaten ?? 0) > 0 ||
+        (log.off_plan_meals ?? 0) > 0 ||
+        (log.water_oz ?? 0) > 0 ||
+        (log.supplements_taken ?? 0) > 0;
+      if (!hasActivity) return;
       const sig = localDay() + JSON.stringify(log);
       if (cancelled || sig === lastSent.current) return;
       lastSent.current = sig;

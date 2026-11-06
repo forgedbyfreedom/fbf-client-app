@@ -19,6 +19,7 @@ import { BrandHeader } from '../../components/ui/BrandHeader';
 import { coachApi, AskResult, CoachMe } from '../../lib/coach';
 import { useRouter } from 'expo-router';
 import { getCoachAlerts, getCoachClients, HubEvent, CoachClient as HubClient } from '../../lib/hub';
+import { CoachAnalytics } from '../../components/coach/CoachAnalytics';
 import { Eyebrow, DisplayText } from '../../components/ui/SectionCard';
 import { colors, borderRadius, fontSize, spacing } from '../../lib/theme';
 
@@ -41,6 +42,7 @@ export default function CoachScreen() {
   const [alerts, setAlerts] = useState<HubEvent[]>([]);
   const [hubClients, setHubClients] = useState<Record<number, HubClient>>({});
   const router = useRouter();
+  const [view, setView] = useState<'console' | 'analytics'>('console');
 
   const load = useCallback(async () => {
     try {
@@ -182,6 +184,19 @@ export default function CoachScreen() {
           <Eyebrow>{me?.is_head ? 'Head coach' : 'Coach'}</Eyebrow>
           <DisplayText size={32}>Coach console.</DisplayText>
         </View>
+
+        <View style={styles.segment}>
+          {(['console', 'analytics'] as const).map((v) => (
+            <TouchableOpacity key={v} style={[styles.segBtn, view === v && styles.segOn]} onPress={() => setView(v)} accessibilityRole="button" accessibilityState={{ selected: view === v }}>
+              <Text style={[styles.segText, view === v && styles.segTextOn]}>{v === 'console' ? 'Console' : 'Analytics'}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {view === 'analytics' && <CoachAnalytics />}
+
+        {view === 'console' && (
+        <>
         <TouchableOpacity style={styles.posingLink} onPress={() => router.push('/posing/queue')} accessibilityRole="button">
           <Ionicons name="body-outline" size={20} color={colors.accentText} />
           <Text style={styles.posingLinkText}>Posing review queue</Text>
@@ -351,6 +366,8 @@ export default function CoachScreen() {
             ))}
           </>
         )}
+        </>
+        )}
         <View style={{ height: spacing.xxxl * 2 }} />
       </ScrollView>
     </View>
@@ -371,6 +388,11 @@ const styles = StyleSheet.create({
   alertText: { color: colors.textSecondary, fontSize: fontSize.xs, marginTop: 2 },
   alertTime: { color: colors.textTertiary, fontSize: fontSize.xs },
   container: { flex: 1, backgroundColor: colors.background },
+  segment: { flexDirection: 'row', gap: 6, backgroundColor: colors.surfaceSunken, borderRadius: 12, padding: 4, marginBottom: spacing.md },
+  segBtn: { flex: 1, minHeight: 40, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
+  segOn: { backgroundColor: '#2A2414' },
+  segText: { color: colors.textSecondary, fontWeight: '700', fontSize: fontSize.sm },
+  segTextOn: { color: colors.accentText },
   posingLink: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, backgroundColor: colors.surface, borderRadius: 16, borderWidth: 1, borderColor: colors.borderAccent, padding: spacing.md, marginBottom: spacing.md },
   posingLinkText: { flex: 1, color: colors.textPrimary, fontWeight: '600', fontSize: fontSize.md },
   center: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center', padding: spacing.xl },

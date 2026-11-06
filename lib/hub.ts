@@ -5,6 +5,7 @@ import type { PhotoPose } from './pose';
 import { Platform } from 'react-native';
 import { apiFetch } from './api';
 import { getToken, wpApiRoot } from './wp-auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type ChangeArea = 'meal plan' | 'workout' | 'supplements' | 'targets' | 'protocol';
 
@@ -40,11 +41,53 @@ export function localDay(d = new Date()): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+const DAILY_QUEUE_KEY = 'fbf_daily_log_queue_v1';
+type QueuedDaily = { day: string; log: DailyLog };
+
+/** Re-send daily logs that failed earlier while offline. Latest entry per day wins. */
+export async function flushDailyQueue(): Promise<void> {
+  let queue: QueuedDaily[] = [];
+  try {
+    const raw = await AsyncStorage.getItem(DAILY_QUEUE_KEY);
+    queue = raw ? (JSON.parse(raw) as QueuedDaily[]) : [];
+  } catch {
+    return;
+  }
+  if (!queue.length) return;
+  const remaining: QueuedDaily[] = [];
+  for (const item of queue) {
+    try {
+      await apiFetch(`/daily-log?day=${item.day}`, { method: 'POST', body: JSON.stringify(item.log) });
+    } catch {
+      remaining.push(item); // still offline — keep it for next time
+    }
+  }
+  try {
+    await AsyncStorage.setItem(DAILY_QUEUE_KEY, JSON.stringify(remaining));
+  } catch {}
+}
+
+async function enqueueDaily(day: string, log: DailyLog): Promise<void> {
+  try {
+    const raw = await AsyncStorage.getItem(DAILY_QUEUE_KEY);
+    const queue: QueuedDaily[] = raw ? (JSON.parse(raw) as QueuedDaily[]) : [];
+    const next = queue.filter((q) => q.day !== day); // one entry per day, newest wins
+    next.push({ day, log });
+    await AsyncStorage.setItem(DAILY_QUEUE_KEY, JSON.stringify(next.slice(-30)));
+  } catch {}
+}
+
+/**
+ * Send the day's log. On failure it is queued and retried on the next sync,
+ * so a dropped connection never silently loses a day (it used to just warn).
+ */
 export async function postDailyLog(log: DailyLog, day = localDay()): Promise<void> {
+  await flushDailyQueue(); // opportunistically drain anything queued while offline
   try {
     await apiFetch(`/daily-log?day=${day}`, { method: 'POST', body: JSON.stringify(log) });
   } catch (e) {
-    console.warn('postDailyLog failed', e);
+    console.warn('postDailyLog failed — queued for retry', e);
+    await enqueueDaily(day, log);
   }
 }
 

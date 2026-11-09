@@ -20,7 +20,7 @@ import { BrandMark, YarbroMark } from '../../components/ui/BrandMark';
 export default function LoginScreen() {
   const { width: winW } = useWindowDimensions();
   const posterW = Math.min(winW - 48 - 14 - 60, 340);
-  const { signIn } = useAuth();
+  const { signIn, sessionNotice } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -98,7 +98,11 @@ export default function LoginScreen() {
             containerStyle={styles.inputContainer}
           />
 
-          {error ? <Text style={styles.error}>{error}</Text> : null}
+          {error ? (
+            <Text style={styles.error}>{error}</Text>
+          ) : sessionNotice ? (
+            <Text style={styles.error}>{sessionNotice}</Text>
+          ) : null}
 
           <Button
             title="Sign In"

@@ -4,6 +4,7 @@ import { useEffect, useSyncExternalStore } from 'react';
 import { Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { getProfile, uploadAvatar, deleteAvatar, HubProfile } from '../lib/hub';
+import { onAuthEvent } from '../lib/wp-auth';
 
 let state: { profile: HubProfile | null; loading: boolean; error: string | null } = { profile: null, loading: false, error: null };
 let fetched = false;
@@ -12,6 +13,13 @@ const set = (patch: Partial<typeof state>) => {
   state = { ...state, ...patch };
   listeners.forEach((l) => l());
 };
+
+// A new sign-in (or a dead session) must not keep the last account's profile
+// or its error — reload on next use.
+onAuthEvent(() => {
+  fetched = false;
+  set({ profile: null, loading: false, error: null });
+});
 
 export async function refreshProfile() {
   set({ loading: true });

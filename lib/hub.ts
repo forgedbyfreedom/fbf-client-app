@@ -105,7 +105,7 @@ async function multipart<T>(path: string, form: FormData): Promise<T> {
   });
   const body = await res.json().catch(() => null);
   if (!res.ok) {
-    throw new Error((body && body.message) || `Upload failed (${res.status})`);
+    throw new Error(res.status === 401 ? 'Your session expired. Please sign in again.' : (body && body.message) || `Upload failed (${res.status})`);
   }
   return body as T;
 }

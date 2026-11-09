@@ -4,11 +4,16 @@ import {
   logout as wpLogout,
   getCachedUser,
   isLoggedIn,
+  installSessionWatcher,
+  onAuthEvent,
   WPUser,
 } from '../lib/wp-auth';
 import { fetchClientMe } from '../lib/wp-adapter';
 import { Client, ClientMetrics, Checkin, StreakData, EarnedBadge, BadgeDefinition, UserRole } from '../types';
 import { demoClientMeResponse } from '../lib/demo-data';
+
+// Watch every call to the site's API for a dead token (see lib/wp-auth).
+installSessionWatcher();
 
 /**
  * Minimal session object kept for API-compatibility with the old
@@ -33,6 +38,8 @@ interface AuthContextType {
   allBadges: BadgeDefinition[];
   loading: boolean;
   clientError: string | null;
+  /** Shown on the sign-in screen after the server rejected a stored session. */
+  sessionNotice: string | null;
   isDemoMode: boolean;
   toggleDemoMode: () => void;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
@@ -54,6 +61,7 @@ export const AuthContext = createContext<AuthContextType>({
   allBadges: [],
   loading: true,
   clientError: null,
+  sessionNotice: null,
   isDemoMode: false,
   toggleDemoMode: () => {},
   signIn: async () => ({ error: null }),
@@ -75,6 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [clientError, setClientError] = useState<string | null>(null);
   const [isDemoMode, setIsDemoMode] = useState(false);
+  const [sessionNotice, setSessionNotice] = useState<string | null>(null);
 
   const loadDemoData = useCallback(() => {
     const d = demoClientMeResponse;
@@ -121,6 +130,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setClientError(message);
     }
   }, [isDemoMode]);
+
+  // Server rejected the stored token → back to sign-in with a clear note.
+  useEffect(
+    () =>
+      onAuthEvent((e) => {
+        if (e !== 'expired') return;
+        setIsDemoMode(false);
+        setSession(null);
+        setUser(null);
+        clearAllData();
+        setClientError(null);
+        setSessionNotice('Your session expired. Please sign in again to see your program.');
+      }),
+    [clearAllData]
+  );
 
   const toggleDemoMode = useCallback(() => {
     setIsDemoMode((prev) => {
@@ -177,6 +201,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (email: string, password: string) => {
       try {
         const u = await wpLogin(email, password);
+        setSessionNotice(null);
         setUser(u);
         setSession({ authenticated: true, user: u });
         fetchClientData();
@@ -214,6 +239,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         allBadges,
         loading,
         clientError,
+        sessionNotice,
         isDemoMode,
         toggleDemoMode,
         signIn,

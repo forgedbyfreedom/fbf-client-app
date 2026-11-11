@@ -89,6 +89,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="radio"
+        options={{
+          title: 'Radio',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="radio-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="podcast"
         options={{ href: null }}
       />

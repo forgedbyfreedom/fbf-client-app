@@ -16,6 +16,7 @@ const TAB_PATH: Record<string, string> = {
   protocol: '/protocol',
   chat: '/chat',
   'ai-coach': '/ai-coach',
+  radio: '/radio',
   coach: '/coach',
   admin: '/admin',
   profile: '/profile',
@@ -36,6 +37,7 @@ export function DesktopSidebar({ isCoach, isAdmin }: { isCoach: boolean; isAdmin
     { route: 'protocol', label: 'Protocol', icon: 'flask-outline' },
     { route: 'chat', label: 'Messages', icon: 'chatbubble-outline' },
     { route: 'ai-coach', label: 'AI Coach', icon: 'fitness-outline' },
+    { route: 'radio', label: 'FBF Radio', icon: 'radio-outline' },
   ];
   const more: Item[] = [
     { route: 'coach', label: 'Coach', icon: 'clipboard-outline', show: isCoach },

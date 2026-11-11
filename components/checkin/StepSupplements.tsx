@@ -1,14 +1,64 @@
-import React, { useContext } from 'react';
-import { View, Text, Switch, StyleSheet } from 'react-native';
+import React, { useContext, useEffect, useMemo, useState, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CheckinContext } from '../../providers/CheckinProvider';
 import { useAuth } from '../../hooks/useAuth';
 import { Input } from '../ui/Input';
+import { extractProtocolItems } from '../../lib/protocol-text';
 import { CompoundLogger } from './CompoundLogger';
 import { colors, fontSize, spacing } from '../../lib/theme';
+
+// Same per-day store the Protocol tab uses, so a tap in either place shows in both.
+const todayKey = () => {
+  const d = new Date();
+  return `fbf_supplement_log_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
+interface Row { key: string; name: string; detail: string; kind: 'supplement' | 'peptide' | 'ped' | 'medical'; dose: string; frequency: string; route: string }
 
 export function StepSupplements() {
   const { form, updateForm } = useContext(CheckinContext);
   const { client } = useAuth();
+  const [taken, setTaken] = useState<Record<string, boolean>>({});
+
+  const rows: Row[] = useMemo(() => {
+    const out: Row[] = [];
+    for (const x of client?.current_supplements ?? []) out.push({ key: `supplement_${x.name}`, name: x.name, detail: [x.dose, x.frequency].filter(Boolean).join(' · '), kind: 'supplement', dose: x.dose, frequency: x.frequency, route: 'Oral' });
+    for (const x of client?.current_peptides ?? []) out.push({ key: `peptide_${x.name}`, name: x.name, detail: [x.dose, x.frequency].filter(Boolean).join(' · '), kind: 'peptide', dose: x.dose, frequency: x.frequency, route: 'SubQ injection' });
+    for (const x of client?.current_peds ?? []) out.push({ key: `ped_${x.compound}`, name: x.compound, detail: [x.dose, x.frequency].filter(Boolean).join(' · '), kind: 'ped', dose: x.dose, frequency: x.frequency, route: x.route });
+    for (const x of (client?.medical_protocol ?? []) as any[]) out.push({ key: `medical_${x.name}`, name: x.name, detail: [x.dose, x.frequency].filter(Boolean).join(' · '), kind: 'medical', dose: x.dose ?? '', frequency: x.frequency ?? '', route: x.route ?? 'Oral' });
+    const have = new Set(out.map((r) => r.key));
+    for (const w of extractProtocolItems(client?.protocol_sections)) {
+      if (have.has(w.key)) continue;
+      out.push({ key: w.key, name: w.name, detail: w.dose, kind: w.type, dose: w.dose, frequency: '', route: w.route || (w.type === 'peptide' ? 'SubQ injection' : '') });
+    }
+    return out;
+  }, [client]);
+
+  useEffect(() => {
+    AsyncStorage.getItem(todayKey()).then((v) => { if (v) { try { setTaken(JSON.parse(v)); } catch {} } }).catch(() => {});
+  }, []);
+
+  const apply = useCallback((next: Record<string, boolean>) => {
+    setTaken(next);
+    AsyncStorage.setItem(todayKey(), JSON.stringify(next)).catch(() => {});
+    // Overall flag = every assigned supplement ticked individually.
+    const supps = rows.filter((r) => r.kind === 'supplement');
+    const allSupps = supps.length > 0 && supps.every((r) => next[r.key]);
+    // Each peptide / compound / medical item ticked is logged as its own entry.
+    const logged = rows.filter((r) => r.kind !== 'supplement' && next[r.key]).map((r) => ({ compound: r.name, dose: r.dose || '', frequency: r.frequency || '', route: r.route || '' }));
+    const manual = form.ped_log_json.filter((e) => !rows.some((r) => r.kind !== 'supplement' && r.name === e.compound));
+    updateForm({ supplement_compliance: allSupps, ped_log_json: [...manual, ...logged] });
+  }, [rows, form.ped_log_json, updateForm]);
+
+  const toggle = (key: string) => apply({ ...taken, [key]: !taken[key] });
+  const allDone = rows.length > 0 && rows.every((r) => taken[r.key]);
+  const setAll = () => {
+    const next = { ...taken };
+    for (const r of rows) next[r.key] = !allDone;
+    apply(next);
+  };
 
   return (
     <View>
@@ -17,28 +67,30 @@ export function StepSupplements() {
           ⚠️ Compound and supplement logging is for personal tracking in an educational context only. Not a recommendation for human use. Consult a healthcare provider.
         </Text>
       </View>
-      <View style={styles.switchRow}>
-        <View>
-          <Text style={styles.label}>Supplement Compliance</Text>
-          <Text style={styles.sublabel}>Did you take all assigned supplements?</Text>
-        </View>
-        <Switch
-          value={form.supplement_compliance}
-          onValueChange={(v) => updateForm({ supplement_compliance: v })}
-          trackColor={{ false: colors.border, true: colors.green }}
-          thumbColor="#fff"
-        />
-      </View>
-
-      {client?.current_supplements && client.current_supplements.length > 0 && (
+      {rows.length > 0 ? (
         <View style={styles.protocolSection}>
-          <Text style={styles.protocolTitle}>Assigned Supplements</Text>
-          {client.current_supplements.map((s, i) => (
-            <Text key={i} style={styles.protocolItem}>
-              {s.name} - {s.dose} ({s.frequency})
-            </Text>
-          ))}
+          <View style={styles.rowHead}>
+            <Text style={styles.protocolTitle}>What did you take today?</Text>
+            <TouchableOpacity onPress={setAll} accessibilityRole="button">
+              <Text style={styles.markAll}>{allDone ? 'Clear all' : 'Mark all'}</Text>
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.sublabel}>Tap each one you took. Nothing is checked for you.</Text>
+          {rows.map((r) => {
+            const on = !!taken[r.key];
+            return (
+              <TouchableOpacity key={r.key} style={[styles.item, on && styles.itemOn]} onPress={() => toggle(r.key)} activeOpacity={0.7} accessibilityRole="checkbox" accessibilityState={{ checked: on }}>
+                <Ionicons name={on ? 'checkbox' : 'square-outline'} size={24} color={on ? colors.green : colors.textTertiary} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.itemName}>{r.name}</Text>
+                  {!!r.detail && <Text style={styles.itemDetail}>{r.detail}</Text>}
+                </View>
+              </TouchableOpacity>
+            );
+          })}
         </View>
+      ) : (
+        <Text style={[styles.sublabel, { marginBottom: spacing.lg }]}>Nothing assigned yet. Log what you took below.</Text>
       )}
 
       <CompoundLogger
@@ -62,6 +114,12 @@ export function StepSupplements() {
 }
 
 const styles = StyleSheet.create({
+  rowHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  markAll: { fontSize: fontSize.sm, color: colors.accentText, fontWeight: '600' },
+  item: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md, borderTopWidth: 1, borderTopColor: colors.border },
+  itemOn: { opacity: 1 },
+  itemName: { fontSize: fontSize.md, color: colors.textPrimary, fontWeight: '600' },
+  itemDetail: { fontSize: fontSize.sm, color: colors.textSecondary, marginTop: 2 },
   switchRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

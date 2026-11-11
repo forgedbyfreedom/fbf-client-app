@@ -32,6 +32,7 @@ import { Alert, Platform } from 'react-native';
 import { normalizeMealPlan } from '../../lib/normalize-plan';
 import { getTodaysWorkout, getTodayDayOfWeek, formatDayName } from '../../lib/workout-utils';
 import { colors, fontSize, spacing, fonts } from '../../lib/theme';
+import { BrandMark } from '../../components/ui/BrandMark';
 
 /**
  * Today — the redesigned home screen. One idea per card:
@@ -208,7 +209,7 @@ export default function TodayScreen() {
           n={3}
           title={plan?.supplements ? `${plan.supplements} supplements` : 'Supplements & protocol'}
           detail={plan?.protocolCount ? 'Includes your private protocol' : 'Tap to log what you have taken'}
-          onPress={() => router.push('/supplements')}
+          onPress={() => router.navigate('/(tabs)/protocol' as any)}
         />
       </SectionCard>
     </>
@@ -288,6 +289,7 @@ export default function TodayScreen() {
       <View style={styles.explore}>
         <Eyebrow style={{ marginBottom: spacing.xs }}>Explore</Eyebrow>
         <ExploreRow icon="scan-outline" label="Body scan" onPress={() => router.push('/bodyscan')} />
+        <ExploreRow icon="body-outline" label="Posing studio" onPress={() => router.push('/posing')} />
         <ExploreRow icon="flask-outline" label="Peptide catalog" onPress={() => router.push('/peptides')} />
         <ExploreRow icon="cart-outline" label="FBF peptide order form" onPress={() => WebBrowser.openBrowserAsync('https://ezformz.net/f/fbf-peptide-catalog-ew6n4u')} />
         <ExploreRow icon="trophy-outline" label="FBF Recomp Protocol" onPress={() => WebBrowser.openBrowserAsync('https://forgedbyfreedom.net/programs/')} />
@@ -306,7 +308,7 @@ export default function TodayScreen() {
       {!desktop && (
       <View style={styles.header}>
         <View style={styles.brand}>
-          <Image source={require('../../assets/fbf-shield.png')} style={styles.logo} resizeMode="contain" />
+          <BrandMark height={40} />
           <View>
             <Text style={styles.brandName}>FORGED BY FREEDOM</Text>
             <Text style={styles.brandSub}>MONSTERS ARE REAL</Text>

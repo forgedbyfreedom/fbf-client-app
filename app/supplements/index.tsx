@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, usePathname } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../../hooks/useAuth';
 import { BrandHeader } from '../../components/ui/BrandHeader';
@@ -20,6 +20,7 @@ import {
   buildTimelineItems,
 } from '../../components/supplements/SupplementTimeline';
 import { colors, fontSize, spacing, borderRadius } from '../../lib/theme';
+import { extractProtocolItems } from '../../lib/protocol-text';
 
 type TabView = 'protocols' | 'timeline';
 
@@ -52,6 +53,7 @@ const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 export default function SupplementsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const inTab = (usePathname() || '').startsWith('/protocol');
   const { client, refreshClientData } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<TabView>('protocols');
@@ -63,7 +65,17 @@ export default function SupplementsScreen() {
   const peds = useMemo(() => client?.current_peds || [], [client]);
   const medical = useMemo(() => client?.medical_protocol || [], [client]);
 
-  const totalItems = supplements.length + peptides.length + peds.length + medical.length;
+  // Compounds the coach wrote into the program text, one tappable item each.
+  const writtenItems = useMemo(() => {
+    const structured = new Set<string>([
+      ...peptides.map((p) => `peptide_${p.name}`),
+      ...peds.map((p) => `ped_${p.compound}`),
+      ...medical.map((p) => `medical_${p.name}`),
+    ]);
+    return extractProtocolItems(client?.protocol_sections).filter((i) => !structured.has(i.key));
+  }, [client, peptides, peds, medical]);
+
+  const totalItems = supplements.length + peptides.length + peds.length + medical.length + writtenItems.length;
 
   // Build all item keys
   const allKeys = useMemo(() => {
@@ -72,8 +84,9 @@ export default function SupplementsScreen() {
     for (const p of peptides) keys.push(`peptide_${p.name}`);
     for (const c of peds) keys.push(`ped_${c.compound}`);
     for (const m of medical) keys.push(`medical_${m.name}`);
+    for (const w of writtenItems) keys.push(w.key);
     return keys;
-  }, [supplements, peptides, peds, medical]);
+  }, [supplements, peptides, peds, medical, writtenItems]);
 
   // Load today's compliance from AsyncStorage
   useEffect(() => {
@@ -171,6 +184,7 @@ export default function SupplementsScreen() {
   }, [client, supplements.length]);
 
   const hasNoProtocols = totalItems === 0 && programSections.length === 0;
+  const writtenByType = (t: 'ped' | 'peptide' | 'medical') => writtenItems.filter((i) => i.type === t);
 
   return (
     <ScrollView
@@ -185,10 +199,12 @@ export default function SupplementsScreen() {
     >
       {/* Header */}
       <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={colors.accent} />
-        </TouchableOpacity>
-        <BrandHeader title="Supplements & Protocol" compact />
+        {!inTab && (
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Ionicons name="chevron-back" size={24} color={colors.accent} />
+          </TouchableOpacity>
+        )}
+        <BrandHeader title="Cycle, Supplements & Support" compact />
       </View>
 
       {/* Compliance Summary */}
@@ -282,11 +298,30 @@ export default function SupplementsScreen() {
         </Card>
       ) : activeTab === 'protocols' ? (
         <>
+          {([['ped', 'My Cycle & Compounds', 'fitness-outline'], ['peptide', 'My Peptides & Support', 'flask-outline'], ['medical', 'My Medical Protocol', 'medkit-outline']] as const).map(([t, label, icon]) =>
+            writtenByType(t).length > 0 ? (
+              <React.Fragment key={`written-${t}`}>
+                <Text style={styles.sectionHeader}>
+                  <Ionicons name={icon} size={14} color={colors.accent} />
+                  {'  '}{label}
+                </Text>
+                {writtenByType(t).map((item) => (
+                  <SupplementCard
+                    key={item.key}
+                    item={{ name: item.name, dose: item.dose, route: item.route || undefined, frequency: item.section }}
+                    type={t}
+                    taken={!!complianceMap[item.key]}
+                    onToggle={() => toggleItem(item.key)}
+                  />
+                ))}
+              </React.Fragment>
+            ) : null
+          )}
           {programSections.length > 0 && (
             <Card style={styles.programCard}>
               <View style={styles.programHeader}>
                 <Ionicons name="lock-closed-outline" size={14} color={colors.accent} />
-                <Text style={styles.programEyebrow}>FROM YOUR PROGRAM · PRIVATE</Text>
+                <Text style={styles.programEyebrow}>WRITTEN PROGRAM · PRIVATE</Text>
               </View>
               <Text style={styles.programNote}>Exactly as your coach wrote it. Only you and your coach see this.</Text>
               {programSections.map((sec, i) => (

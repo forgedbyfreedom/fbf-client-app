@@ -59,6 +59,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="protocol"
+        options={{
+          title: 'Protocol',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="flask-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="chat"
         options={{
           title: 'Chat',
@@ -76,6 +85,15 @@ export default function TabLayout() {
           title: 'AI Coach',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="fitness-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="radio"
+        options={{
+          title: 'Radio',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="radio-outline" size={size} color={color} />
           ),
         }}
       />

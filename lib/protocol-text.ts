@@ -73,3 +73,44 @@ export function extractProtocolSections(text: string | null | undefined): Protoc
   flush();
   return out;
 }
+
+export interface ProtocolItem {
+  /** Stable key shared with the daily check-off store, e.g. `ped_Test Propionate`. */
+  key: string;
+  name: string;
+  /** Everything after the name, as the coach wrote it, e.g. "300 mg/week". */
+  dose: string;
+  route: string;
+  type: 'ped' | 'peptide' | 'medical';
+  section: string;
+}
+
+const ROUTE_RE = /\b(subq|sub-q|subcutaneous|im|intramuscular|oral|topical|sublingual)\b[^)]*/i;
+
+/**
+ * Turns "Name: dose" lines inside cycle / peptide / medical sections into
+ * individual items so each can be viewed and ticked on its own. Lines without a
+ * "Name: detail" shape are left to the verbatim text, never guessed at.
+ */
+export function extractProtocolItems(sections: ProtocolSection[] | null | undefined): ProtocolItem[] {
+  const out: ProtocolItem[] = [];
+  const seen = new Set<string>();
+  for (const s of sections ?? []) {
+    if (s.kind === 'supplements') continue;
+    const type: ProtocolItem['type'] = s.kind === 'cycle' ? 'ped' : s.kind === 'peptides' ? 'peptide' : 'medical';
+    for (const raw of s.body.split(/\r?\n/)) {
+      const line = raw.replace(/^[\s\-*•\d.)]+/, '').replace(/\*\*/g, '').trim();
+      const i = line.indexOf(':');
+      if (i < 1 || i > 60) continue;
+      const name = line.slice(0, i).trim();
+      const dose = line.slice(i + 1).trim();
+      if (!name || !dose) continue;
+      const key = `${type}_${name}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const r = ROUTE_RE.exec(dose);
+      out.push({ key, name, dose, route: r ? r[0].replace(/[()]/g, '').trim() : '', type, section: s.title });
+    }
+  }
+  return out;
+}

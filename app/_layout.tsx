@@ -9,6 +9,7 @@ import * as Updates from 'expo-updates';
 import { AuthProvider } from '../providers/AuthProvider';
 import { useAuth } from '../hooks/useAuth';
 import { usePushNotifications } from '../hooks/usePushNotifications';
+import LaunchIntro from '../components/LaunchIntro';
 import { Loading } from '../components/ui/Loading';
 import { colors } from '../lib/theme';
 import { syncHealth } from '../lib/health-sync';
@@ -185,6 +186,9 @@ export default function RootLayout() {
         <Stack.Screen name="bodyscan/index" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="bodyscan/capture" options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="bodyscan/report" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="posing/index" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="posing/capture" options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="posing/queue" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen
           name="client/[id]"
           options={{ animation: 'slide_from_right' }}
@@ -215,6 +219,7 @@ export default function RootLayout() {
       {Platform.OS !== 'web' && <PushNotificationHandler />}
       <BackgroundSyncHandler />
       <DeepLinkHandler />
+      <LaunchIntro />
     </AuthProvider>
   );
 

@@ -6,9 +6,12 @@ export interface SupplementItem {
 
 export interface PedItem {
   compound: string;
+  /** Amount with its unit, e.g. "250 mg" or "2 IU". */
   dose: string;
   frequency: string;
   route: string;
+  /** Optional: brand/source, injection site, how it felt. */
+  notes?: string;
 }
 
 export interface PeptideItem {

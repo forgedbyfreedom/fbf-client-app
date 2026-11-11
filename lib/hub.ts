@@ -105,7 +105,7 @@ async function multipart<T>(path: string, form: FormData): Promise<T> {
   });
   const body = await res.json().catch(() => null);
   if (!res.ok) {
-    throw new Error((body && body.message) || `Upload failed (${res.status})`);
+    throw new Error(res.status === 401 ? 'Your session expired. Please sign in again.' : (body && body.message) || `Upload failed (${res.status})`);
   }
   return body as T;
 }
@@ -174,12 +174,37 @@ export interface LabReport {
   uploaded_at: string;
   filename: string;
   markers: LabMarker[];
+  /** Added by the FBF Bloodwork Reader plugin (1.0+). Older reports won't have these. */
+  warnings?: string[];
+  partial?: boolean;
+  unreadable?: number;
 }
 
 export async function extractBloodwork(file: { uri: string; name: string; type: string; file?: Blob }): Promise<LabReport> {
   const form = new FormData();
   await appendFile(form, 'file', file, file.name, file.type);
   return multipart<LabReport>('/bloodwork/extract', form);
+}
+
+/** Written analysis of a report. Needs the FBF Bloodwork Reader plugin 1.1+; returns null if the route is missing. */
+export async function analyzeBloodwork(report: Pick<LabReport, 'id' | 'markers' | 'collected_on'>): Promise<string | null> {
+  const token = await getToken();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 95000);
+  try {
+    const res = await fetch(`${wpApiRoot}/bloodwork/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: JSON.stringify({ report_id: report.id, markers: report.markers, collected_on: report.collected_on }),
+      signal: controller.signal,
+    });
+    if (res.status === 404) return null;
+    const body = await res.json().catch(() => null);
+    if (!res.ok) throw new Error((body && body.message) || `Analysis failed (${res.status})`);
+    return (body && body.reply) || null;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export async function getBloodworkHistory(): Promise<LabReport[]> {

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  useWindowDimensions,
   View,
   Text,
   Image,
@@ -14,9 +15,12 @@ import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { colors, fontSize, spacing } from '../../lib/theme';
+import { BrandMark, YarbroMark } from '../../components/ui/BrandMark';
 
 export default function LoginScreen() {
-  const { signIn } = useAuth();
+  const { width: winW } = useWindowDimensions();
+  const posterW = Math.min(winW - 48 - 14 - 60, 340);
+  const { signIn, sessionNotice } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -53,15 +57,18 @@ export default function LoginScreen() {
         <View style={styles.header}>
           {Platform.OS === 'web' ? (
             // Web: the still gold shield (no video).
-            <Image source={{ uri: '/fbf-shield-intro.jpg' }} style={styles.webPoster} resizeMode="cover" accessibilityLabel="Forged by Freedom" />
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: spacing.sm }}>
+              <Image source={{ uri: '/fbf-shield-intro.jpg' }} style={{ width: posterW, height: (posterW * 9) / 16, borderRadius: 16 }} resizeMode="cover" accessibilityLabel="Forged by Freedom" />
+              <YarbroMark height={(posterW * 9) / 16} />
+            </View>
           ) : (
-            <Image source={require('../../assets/fbf-shield.png')} style={styles.logo} resizeMode="contain" />
+            <BrandMark height={170} style={{ marginBottom: spacing.sm }} />
           )}
           <Text style={styles.subtitle}>Client Portal</Text>
-          <View style={styles.partner} accessibilityRole="text" accessibilityLabel="Team Yarbro Partner and Trained Athlete">
+          <View style={styles.partner} accessibilityRole="text" accessibilityLabel="Powered by Yarbro, Trained Athlete">
             <View style={styles.partnerRule} />
             <Text style={styles.partnerText}>
-              TEAM YARBRO PARTNER <Text style={styles.partnerDot}>·</Text> TRAINED ATHLETE
+              POWERED BY YARBRO <Text style={styles.partnerDot}>·</Text> TRAINED ATHLETE
             </Text>
             <View style={styles.partnerRule} />
           </View>
@@ -91,7 +98,11 @@ export default function LoginScreen() {
             containerStyle={styles.inputContainer}
           />
 
-          {error ? <Text style={styles.error}>{error}</Text> : null}
+          {error ? (
+            <Text style={styles.error}>{error}</Text>
+          ) : sessionNotice ? (
+            <Text style={styles.error}>{sessionNotice}</Text>
+          ) : null}
 
           <Button
             title="Sign In"

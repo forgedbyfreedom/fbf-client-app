@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'expo-router';
 import { Avatar } from '../ui/Avatar';
 import { useProfile } from '../../hooks/useProfile';
 import { colors, fonts, spacing } from '../../lib/theme';
+import { BrandMark } from '../ui/BrandMark';
 
 type Item = { route: string; label: string; icon: keyof typeof Ionicons.glyphMap; show?: boolean };
 
@@ -12,8 +13,10 @@ const TAB_PATH: Record<string, string> = {
   index: '/',
   workouts: '/workouts',
   meals: '/meals',
+  protocol: '/protocol',
   chat: '/chat',
   'ai-coach': '/ai-coach',
+  radio: '/radio',
   coach: '/coach',
   admin: '/admin',
   profile: '/profile',
@@ -31,8 +34,10 @@ export function DesktopSidebar({ isCoach, isAdmin }: { isCoach: boolean; isAdmin
     { route: 'index', label: 'Today', icon: 'home-outline' },
     { route: 'workouts', label: 'Train', icon: 'barbell-outline' },
     { route: 'meals', label: 'Meals', icon: 'nutrition-outline' },
+    { route: 'protocol', label: 'Protocol', icon: 'flask-outline' },
     { route: 'chat', label: 'Messages', icon: 'chatbubble-outline' },
     { route: 'ai-coach', label: 'AI Coach', icon: 'fitness-outline' },
+    { route: 'radio', label: 'FBF Radio', icon: 'radio-outline' },
   ];
   const more: Item[] = [
     { route: 'coach', label: 'Coach', icon: 'clipboard-outline', show: isCoach },
@@ -62,7 +67,7 @@ export function DesktopSidebar({ isCoach, isAdmin }: { isCoach: boolean; isAdmin
   return (
     <View style={styles.bar}>
       <View style={styles.brand}>
-        <Image source={require('../../assets/fbf-shield.png')} style={styles.logo} resizeMode="contain" />
+        <BrandMark height={40} />
         <View>
           <Text style={styles.brandName}>FORGED BY FREEDOM</Text>
           <Text style={styles.brandSub}>MONSTERS ARE REAL</Text>

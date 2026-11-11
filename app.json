@@ -78,7 +78,7 @@
         "expo-audio",
         {
           "microphonePermission": "Allow Forged by Freedom to use your microphone for voice notes.",
-          "enableBackgroundPlayback": false,
+          "enableBackgroundPlayback": true,
           "enableBackgroundRecording": false
         }
       ],

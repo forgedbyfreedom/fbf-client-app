@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Image, Text, StyleSheet } from 'react-native';
+import { BrandMark } from './BrandMark';
 import { colors, fontSize, spacing } from '../../lib/theme';
 import { useIsDesktop } from '../../hooks/useBreakpoint';
 
@@ -15,11 +16,7 @@ export function BrandHeader({ title, compact }: BrandHeaderProps) {
   }
   return (
     <View style={[styles.container, compact && styles.containerCompact]}>
-      <Image
-        source={require('../../assets/fbf-shield.png')}
-        style={compact ? styles.logoCompact : styles.logo}
-        resizeMode="contain"
-      />
+      <BrandMark height={compact ? 32 : 44} />
       {title ? (
         <Text style={compact ? styles.titleCompact : styles.title}>{title}</Text>
       ) : (

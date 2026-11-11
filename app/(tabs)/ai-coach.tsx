@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Modal,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
@@ -16,13 +17,14 @@ import * as DocumentPicker from 'expo-document-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AnalysisView } from '../../components/ui/AnalysisView';
 import { SectionCard, Eyebrow, DisplayText } from '../../components/ui/SectionCard';
 import { colors, fontSize, fonts, spacing } from '../../lib/theme';
 import { useIsDesktop } from '../../hooks/useBreakpoint';
 import { generateSpeech, playAudio } from '../../lib/elevenlabs';
 import { VOICE_IDS, type VoicePreference } from './profile';
 import { getToken, wpApiRoot } from '../../lib/wp-auth';
-import { extractBloodwork, getBloodworkHistory, getAiStats, AiStats, LabReport, LabMarker } from '../../lib/hub';
+import { analyzeBloodwork, extractBloodwork, getBloodworkHistory, getAiStats, AiStats, LabReport, LabMarker } from '../../lib/hub';
 
 const SAMPLE_QUESTIONS = [
   'How is my progress this week?',
@@ -70,6 +72,8 @@ export default function AICoachScreen() {
   const [tab, setTab] = useState<Tab>('ask');
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
+  const [runError, setRunError] = useState<string | null>(null);
+  const [waitNotice, setWaitNotice] = useState(false);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState<AiStats | null>(null);
   const [speaking, setSpeaking] = useState<'idle' | 'generating' | 'playing'>('idle');
@@ -101,26 +105,55 @@ export default function AICoachScreen() {
     setSpeaking('idle');
   };
 
-  const run = async (q: string) => {
+  const run = async (q: string, labs?: LabReport) => {
     if (!q.trim() || loading) return;
     setLoading(true);
     setAnswer('');
+    setRunError(null);
     resetVoice();
+    if (labs) setWaitNotice(true);
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 250);
     try {
-      const reply = await askCoach(q);
+      let reply: string | null = null;
+      if (labs) {
+        try {
+          reply = await analyzeBloodwork(labs);
+        } catch (err: any) {
+          if (err?.name === 'AbortError') throw err;
+          reply = null; // fall back to the coach chat below
+        }
+      }
+      if (!reply) reply = await askCoach(q);
       setAnswer(reply);
       setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 150);
     } catch (e: any) {
-      Alert.alert('AI Coach', e.message || 'Failed to get a response.');
+      const timedOut = e?.name === 'AbortError';
+      const msg = timedOut
+        ? 'The analysis took too long. Tap Analyze again, or ask about one marker at a time.'
+        : e?.message || 'Failed to get a response.';
+      setRunError(msg);
+      Alert.alert('AI Coach', msg);
     } finally {
       setLoading(false);
+      setWaitNotice(false);
     }
   };
 
-  const analyze = (markers: LabMarker[], when?: string | null) => {
-    const lines = markers.map(markerLine).join('\n');
+  const analyze = (lab: LabReport) => {
+    const markers = lab.markers;
+    const when = lab.collected_on;
+    // Keep the reply short enough to finish well inside the server's time limit:
+    // full detail only for out-of-range markers, one grouped line for the rest.
+    const isOut = (m: LabMarker) => m.flag === 'high' || m.flag === 'low';
+    const out = markers.filter(isOut).map(markerLine).join('\n');
+    const rest = markers.filter((m) => !isOut(m)).map(markerLine).join('\n');
     run(
-      `Please analyze my bloodwork${when ? ` (collected ${when})` : ''}. For each marker give the value, the standard lab range, the acceptable range for an enhanced athlete, and your assessment (normal / watch / intervene / red flag). Flag anything concerning, explain which compounds could cause the abnormal values, and give the intervention ladder (lifestyle > supplements with doses > pharmaceuticals with doses > discontinuation thresholds).\n\n${lines}`
+      `Please analyze my bloodwork${when ? ` (collected ${when})` : ''}. Keep it focused and under about 600 words.\n\n` +
+        `1) OUT OF RANGE: for each marker below, give the value, what it means for an enhanced athlete, your assessment (watch / intervene / red flag), the compounds that could cause it, and the intervention ladder (lifestyle > supplements > pharmaceuticals > discontinuation thresholds).\n` +
+        `2) IN RANGE: do not go marker by marker. Write 2-4 lines on anything that deserves attention even though it is in range, and say the rest look fine.\n` +
+        `3) Finish with the 3 most important actions.\n\n` +
+        `OUT OF RANGE:\n${out || '(none flagged)'}\n\nIN RANGE:\n${rest || '(none)'}`,
+      lab
     );
   };
 
@@ -176,6 +209,20 @@ export default function AICoachScreen() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.background }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <Modal visible={waitNotice} transparent animationType="fade" onRequestClose={() => setWaitNotice(false)}>
+        <View style={styles.noticeBackdrop}>
+          <View style={styles.noticeCard} accessibilityViewIsModal>
+            <ActivityIndicator color={colors.accent} size="large" />
+            <Text style={styles.noticeTitle}>Building your detailed analysis</Text>
+            <Text style={styles.noticeBody}>
+              This can take a minute or two. Keep the app open and your results will appear below as soon as they're ready.
+            </Text>
+            <TouchableOpacity style={styles.primary} onPress={() => setWaitNotice(false)} accessibilityRole="button">
+              <Text style={styles.primaryText}>Got it</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
       <ScrollView
         ref={scrollRef}
         style={styles.container}
@@ -270,6 +317,14 @@ export default function AICoachScreen() {
                 subtitle={report.collected_on ? `Collected ${report.collected_on}` : undefined}
                 highlight
               >
+                {report.warnings && report.warnings.length > 0 ? (
+                  <View style={styles.labNotice} accessibilityRole="alert">
+                    <Text style={styles.labNoticeTitle}>{report.partial ? 'Only part of this report was read' : 'Check these against your original report'}</Text>
+                    {report.warnings.slice(0, 8).map((w, i) => (
+                      <Text key={i} style={styles.labNoticeText}>• {w}</Text>
+                    ))}
+                  </View>
+                ) : null}
                 {[...flagged, ...normal].map((m, i) => (
                   <View key={i} style={styles.labRow}>
                     <View style={{ flex: 1 }}>
@@ -283,7 +338,7 @@ export default function AICoachScreen() {
                     </Text>
                   </View>
                 ))}
-                <TouchableOpacity style={[styles.primary, loading && styles.off]} onPress={() => analyze(report.markers, report.collected_on)} disabled={loading} accessibilityRole="button">
+                <TouchableOpacity style={[styles.primary, loading && styles.off]} onPress={() => analyze(report)} disabled={loading} accessibilityRole="button">
                   {loading ? <ActivityIndicator color={colors.onAccent} /> : <Text style={styles.primaryText}>Analyze with Coach Bryan</Text>}
                 </TouchableOpacity>
               </SectionCard>
@@ -330,7 +385,7 @@ export default function AICoachScreen() {
           </>
         )}
 
-        {(answer || loading) && (
+        {(answer || loading || runError) && (
           <SectionCard
             eyebrow="Coach Bryan"
             right={
@@ -349,12 +404,12 @@ export default function AICoachScreen() {
             {loading ? (
               <View style={styles.thinking}>
                 <ActivityIndicator color={colors.accent} />
-                <Text style={styles.muted}>Searching the library…</Text>
+                <Text style={styles.muted}>Reading your results… this can take up to a minute. Your analysis will appear here.</Text>
               </View>
+            ) : runError && !answer ? (
+              <Text style={styles.error}>{runError}</Text>
             ) : (
-              <Text style={styles.answer} selectable>
-                {answer}
-              </Text>
+              <AnalysisView text={answer} />
             )}
           </SectionCard>
         )}
@@ -383,6 +438,10 @@ const styles = StyleSheet.create({
   chip: { minHeight: 36, paddingHorizontal: 12, borderRadius: 18, borderWidth: 1, borderColor: colors.borderLight, justifyContent: 'center' },
   chipText: { color: colors.textSecondary, fontSize: 13 },
   primary: { minHeight: 52, borderRadius: 14, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
+  noticeBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', alignItems: 'center', justifyContent: 'center', padding: spacing.lg },
+  noticeCard: { width: '100%', maxWidth: 380, backgroundColor: colors.surface, borderRadius: 16, borderWidth: 1, borderColor: colors.border, padding: spacing.lg, gap: spacing.md, alignItems: 'center' },
+  noticeTitle: { color: colors.textPrimary, fontSize: fontSize.lg, fontWeight: '700', textAlign: 'center' },
+  noticeBody: { color: colors.textSecondary, fontSize: fontSize.md, textAlign: 'center', lineHeight: 22 },
   primaryText: { color: colors.onAccent, fontWeight: '700', fontSize: fontSize.md },
   secondary: { minHeight: 48, borderRadius: 12, borderWidth: 1, borderColor: colors.borderAccent, alignItems: 'center', justifyContent: 'center' },
   secondaryText: { color: colors.accentText, fontWeight: '600', fontSize: fontSize.md },
@@ -390,6 +449,9 @@ const styles = StyleSheet.create({
   upload: { minHeight: 96, borderRadius: 14, borderWidth: 1, borderStyle: 'dashed', borderColor: colors.borderAccent, backgroundColor: colors.surfaceSunken, alignItems: 'center', justifyContent: 'center', gap: 8 },
   uploadText: { color: colors.accentText, fontWeight: '600' },
   error: { color: colors.yellow, fontSize: fontSize.sm },
+  labNotice: { borderWidth: 1, borderColor: colors.yellow, borderRadius: 8, padding: spacing.md, marginBottom: spacing.sm, gap: 4 },
+  labNoticeTitle: { color: colors.yellow, fontSize: fontSize.sm, fontWeight: '700' },
+  labNoticeText: { color: colors.textPrimary, fontSize: fontSize.sm },
   labRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: 6, borderTopWidth: 1, borderTopColor: colors.border },
   labName: { color: colors.textPrimary, fontSize: fontSize.sm, fontWeight: '600' },
   labRef: { color: colors.textSecondary, fontSize: 11 },

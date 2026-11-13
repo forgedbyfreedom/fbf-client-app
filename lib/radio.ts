@@ -19,29 +19,47 @@ export type RadioEpisode = {
   cover: string;
   date: string;
   link: string;
-  /** Set for FBF Workout Mix songs (playlist kept separate from Radio episodes). */
+  /** Set for songs (playlists kept separate from Radio episodes). */
   kind?: 'radio' | 'mix';
+  /** Which song playlist: the Workout Mix or Gamecock Country. */
+  playlist?: MixPlaylist;
   explicit?: boolean;
   artist?: string;
   album?: string;
 };
 
+export type MixPlaylist = 'workout' | 'gamecock';
+export const MIX_TITLES: Record<MixPlaylist, string> = {
+  workout: 'FBF Workout Mix',
+  gamecock: 'Gamecock Country',
+};
+
 export const MIX_FEED = `${WP_URL}/wp-json/fbf-music/v1/tracks`;
 
-/** The crew's own workout songs (FBF Workout Mix plugin). Empty if the plugin isn't installed yet. */
-export async function fetchMixTracks(): Promise<RadioEpisode[]> {
+/** Gamecock Country songs have "gc" sources; the plugin (1.1+) also says so itself. */
+function playlistOf(t: any): MixPlaylist {
+  if (t?.playlist === 'gamecock' || t?.playlist === 'workout') return t.playlist;
+  return String(t?.source_id || '').startsWith('gc') ? 'gamecock' : 'workout';
+}
+
+/** The crew's own songs (FBF Workout Mix plugin), one playlist at a time. Empty if the plugin isn't installed yet. */
+export async function fetchMixTracks(playlist: MixPlaylist = 'workout'): Promise<RadioEpisode[]> {
   try {
-    const res = await fetch(MIX_FEED, { headers: { Accept: 'application/json' } });
+    const res = await fetch(`${MIX_FEED}?playlist=${playlist}`, { headers: { Accept: 'application/json' } });
     if (!res.ok) return [];
     const json = await res.json();
     const list: any[] = Array.isArray(json?.tracks) ? json.tracks : [];
-    return list.map((t, i) => ({
-      ...t,
-      number: t.number || i + 1,
-      kind: 'mix' as const,
-      artist: 'FBF Workout Mix',
-      album: 'FBF Workout Mix',
-    }));
+    // Older plugin versions return every song in one feed, so sort them into playlists here too.
+    return list
+      .filter((t) => playlistOf(t) === playlist)
+      .map((t, i) => ({
+        ...t,
+        number: i + 1,
+        kind: 'mix' as const,
+        playlist,
+        artist: MIX_TITLES[playlist],
+        album: MIX_TITLES[playlist],
+      }));
   } catch {
     return [];
   }

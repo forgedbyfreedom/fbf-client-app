@@ -10,6 +10,8 @@ import {
   PlayerState,
   fetchEpisodes,
   fetchMixTracks,
+  MixPlaylist,
+  MIX_TITLES,
   getRadioPlayer,
   loadPositions,
   savePosition,
@@ -22,11 +24,21 @@ import {
 const SPEEDS = [1, 1.25, 1.5, 1.75, 2];
 const AUTO_KEY = 'fbf_radio_autonext';
 const MODE_KEY = 'fbf_radio_mode';
-type Mode = 'radio' | 'mix';
+type Mode = 'radio' | 'mix' | 'gamecock';
+const MODES: Mode[] = ['radio', 'mix', 'gamecock'];
+const MODE_LABEL: Record<Mode, string> = { radio: 'Radio', mix: 'Workout Mix', gamecock: 'Gamecocks' };
+const MODE_ICON: Record<Mode, keyof typeof Ionicons.glyphMap> = {
+  radio: 'radio-outline',
+  mix: 'musical-notes-outline',
+  gamecock: 'american-football-outline',
+};
+/** Song playlist shown in each music mode. */
+const PLAYLIST_OF: Record<Exclude<Mode, 'radio'>, MixPlaylist> = { mix: 'workout', gamecock: 'gamecock' };
 
 export default function RadioScreen() {
   const [episodes, setEpisodes] = useState<RadioEpisode[]>([]);
   const [tracks, setTracks] = useState<RadioEpisode[]>([]);
+  const [gcTracks, setGcTracks] = useState<RadioEpisode[]>([]);
   const [mode, setMode] = useState<Mode>('radio');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,12 +52,14 @@ export default function RadioScreen() {
   const player = getRadioPlayer();
   const epsRef = useRef<RadioEpisode[]>([]);
   const mixRef = useRef<RadioEpisode[]>([]);
+  const gcRef = useRef<RadioEpisode[]>([]);
   const speedRef = useRef(1);
   const curRef = useRef<RadioEpisode | null>(null);
   const autoRef = useRef(true);
   const lastSave = useRef(0);
   epsRef.current = episodes;
   mixRef.current = tracks;
+  gcRef.current = gcTracks;
   speedRef.current = speed;
   curRef.current = current;
   autoRef.current = autoNext;
@@ -53,17 +67,20 @@ export default function RadioScreen() {
   const load = useCallback(async () => {
     setError(null);
     try {
-      const [eps, pos, spd, auto, mix, savedMode] = await Promise.all([
+      const [eps, pos, spd, auto, mix, gc, savedMode] = await Promise.all([
         fetchEpisodes(),
         loadPositions(),
         loadSpeed(),
         AsyncStorage.getItem(AUTO_KEY),
-        fetchMixTracks(),
+        fetchMixTracks('workout'),
+        fetchMixTracks('gamecock'),
         AsyncStorage.getItem(MODE_KEY),
       ]);
       setEpisodes(eps);
       setTracks(mix);
+      setGcTracks(gc);
       if (savedMode === 'mix' && mix.length) setMode('mix');
+      if (savedMode === 'gamecock' && gc.length) setMode('gamecock');
       setPositions(pos);
       setSpeed(spd);
       player.setRate(spd);
@@ -97,9 +114,9 @@ export default function RadioScreen() {
       const cur = curRef.current;
       if (!cur) return;
       const isMix = cur.kind === 'mix';
-      const list = isMix ? mixRef.current : epsRef.current;
+      const list = isMix ? (cur.playlist === 'gamecock' ? gcRef.current : mixRef.current) : epsRef.current;
       const i = list.findIndex((e) => e.id === cur.id);
-      // The Workout Mix loops back to the first song so the music never stops mid-workout.
+      // Song playlists loop back to the first song so the music never stops mid-workout.
       const nxt = list[i + dir] || (isMix && list.length ? list[dir === 1 ? 0 : list.length - 1] : undefined);
       if (nxt) start(nxt, true, true);
     },
@@ -133,7 +150,7 @@ export default function RadioScreen() {
 
   const toggle = () => {
     if (!current) {
-      const first = mode === 'mix' ? tracks[0] : episodes[0];
+      const first = mode === 'radio' ? episodes[0] : songsFor(mode)[0];
       if (first) start(first);
       return;
     }
@@ -156,15 +173,23 @@ export default function RadioScreen() {
     setMode(m);
     AsyncStorage.setItem(MODE_KEY, m).catch(() => {});
   };
+  function songsFor(m: Mode): RadioEpisode[] {
+    return m === 'gamecock' ? gcTracks : m === 'mix' ? tracks : [];
+  }
+  // Shuffle within the playlist that's playing (or the one on screen).
   const shuffle = () => {
-    if (!tracks.length) return;
-    const pick = tracks[Math.floor(Math.random() * tracks.length)];
-    switchMode('mix');
+    const m: Mode = current?.kind === 'mix' ? (current.playlist === 'gamecock' ? 'gamecock' : 'mix') : mode;
+    const pool = songsFor(m === 'radio' ? 'mix' : m);
+    if (!pool.length) return;
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    switchMode(m === 'radio' ? 'mix' : m);
     start(pick, true, true);
   };
-  const isMixList = mode === 'mix';
-  const list = isMixList ? tracks : episodes;
+  const isMixList = mode !== 'radio';
+  const listTitle = mode === 'radio' ? 'FBF Radio' : MIX_TITLES[PLAYLIST_OF[mode]];
+  const list = isMixList ? songsFor(mode) : episodes;
   const curIsMix = current?.kind === 'mix';
+  const curTitle = current?.playlist === 'gamecock' ? MIX_TITLES.gamecock : MIX_TITLES.workout;
 
   const dur = state.duration || current?.duration || 0;
   const pct = dur ? Math.min(1, state.position / dur) : 0;
@@ -178,7 +203,7 @@ export default function RadioScreen() {
       <BrandHeader title="FBF Radio" />
 
       <View style={styles.segment} accessibilityRole="tablist">
-        {(['radio', 'mix'] as Mode[]).map((m) => (
+        {MODES.map((m) => (
           <TouchableOpacity
             key={m}
             onPress={() => switchMode(m)}
@@ -186,8 +211,8 @@ export default function RadioScreen() {
             accessibilityRole="tab"
             accessibilityState={{ selected: mode === m }}
           >
-            <Ionicons name={m === 'radio' ? 'radio-outline' : 'musical-notes-outline'} size={16} color={mode === m ? colors.onAccent : colors.textSecondary} />
-            <Text style={[styles.segText, mode === m && styles.segTextOn]}>{m === 'radio' ? 'Radio' : 'Workout Mix'}</Text>
+            <Ionicons name={MODE_ICON[m]} size={16} color={mode === m ? colors.onAccent : colors.textSecondary} />
+            <Text style={[styles.segText, mode === m && styles.segTextOn]} numberOfLines={1}>{MODE_LABEL[m]}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -196,7 +221,7 @@ export default function RadioScreen() {
         <View style={styles.nowRow}>
           {current?.cover ? <Image source={{ uri: current.cover }} style={styles.cover} /> : (
             <View style={[styles.cover, styles.coverEmpty]}>
-              <Ionicons name={isMixList ? 'musical-notes-outline' : 'radio-outline'} size={32} color={colors.accent} />
+              <Ionicons name={MODE_ICON[mode]} size={32} color={colors.accent} />
             </View>
           )}
           <View style={{ flex: 1 }}>
@@ -204,9 +229,9 @@ export default function RadioScreen() {
               {current
                 ? current.title
                 : isMixList
-                  ? tracks[0]
-                    ? 'Tap play to start the Workout Mix'
-                    : 'FBF Workout Mix'
+                  ? list[0]
+                    ? `Tap play to start ${mode === 'gamecock' ? 'Gamecock Country' : 'the Workout Mix'}`
+                    : listTitle
                   : episodes[0]
                     ? 'Tap play to start the newest episode'
                     : 'Knox & Maeve'}
@@ -214,9 +239,11 @@ export default function RadioScreen() {
             <Text style={styles.nowSub}>
               {current
                 ? curIsMix
-                  ? `FBF Workout Mix${current.explicit ? '  ·  Explicit' : ''}`
+                  ? `${curTitle}${current.explicit ? '  ·  Explicit' : ''}`
                   : `Episode ${current.number}`
-                : isMixList
+                : mode === 'gamecock'
+                  ? 'Garnet & black country — Willy B, SEC roll call & more'
+                  : isMixList
                   ? 'Our own songs — Big B, Hot Rod, Pyabro & the crew'
                   : 'Training talk for while you train'}
             </Text>
@@ -242,7 +269,7 @@ export default function RadioScreen() {
 
         <View style={styles.controls}>
           {curIsMix || (!current && isMixList) ? (
-            <TouchableOpacity onPress={shuffle} style={styles.pill} accessibilityLabel="Shuffle the Workout Mix">
+            <TouchableOpacity onPress={shuffle} style={styles.pill} accessibilityLabel="Shuffle this playlist">
               <Ionicons name="shuffle" size={18} color={colors.textPrimary} />
             </TouchableOpacity>
           ) : (
@@ -277,7 +304,7 @@ export default function RadioScreen() {
       </SectionCard>
 
       <SectionCard
-        eyebrow={isMixList ? 'Workout Mix' : 'Episodes'}
+        eyebrow={isMixList ? listTitle : 'Episodes'}
         title={list.length ? `${list.length} ${isMixList ? (list.length === 1 ? 'song' : 'songs') : 'episodes'}` : undefined}
       >
         {loading ? (
@@ -285,7 +312,7 @@ export default function RadioScreen() {
         ) : error && !isMixList ? (
           <Text style={styles.empty}>{error}</Text>
         ) : !list.length ? (
-          <Text style={styles.empty}>{isMixList ? 'The Workout Mix is on the way.' : 'New episodes are on the way.'}</Text>
+          <Text style={styles.empty}>{isMixList ? `${listTitle} is on the way.` : 'New episodes are on the way.'}</Text>
         ) : (
           list.map((ep) => {
             const active = current?.id === ep.id;

@@ -19,7 +19,33 @@ export type RadioEpisode = {
   cover: string;
   date: string;
   link: string;
+  /** Set for FBF Workout Mix songs (playlist kept separate from Radio episodes). */
+  kind?: 'radio' | 'mix';
+  explicit?: boolean;
+  artist?: string;
+  album?: string;
 };
+
+export const MIX_FEED = `${WP_URL}/wp-json/fbf-music/v1/tracks`;
+
+/** The crew's own workout songs (FBF Workout Mix plugin). Empty if the plugin isn't installed yet. */
+export async function fetchMixTracks(): Promise<RadioEpisode[]> {
+  try {
+    const res = await fetch(MIX_FEED, { headers: { Accept: 'application/json' } });
+    if (!res.ok) return [];
+    const json = await res.json();
+    const list: any[] = Array.isArray(json?.tracks) ? json.tracks : [];
+    return list.map((t, i) => ({
+      ...t,
+      number: t.number || i + 1,
+      kind: 'mix' as const,
+      artist: 'FBF Workout Mix',
+      album: 'FBF Workout Mix',
+    }));
+  } catch {
+    return [];
+  }
+}
 
 export async function fetchEpisodes(): Promise<RadioEpisode[]> {
   const res = await fetch(RADIO_FEED, { headers: { Accept: 'application/json' } });
@@ -122,8 +148,8 @@ function webPlayer(): RadioPlayer {
         try {
           ms.metadata = new (globalThis as any).MediaMetadata({
             title: ep.title,
-            artist: 'Forged by Freedom Radio',
-            album: `Episode ${ep.number}`,
+            artist: ep.artist || 'Forged by Freedom Radio',
+            album: ep.album || `Episode ${ep.number}`,
             artwork: [{ src: ep.cover, sizes: '512x512' }],
           });
         } catch {}
@@ -197,7 +223,7 @@ function nativePlayer(): RadioPlayer {
       if (player) player.remove();
       player = audio.createAudioPlayer({ uri: ep.audio }, { updateInterval: 500 });
       try {
-        player.setActiveForLockScreen?.(true, { title: ep.title, artist: 'Forged by Freedom Radio', albumTitle: `Episode ${ep.number}`, artworkUrl: ep.cover });
+        player.setActiveForLockScreen?.(true, { title: ep.title, artist: ep.artist || 'Forged by Freedom Radio', albumTitle: ep.album || `Episode ${ep.number}`, artworkUrl: ep.cover });
       } catch {}
       player.setPlaybackRate?.(rate);
       if (startAt > 0) {
